@@ -1,13 +1,10 @@
+
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.bytedeco.opencv.opencv_core.CvScalar;
-import org.bytedeco.opencv.opencv_core.CvSize;
-import org.bytedeco.opencv.opencv_core.IplImage;
-import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_core.*;
 
 import static org.bytedeco.opencv.global.opencv_core.*;
-import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2HSV;
-import static org.bytedeco.opencv.global.opencv_imgproc.cvCvtColor;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public class ImageThresholder {
 
@@ -68,5 +65,39 @@ public class ImageThresholder {
         Mat addedMats = addPut(mat1, mat2);
 
         return this.matConverter.convert(addedMats);
+    }
+
+    public Frame erodeImage(Frame frame, int perimeters) {
+        IplImage srcImage = this.iplConverter.convert(frame);
+        IplImage erodedImage = srcImage.clone();
+        for (int i = 0; i < perimeters; i++) {
+            cvErode(erodedImage, erodedImage);
+        }
+        return this.iplConverter.convert(erodedImage);
+    }
+
+    public Frame dilateImage(Frame frame, int perimeters) {
+        IplImage srcImage = this.iplConverter.convert(frame);
+        IplImage dilatedImage = srcImage.clone();
+        for (int i = 0; i < perimeters; i++) {
+            cvDilate(dilatedImage, dilatedImage);
+        }
+        return this.iplConverter.convert(dilatedImage);
+    }
+
+    public Frame medFilter(Frame frame, int N) {
+        Mat srcMat = this.matConverter.convert(frame);
+        Mat smoothMat = new Mat(srcMat.rows(), srcMat.cols(), srcMat.type());
+        org.bytedeco.opencv.global.opencv_imgproc.medianBlur(srcMat, smoothMat, N);
+
+        return this.matConverter.convert(smoothMat);
+    }
+
+    public Frame blurFilter(Frame frame, int N) {
+        Mat srcMat = this.matConverter.convert(frame);
+        Mat smoothMat = new Mat(srcMat.rows(), srcMat.cols(), srcMat.type());
+        org.bytedeco.opencv.global.opencv_imgproc.blur(srcMat, smoothMat, new Size(N,N));
+
+        return this.matConverter.convert(smoothMat);
     }
 }
