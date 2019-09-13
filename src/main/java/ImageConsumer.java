@@ -1,5 +1,9 @@
+import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
+import org.bytedeco.javacpp.indexer.UByteRawIndexer;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
+
+import java.util.List;
 
 public class ImageConsumer implements Runnable {
 
@@ -31,7 +35,7 @@ public class ImageConsumer implements Runnable {
     }
 
     public void setup() {
-        this.thresholder.setFirstRange(33, 90, 20, 255, 0, 250);
+        this.thresholder.setFirstRange(27, 90, 29, 255, 49, 255);
         this.thresholder.setSecondRange(0, 40, 200, 255, 100, 255);
         this.thread.start();
     }
@@ -53,17 +57,33 @@ public class ImageConsumer implements Runnable {
                     this.canvas6.setCanvasSize(frame.imageWidth, frame.imageHeight);
                     this.firstImage = false;
                 }
-                Frame blurredFrame = this.thresholder.blurFilter(frame, 5);
+                Frame blurredFrame = this.thresholder.blurFilter(frame, 7);
                 Frame thresholdFrame = this.thresholder.thresholdFirstRange(blurredFrame);
-                Frame medFrame = this.thresholder.medFilter(thresholdFrame, 5);
-                Frame erodedFrame = this.thresholder.erodeImage(medFrame, 10);
-                Frame dilatedFrame = this.thresholder.dilateImage(erodedFrame, 10);
+                Frame medFrame = this.thresholder.medFilter(thresholdFrame, 7);
+                Frame erodedFrame = this.thresholder.erodeImage(medFrame, 5);
+                Frame dilatedFrame = this.thresholder.dilateImage(erodedFrame, 5);
+                List<int[]> locations = this.thresholder.customDetectCircle(dilatedFrame,20, 30, 10, 0.4);
+                Frame paintedFrame = frame.clone();
+                /* TODO: find a way to paint circles on top of captured image safely
+                UByteBufferIndexer indexer = paintedFrame.createIndexer();
+                for (int[] location : locations) {
+                    int xCenter = location[0];
+                    int yCenter = location[1];
+                    int r = location[2];
+                    int numSteps = (int) (2*Math.PI*r);
+                    for (double step = 0; step < numSteps + 1; step++) {
+                        int x = r*(int)Math.cos(step / r);
+                        int y = r*(int)Math.sin(step / r);
+
+                        indexer.put(y + yCenter, x + xCenter, 255, 1);
+                    }
+                }*/
                 this.canvas.showImage(frame);
-                this.canvas2.showImage(blurredFrame);
-                this.canvas3.showImage(medFrame);
-                this.canvas4.showImage(thresholdFrame);
-                this.canvas5.showImage(erodedFrame);
-                this.canvas6.showImage(dilatedFrame);
+//                this.canvas2.showImage(blurredFrame);
+//                this.canvas3.showImage(medFrame);
+//                this.canvas4.showImage(thresholdFrame);
+//                this.canvas5.showImage(erodedFrame);
+                this.canvas6.showImage(paintedFrame);
             }
         }
         this.shutdownProcedure();

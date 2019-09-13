@@ -13,13 +13,11 @@ public class ImageStorageBox {
     }
 
     public synchronized Frame consumeImage() {
-        System.out.println("Consuming image");
         this.unconsumedFrame = false;
         return this.image;
     }
 
     public synchronized void putImage(Frame image) {
-        System.out.println("Storing image");
         this.image = image;
         this.unconsumedFrame = true;
     }
