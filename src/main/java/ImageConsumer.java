@@ -35,7 +35,7 @@ public class ImageConsumer implements Runnable {
     }
 
     public void setup() {
-        this.thresholder.setFirstRange(27, 90, 29, 255, 49, 255);
+        this.thresholder.setFirstRange(69, 91, 97, 255, 0, 255);
         this.thresholder.setSecondRange(0, 40, 200, 255, 100, 255);
         this.thread.start();
     }
@@ -47,6 +47,7 @@ public class ImageConsumer implements Runnable {
     public void run() {
         while (!this.shutdown) {
             if (this.storageBox.hasUnconsumedFrame()) {
+                long startTime = System.currentTimeMillis();
                 Frame frame = this.storageBox.consumeImage();
                 if (this.firstImage) {
                     this.canvas.setCanvasSize(frame.imageWidth, frame.imageHeight);
@@ -83,7 +84,8 @@ public class ImageConsumer implements Runnable {
 //                this.canvas3.showImage(medFrame);
 //                this.canvas4.showImage(thresholdFrame);
 //                this.canvas5.showImage(erodedFrame);
-                this.canvas6.showImage(paintedFrame);
+                this.canvas6.showImage(dilatedFrame);
+                System.out.println(System.currentTimeMillis() - startTime);
             }
         }
         this.shutdownProcedure();

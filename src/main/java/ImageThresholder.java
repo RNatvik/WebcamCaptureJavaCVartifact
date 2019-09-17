@@ -1,13 +1,8 @@
-
-import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacpp.indexer.UByteRawIndexer;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.*;
-
 import java.util.*;
-
-import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.toMap;
 import static org.bytedeco.opencv.global.opencv_core.*;
 import static org.bytedeco.opencv.global.opencv_imgproc.*;
@@ -125,7 +120,7 @@ public class ImageThresholder {
             }
         }
 
-        // https://www.codingame.com/playgrounds/38470/how-to-detect-circles-in-images
+        // Start of time intensive process
         Map<String, Integer> acc = new HashMap<>();
         ArrayList<int[]> edges = new ArrayList<>();
         UByteRawIndexer indexer = mat.createIndexer();
@@ -136,6 +131,8 @@ public class ImageThresholder {
                 }
             }
         }
+        // end of time intensive process
+
         for (int[] edge : edges) {
             int x = edge[0];
             int y = edge[1];
@@ -152,7 +149,6 @@ public class ImageThresholder {
                 }
             }
         }
-
         Map<String, Integer> sorted = acc
                 .entrySet()
                 .stream()
