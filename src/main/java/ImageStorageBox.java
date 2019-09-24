@@ -1,7 +1,9 @@
 
 import org.bytedeco.javacv.Frame;
 
-
+/**
+ * This class is an intermediary storage for a Frame object.
+ */
 public class ImageStorageBox {
 
     private Frame image;
