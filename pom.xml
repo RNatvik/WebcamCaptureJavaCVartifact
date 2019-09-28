@@ -26,6 +26,12 @@
             <artifactId>javacv-platform</artifactId>
             <version>1.5.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20190722</version>
+            <type>bundle</type>
+        </dependency>
     </dependencies>
 
 </project>

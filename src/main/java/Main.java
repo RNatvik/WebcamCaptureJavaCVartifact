@@ -2,8 +2,9 @@ public class Main {
 
     public static void main(String[] args) {
         ImageStorageBox storageBox = new ImageStorageBox();
+        Database database = new Database();
         Camera camera = new Camera(1, storageBox);
-        ImageProcessor consumer = new ImageProcessor(storageBox);
+        ImageProcessor consumer = new ImageProcessor(storageBox, database);
 
         System.out.println("Setup camera...");
         boolean cameraSetupSuccess = camera.setup();

@@ -1,3 +1,4 @@
+import data.Image;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacpp.indexer.UByteRawIndexer;
 import org.bytedeco.javacv.CanvasFrame;
@@ -24,6 +25,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
 public class ImageProcessor implements Runnable {
 
     private ImageStorageBox storageBox;
+    private Database database;
     private Thread thread;
     private CvScalar firstRangeMin, firstRangeMax;
     private CvScalar secondRangeMin, secondRangeMax;
@@ -36,8 +38,9 @@ public class ImageProcessor implements Runnable {
     private CanvasFrame canvas2;
     private boolean firstImage;
 
-    public ImageProcessor(ImageStorageBox storageBox) {
+    public ImageProcessor(ImageStorageBox storageBox, Database database) {
         this.storageBox = storageBox;
+        this.database = new Database();
         this.thread = new Thread(this);
         this.firstRangeMin = new CvScalar(0, 0, 0, 0);
         this.firstRangeMax = new CvScalar(179, 255, 255, 0);
@@ -80,10 +83,10 @@ public class ImageProcessor implements Runnable {
                 List<int[]> locations = this.customDetectCircle(processedFrame, 10, 170, 20, 0.4);
 
                 Frame paintedFrame = paintCircles(frame, locations);
-
+                this.database.setImageToGUI(new Image(paintedFrame));
                 this.canvas.showImage(paintedFrame);
                 this.canvas2.showImage(processedFrame);
-                System.out.println(System.currentTimeMillis() - startTime);
+                // System.out.println(System.currentTimeMillis() - startTime);
             }
         }
         this.shutdownProcedure();
@@ -380,11 +383,11 @@ public class ImageProcessor implements Runnable {
 
         }
         long findCriclesEndTime = System.currentTimeMillis();
-        System.out.println("Setup points: " + (findEdgesTimerStart - pointsTimerStart));
-        System.out.println("Find edges: " + (accStartTime - findEdgesTimerStart));
-        System.out.println("Accumulate: " + (sortAccStartTime - accStartTime));
-        System.out.println("Sort acc: " + (findCirclesStartTime - sortAccStartTime));
-        System.out.println("Find circles: " + (findCriclesEndTime - findCirclesStartTime));
+//        System.out.println("Setup points: " + (findEdgesTimerStart - pointsTimerStart));
+//        System.out.println("Find edges: " + (accStartTime - findEdgesTimerStart));
+//        System.out.println("Accumulate: " + (sortAccStartTime - accStartTime));
+//        System.out.println("Sort acc: " + (findCirclesStartTime - sortAccStartTime));
+//        System.out.println("Find circles: " + (findCriclesEndTime - findCirclesStartTime));
         return circles;
     }
 
