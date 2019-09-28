@@ -32,10 +32,14 @@ public class Server implements Runnable {
 
         try {
             serverSocket = new ServerSocket(this.port, 3, InetAddress.getByName(this.host));
+            System.out.println("Server:: " + serverSocket.getInetAddress() + " (" + serverSocket.getLocalPort() + ")");
             while (!this.shutdown) {
+                System.out.println("Server:: Waiting for client...");
                 clientSocket = serverSocket.accept();
+                System.out.println("Server:: Accepted new client");
                 ClientSocket client = new ClientSocket(clientSocket, this.database);
                 client.start();
+                System.out.println("Server:: Started client socket thread");
             }
         } catch (IOException e) {
             e.printStackTrace();
