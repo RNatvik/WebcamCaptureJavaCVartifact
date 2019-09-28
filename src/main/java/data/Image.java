@@ -10,4 +10,8 @@ public class Image extends Data{
         super(DataType.IMAGE);
         this.frame = frame;
     }
+
+    public Frame getFrame() {
+        return frame;
+    }
 }
