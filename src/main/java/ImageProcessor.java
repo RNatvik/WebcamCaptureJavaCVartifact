@@ -6,16 +6,10 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.*;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.HashMap;
-import java.util.Collections;
+import java.util.*;
 
 import static java.util.stream.Collectors.toMap;
 import static org.bytedeco.opencv.global.opencv_core.*;
-import static org.bytedeco.opencv.global.opencv_core.cvCreateImage;
 import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 
@@ -80,7 +74,7 @@ public class ImageProcessor implements Runnable {
                 processedFrame = this.erodeImage(processedFrame, 14);
                 processedFrame = this.dilateImage(processedFrame, 7);
                 processedFrame = this.edgeDetectCanny(processedFrame);
-                List<int[]> locations = this.customDetectCircle(processedFrame, 10, 170, 20, 0.4);
+                List<int[]> locations = this.customDetectCircle(processedFrame, 15, 20, 20, 0.4);
 
                 Frame paintedFrame = paintCircles(frame, locations);
                 this.database.setImageToGUI(new Image(paintedFrame));
