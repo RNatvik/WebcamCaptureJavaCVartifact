@@ -1,3 +1,4 @@
+import data.DataStorage;
 import data.Image;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacpp.indexer.UByteRawIndexer;
@@ -19,7 +20,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
 public class ImageProcessor implements Runnable {
 
     private ImageStorageBox storageBox;
-    private Database database;
+    private DataStorage dataStorage;
     private Thread thread;
     private CvScalar firstRangeMin, firstRangeMax;
     private CvScalar secondRangeMin, secondRangeMax;
@@ -32,9 +33,9 @@ public class ImageProcessor implements Runnable {
     private CanvasFrame canvas2;
     private boolean firstImage;
 
-    public ImageProcessor(ImageStorageBox storageBox, Database database) {
+    public ImageProcessor(ImageStorageBox storageBox, DataStorage dataStorage) {
         this.storageBox = storageBox;
-        this.database = new Database();
+        this.dataStorage = dataStorage;
         this.thread = new Thread(this);
         this.firstRangeMin = new CvScalar(0, 0, 0, 0);
         this.firstRangeMax = new CvScalar(179, 255, 255, 0);
@@ -77,7 +78,7 @@ public class ImageProcessor implements Runnable {
                 List<int[]> locations = this.customDetectCircle(processedFrame, 15, 20, 20, 0.4);
 
                 Frame paintedFrame = paintCircles(frame, locations);
-                this.database.setImageToGUI(new Image(paintedFrame));
+                this.dataStorage.setImageToGUI(new Image(paintedFrame));
                 this.canvas.showImage(paintedFrame);
                 this.canvas2.showImage(processedFrame);
                 // System.out.println(System.currentTimeMillis() - startTime);
