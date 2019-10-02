@@ -1,5 +1,12 @@
 package communication;
 
+import org.bytedeco.javacv.CanvasFrame;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
@@ -13,6 +20,8 @@ public class UDPClient implements Runnable {
     private DatagramSocket socket;
     private boolean alive;
 
+    private CanvasFrame canvasFrame;
+
     public UDPClient(InetAddress hostAddress, int hostPort) {
         try {
             this.thread = new Thread(this);
@@ -20,6 +29,8 @@ public class UDPClient implements Runnable {
             this.hostPort = hostPort;
             this.socket = new DatagramSocket();
             this.alive = true;
+            this.canvasFrame = new CanvasFrame("UDP Client");
+            this.canvasFrame.setCanvasSize(640, 480);
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -41,15 +52,19 @@ public class UDPClient implements Runnable {
             this.socket.setSoTimeout(5);
         } catch (IOException e) {
             e.printStackTrace();
+            this.alive = false;
         }
-
+        Java2DFrameConverter frameConverter = new Java2DFrameConverter();
         while (this.alive) {
             try {
                 byte[] buffer = new byte[32768];
                 DatagramPacket response = new DatagramPacket(buffer, buffer.length);
                 this.socket.receive(response);
+                BufferedImage img = ImageIO.read(new ByteArrayInputStream(response.getData()));
 
-                String stringResponse = new String(buffer, 0, response.getLength());
+                Frame frame = frameConverter.getFrame(img);
+                this.canvasFrame.showImage(frame);
+                //String stringResponse = new String(buffer, 0, response.getLength());
             } catch (SocketTimeoutException e) {
 
             } catch (IOException e) {
@@ -65,7 +80,7 @@ public class UDPClient implements Runnable {
 
         ArrayList<UDPClient> clients = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             UDPClient client = new UDPClient(InetAddress.getLoopbackAddress(), 2345);
             clients.add(client);
             client.startThread();
