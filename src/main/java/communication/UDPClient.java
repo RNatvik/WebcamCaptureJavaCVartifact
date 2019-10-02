@@ -45,12 +45,11 @@ public class UDPClient implements Runnable {
 
         while (this.alive) {
             try {
-                byte[] buffer = new byte[512];
+                byte[] buffer = new byte[32768];
                 DatagramPacket response = new DatagramPacket(buffer, buffer.length);
                 this.socket.receive(response);
 
                 String stringResponse = new String(buffer, 0, response.getLength());
-                System.out.println(Thread.currentThread() + ": " + stringResponse);
             } catch (SocketTimeoutException e) {
 
             } catch (IOException e) {

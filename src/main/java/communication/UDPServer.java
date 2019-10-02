@@ -46,11 +46,14 @@ public class UDPServer implements Runnable {
         while (!shutdown) {
             try {
                 DatagramPacket hello = new DatagramPacket(new byte[1], 1);
+                System.out.println("UDPServer:: waiting for datagram...");
                 this.serverSocket.receive(hello);
+                System.out.println("UDPServer:: received datagram");
                 InetAddress address = hello.getAddress();
                 int port = hello.getPort();
                 UDPClientSocket clientSocket = new UDPClientSocket(this.serverSocket, address, port, this.dataStorage);
                 this.executorService.submit(clientSocket);
+                System.out.println("UDPServer:: submitted client socket to executor");
             } catch (IOException e) {
                 e.printStackTrace();
                 shutdown = true;
