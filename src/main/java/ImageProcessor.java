@@ -1,396 +1,271 @@
-import data.DataStorage;
-import data.Image;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
-import org.bytedeco.javacpp.indexer.UByteRawIndexer;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.CvMoments;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import static java.util.stream.Collectors.toMap;
 import static org.bytedeco.opencv.global.opencv_core.*;
 import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
-
 /**
- * This class represents an image processor.
+ * This class is an image processor for object detection.
+ * When its run() method is invoked it is designed to run until stop() method is called
+ * It needs an instance of the Flag class, shared with a capturing device to be notified when a new image is available.
+ * An instance of this class needs to have its start() method called ONCE before invoking the run() method.
  */
 public class ImageProcessor implements Runnable {
 
-    private ImageStorageBox storageBox;
-    private DataStorage dataStorage;
-    private Thread thread;
-    private CvScalar firstRangeMin, firstRangeMax;
-    private CvScalar secondRangeMin, secondRangeMax;
-    private OpenCVFrameConverter.ToIplImage iplConverter;
-    private OpenCVFrameConverter.ToMat matConverter;
+    private IplImage srcIm;
+    private IplImage binIm;
+    private LowPassFilter filter;
+    private Flag flag;
     private boolean shutdown;
+    private boolean initialized;
+    private boolean terminated;
 
-    // Testing purposes //
     private CanvasFrame canvas;
-    private CanvasFrame canvas2;
-    private boolean firstImage;
+    private OpenCVFrameConverter.ToIplImage converter;
+    private long timeTest;
 
-    public ImageProcessor(ImageStorageBox storageBox, DataStorage dataStorage) {
-        this.storageBox = storageBox;
-        this.dataStorage = dataStorage;
-        this.thread = new Thread(this);
-        this.firstRangeMin = new CvScalar(0, 0, 0, 0);
-        this.firstRangeMax = new CvScalar(179, 255, 255, 0);
-        this.secondRangeMin = new CvScalar(0, 0, 0, 0);
-        this.secondRangeMax = new CvScalar(179, 255, 255, 0);
-        this.iplConverter = new OpenCVFrameConverter.ToIplImage();
-        this.matConverter = new OpenCVFrameConverter.ToMat();
-        this.canvas = new CanvasFrame("Canvas 1");
-        this.canvas2 = new CanvasFrame("Canvas 2");
-        this.firstImage = true;
+    /**
+     * Instance constructor
+     *
+     * @param flag a flag for cross thread notifications that a new image has been produced
+     */
+    public ImageProcessor(Flag flag) {
+        this.srcIm = cvCreateImage(new CvSize(640, 480), 8, 3);
+        this.binIm = cvCreateImage(new CvSize(640, 480), 8, 1);
+        this.filter = new LowPassFilter(5);
+        this.flag = flag;
+        this.shutdown = false;
+        this.initialized = false;
+        this.terminated = false;
+        this.canvas = new CanvasFrame("ImageProcessor");
+        this.converter = new OpenCVFrameConverter.ToIplImage();
+        this.timeTest = 0;
+
     }
 
-    public void setup() {
-        this.thread.start();
-        this.setFirstRange(38, 82, 0, 167, 36, 200);
-        this.setSecondRange(0, 40, 200, 255, 100, 255);
+    /**
+     * Start method
+     * Call this method once before invoking the run() method.
+     * This initializes the source image feed.
+     *
+     * @param srcIm the source image feed to process
+     * @return true if successful, false if already initialized
+     */
+    public boolean start(IplImage srcIm) {
+        boolean success = false;
+        if (!this.initialized) {
+            this.srcIm = srcIm;
+            this.canvas.setCanvasSize(this.srcIm.width(), this.srcIm.height());
+            this.initialized = true;
+            this.shutdown = false;
+            success = true;
+        }
+        return success;
     }
 
+    /**
+     * Stops the processor upon completion of the current loop in the run() method
+     */
     public void stop() {
         this.shutdown = true;
     }
 
+    /**
+     * Used to check whether or not the the process is terminated.
+     *
+     * @return true if the process is terminated. False if not
+     */
+    public boolean isTerminated() {
+        return this.terminated;
+    }
+
+    /**
+     * This class' runnable method
+     * This method starts a while-loop where the source image feed is processed by thresholding and filtering
+     * to locate an object and paint its location on a copy of the source image.
+     * TODO: This resulting image and the object location should be forwarded to a storage space for distribution
+     */
+    @Override
     public void run() {
         while (!this.shutdown) {
-            if (this.storageBox.hasUnconsumedFrame()) {
-                long startTime = System.currentTimeMillis();
-                Frame frame = this.storageBox.consumeImage();
-                if (this.firstImage) {
-                    this.canvas.setCanvasSize(frame.imageWidth, frame.imageHeight);
-                    this.canvas2.setCanvasSize(frame.imageWidth, frame.imageHeight);
-                    this.firstImage = false;
-                }
-                Frame processedFrame = this.blurFilter(frame, 9);
-                processedFrame = this.thresholdFirstRange(processedFrame);
-                processedFrame = this.medFilter(processedFrame, 5);
-                processedFrame = this.dilateImage(processedFrame, 7);
-                processedFrame = this.erodeImage(processedFrame, 14);
-                processedFrame = this.dilateImage(processedFrame, 7);
-                processedFrame = this.edgeDetectCanny(processedFrame);
-                List<int[]> locations = this.customDetectCircle(processedFrame, 15, 20, 20, 0.4);
+            if (this.flag.get()) {
 
-                Frame paintedFrame = paintCircles(frame, locations);
-                this.dataStorage.setImageToGUI(new Image(paintedFrame));
-                this.canvas.showImage(paintedFrame);
-                this.canvas2.showImage(processedFrame);
-                // System.out.println(System.currentTimeMillis() - startTime);
+                IplImage image = cvCloneImage(this.srcIm);
+                IplConvKernel kernel = IplConvKernel.create(5, 5, 2, 2, CV_SHAPE_ELLIPSE, null);
+                this.flag.set(false);
+
+                this.threshold(image, this.binIm);
+                this.morph(this.binIm, kernel, 5, 3);
+                cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 5, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
+
+                int[] location = this.getCoordinates(this.binIm);
+                this.paintCircle(image, new int[]{location[0], location[1], 2});
+                this.paintCircle(image, location);
+//                List<int[]> locations = this.getCircles(
+//                        this.binIm,
+//                        1,
+//                        50,
+//                        50,
+//                        50,
+//                        10,
+//                        200
+//                );
+//                this.paintCircle(image, locations);
+                this.canvas.showImage(this.converter.convert(image));
+
+                cvReleaseImage(image);
             }
         }
-        this.shutdownProcedure();
+        if (!this.isTerminated()) {
+            this.shutdownSequence();
+            this.terminated = true;
+            this.initialized = false;
+        }
     }
 
     /**
-     * Paint red circles in frame for given location and size
+     * Color threshold method
      *
-     * @param frame     the frame to paint the circles on
-     * @param locations list of locations in frame to paint the circles formatted as [x,y,r] where x and y are the
-     *                  circle center position and r is the circles radius
-     * @return painted frame
+     * @param image  the input image
+     * @param imgbin the output image
      */
-    private Frame paintCircles(Frame frame, List<int[]> locations) {
-        Frame paintedFrame = frame.clone();
-        UByteBufferIndexer indexer = paintedFrame.createIndexer();
+    private void threshold(IplImage image, IplImage imgbin) {
+        CvSize size = new CvSize(image.width(), image.height());
+        IplImage imghsv = cvCreateImage(size, 8, 3);
+        cvCvtColor(image, imghsv, CV_BGR2HSV);
+        cvInRangeS(imghsv, new CvScalar(79, 94, 125, 0), new CvScalar(125, 255, 255, 0), imgbin);
+        cvReleaseImage(imghsv);
+        cvReleaseImageHeader(imghsv);
+    }
+
+    /**
+     * Dilation and Erosion method. This method fills gaps by dilation and removes noise by erosion.
+     * It then restores detected object size by dilation again.
+     *
+     * @param image           the image to morph
+     * @param kernel          the filter kernel
+     * @param initialDilation layers of initial dilation to fill gaps
+     * @param erosion         layers of secondary erosion to remove noise.
+     *                        This parameter tells the method how many layers to erode AFTER eroding the initial dilation.
+     */
+    private void morph(IplImage image, IplConvKernel kernel, int initialDilation, int erosion) {
+        cvDilate(image, image, kernel, initialDilation);
+        cvErode(image, image, kernel, initialDilation + erosion);
+        cvDilate(image, image, kernel, erosion);
+    }
+
+    /**
+     * Hough circle detection method. Finds edges in a gray scale image and finds circle shaped objects
+     *
+     * @param image       the image to detect circles in.
+     * @param accRes      the accumulator's resolution. (inverse of size)
+     * @param minDist     the minimum distance between centres of detected circles
+     * @param cannyThresh the upper canny edge detection threshold. Lower threshold is half of this value
+     * @param votes       the number of votes needed to be qualified as a circle
+     * @param rMin        the minimum circle radius to detect
+     * @param rMax        the maximum circle radius to detect
+     * @return a List of integer arrays containing the circles' center location and radius formatted as {x,y,r}
+     */
+    private List<int[]> getCircles(IplImage image, int accRes, int minDist, double cannyThresh, double votes, int rMin, int rMax) {
+        CvMemStorage mem = CvMemStorage.create();
+        ArrayList<int[]> circleList = new ArrayList<>();
+        CvSeq circles = cvHoughCircles(
+                image, //Input image
+                mem, //Memory Storage
+                CV_HOUGH_GRADIENT, //Detection method
+                accRes, //Inverse ratio
+                minDist, //Minimum distance between the centers of the detected circles
+                cannyThresh, //Higher threshold for canny edge detector
+                votes, //Threshold at the center detection stage
+                rMin, //min radius
+                rMax //max radius
+        );
+        for (int i = 0; i < circles.total(); i++) {
+            CvPoint3D32f circle = new CvPoint3D32f(cvGetSeqElem(circles, i));
+            int x = Math.round(circle.x());
+            int y = Math.round(circle.y());
+            int r = Math.round(circle.z());
+            circleList.add(new int[]{x, y, r});
+        }
+        return circleList;
+    }
+
+    /**
+     * Calculates the center of mass and radius of a circle located at this center (defined by it's area).
+     * When used on a color thresholded image this locates the center of mass and the area of the detected objects.
+     * Note that this means that if several objects are detected they are all viewed as a single object and the area and
+     * location will be skewed as a result
+     *
+     * @param thresholdImage the image to calculate from
+     * @return integer array
+     */
+    private int[] getCoordinates(IplImage thresholdImage) {
+
+        CvMoments moments = new CvMoments();
+        cvMoments(thresholdImage, moments, 1);
+        // cv Spatial moment : Mji=sumx,y(I(x,y)•xj•yi)
+        // where I(x,y) is the intensity of the pixel (x, y).
+        double momX10 = cvGetSpatialMoment(moments, 1, 0); // (x,y)
+        double momY01 = cvGetSpatialMoment(moments, 0, 1);// (x,y)
+        double area = cvGetCentralMoment(moments, 0, 0);
+        int x = (int) (momX10 / area);
+        int y = (int) (momY01 / area);
+        int radius = (int) (Math.sqrt(area / Math.PI));
+        int r = this.filter.passValue(radius);
+        return new int[]{x, y, r, (int)area};
+    }
+
+    /**
+     * Colors a red circle on the input image
+     *
+     * @param image     the image to color the circle on
+     * @param locations a list of integer arrays containing multiple circles' {x,y,radius} information
+     */
+    private void paintCircle(IplImage image, List<int[]> locations) {
         for (int[] location : locations) {
-            int xCenter = location[0];
-            int yCenter = location[1];
-            int r = location[2];
-            for (int i = r; i < r + 2; i++) {
-                int numSteps = (int) (2 * Math.PI * i);
-                for (double step = 0; step < numSteps; step++) {
-                    int x = xCenter + (int) (i * Math.cos(step * 2 * Math.PI / numSteps));
-                    int y = yCenter + (int) (i * Math.sin(step * 2 * Math.PI / numSteps));
+            paintCircle(image, location);
+        }
+    }
 
-                    try {
-                        indexer.put(y, x, new int[]{0, 0, 255});
-                    } catch (IndexOutOfBoundsException iob) {
-                    }
+    /**
+     * Colors a red circle on the input image
+     *
+     * @param image    the image to color the circle on
+     * @param location integer array containing a single circle's {x,y,radius} information
+     */
+    private void paintCircle(IplImage image, int[] location) {
+        Frame frame = this.converter.convert(image);
+        UByteBufferIndexer indexer = frame.createIndexer();
+        int xCenter = location[0];
+        int yCenter = location[1];
+        int r = location[2];
+        for (int i = r; i < r + 3; i++) {
+            int numSteps = (int) (2 * Math.PI * i);
+            for (double step = 0; step < numSteps; step++) {
+                int x = xCenter + (int) (i * Math.cos(step * 2 * Math.PI / numSteps));
+                int y = yCenter + (int) (i * Math.sin(step * 2 * Math.PI / numSteps));
+
+                try {
+                    indexer.put(y, x, new int[]{0, 0, 255});
+                } catch (IndexOutOfBoundsException iob) {
                 }
             }
-        }
-        return paintedFrame;
-    }
-
-    /**
-     * Set the first color range
-     *
-     * @param hueMin minimum hue in range
-     * @param hueMax maximum hue in range
-     * @param satMin minimum saturation in range
-     * @param satMax maximum saturation in range
-     * @param valMin minimum value in range
-     * @param valMax maximum value in range
-     */
-    private void setFirstRange(int hueMin, int hueMax, int satMin, int satMax, int valMin, int valMax) {
-        this.firstRangeMin = new CvScalar(hueMin, satMin, valMin, 0);
-        this.firstRangeMax = new CvScalar(hueMax, satMax, valMax, 0);
-    }
-
-    /**
-     * Set the second color range
-     *
-     * @param hueMin minimum hue in range
-     * @param hueMax maximum hue in range
-     * @param satMin minimum saturation in range
-     * @param satMax maximum saturation in range
-     * @param valMin minimum value in range
-     * @param valMax maximum value in range
-     */
-    private void setSecondRange(int hueMin, int hueMax, int satMin, int satMax, int valMin, int valMax) {
-        this.secondRangeMin = new CvScalar(hueMin, satMin, valMin, 0);
-        this.secondRangeMax = new CvScalar(hueMax, satMax, valMax, 0);
-    }
-
-    /**
-     * Preforms color thresholding on the input frame
-     *
-     * @param frame the frame to threshold
-     * @return binary color thresholded frame
-     */
-    private Frame thresholdFirstRange(Frame frame) {
-        IplImage image = iplConverter.convert(frame);
-        CvSize size = new CvSize(image.width(), image.height());
-        IplImage imghsv = cvCreateImage(size, 8, 3);
-        IplImage imgbin = cvCreateImage(size, 8, 1);
-
-        cvCvtColor(image, imghsv, CV_BGR2HSV);
-        cvInRangeS(imghsv, this.firstRangeMin, this.firstRangeMax, imgbin);
-
-        return this.iplConverter.convert(imgbin);
-    }
-
-    /**
-     * Preforms color thresholding on the input frame
-     *
-     * @param frame the frame to threshold
-     * @return binary color thresholded frame
-     */
-    private Frame thresholdSecondRange(Frame frame) {
-        IplImage image = iplConverter.convert(frame);
-        CvSize size = new CvSize(image.width(), image.height());
-        IplImage imghsv = cvCreateImage(size, 8, 3);
-        IplImage imgbin = cvCreateImage(size, 8, 1);
-
-        cvCvtColor(image, imghsv, CV_BGR2HSV);
-        cvInRangeS(imghsv, this.secondRangeMin, this.secondRangeMax, imgbin);
-
-        return this.iplConverter.convert(imgbin);
-    }
-
-    /**
-     * Preforms color thresholding on the input frame using both internal ranges
-     * Useful only for detecting multiple colors OR the color red.
-     *
-     * @param frame the frame to threshold
-     * @return binary color thresholded frame
-     */
-    private Frame thresholdBoth(Frame frame) {
-        Frame bin1 = thresholdFirstRange(frame);
-        Frame bin2 = thresholdSecondRange(frame);
-
-        Mat mat1 = this.matConverter.convert(bin1);
-        Mat mat2 = this.matConverter.convert(bin2);
-        Mat addedMats = addPut(mat1, mat2);
-
-        return this.matConverter.convert(addedMats);
-    }
-
-    /**
-     * Slims (erodes) edges in an image
-     *
-     * @param frame      the frame to erode
-     * @param perimeters number of edge perimeters to remove
-     * @return eroded frame
-     */
-    private Frame erodeImage(Frame frame, int perimeters) {
-        IplImage srcImage = this.iplConverter.convert(frame);
-        IplImage erodedImage = srcImage.clone();
-        for (int i = 0; i < perimeters; i++) {
-            cvErode(erodedImage, erodedImage);
-        }
-        return this.iplConverter.convert(erodedImage);
-    }
-
-    /**
-     * Expands (dilates) edges in an image
-     *
-     * @param frame      the frame to dilate
-     * @param perimeters number of perimiters to add
-     * @return expanded frame
-     */
-    private Frame dilateImage(Frame frame, int perimeters) {
-        IplImage srcImage = this.iplConverter.convert(frame);
-        IplImage dilatedImage = srcImage.clone();
-        for (int i = 0; i < perimeters; i++) {
-            cvDilate(dilatedImage, dilatedImage);
-        }
-        return this.iplConverter.convert(dilatedImage);
-    }
-
-    /**
-     * Median Filter. Finds the median value of pixel values encompassed by the NxN filter mask.
-     *
-     * @param frame the input image
-     * @param N     mask size
-     * @return median filtered Frame
-     */
-    private Frame medFilter(Frame frame, int N) {
-        Mat srcMat = this.matConverter.convert(frame);
-        Mat smoothMat = new Mat(srcMat.rows(), srcMat.cols(), srcMat.type());
-        org.bytedeco.opencv.global.opencv_imgproc.medianBlur(srcMat, smoothMat, N);
-
-        return this.matConverter.convert(smoothMat);
-    }
-
-    /**
-     * Blur the input frame
-     *
-     * @param frame input frame to blur
-     * @param N     mask size
-     * @return blurred frame
-     */
-    private Frame blurFilter(Frame frame, int N) {
-        Mat srcMat = this.matConverter.convert(frame);
-        Mat smoothMat = new Mat(srcMat.rows(), srcMat.cols(), srcMat.type());
-        org.bytedeco.opencv.global.opencv_imgproc.blur(srcMat, smoothMat, new Size(N, N));
-
-        return this.matConverter.convert(smoothMat);
-    }
-
-    /**
-     * Use canny method to detect edges in input frame.
-     *
-     * @param frame the frame to scan.
-     * @return binary frame with only detected edges.
-     */
-    private Frame edgeDetectCanny(Frame frame) {
-        CvSize size = new CvSize(frame.imageWidth, frame.imageHeight);
-        IplImage srcImage = this.iplConverter.convert(frame);
-        IplImage edgeImage = cvCreateImage(size, 8, 1);
-        cvCanny(srcImage, edgeImage, 0, 1);
-        return this.iplConverter.convert(edgeImage);
-    }
-
-    /**
-     * Finds circle objects in the input frame with specified radius range
-     *
-     * @param frame     the frame to scan
-     * @param rMin      minimum circle radius to detect
-     * @param rMax      maximum circle radius to detect
-     * @param steps     amount of points to match to a circle
-     * @param threshold edge strength threshold (redundant for binary images: set to 1)
-     * @return list of detected circles formatted as [x, y, r] where x the circle center column position, y is the
-     * circle center row position and r is the detected circle radius.
-     */
-    private List<int[]> customDetectCircle(Frame frame, int rMin, int rMax, int steps, double threshold) {
-        Mat mat = this.matConverter.convert(frame);
-        long pointsTimerStart = System.currentTimeMillis();
-        ArrayList<int[]> points = new ArrayList<>();
-        for (int r = rMin; r < rMax + 1; r++) {
-            for (int t = 0; t < steps; t++) {
-                int[] temp = new int[3];
-                temp[0] = r;
-                temp[1] = (int) (r * Math.cos(2 * Math.PI * t / steps));
-                temp[2] = (int) (r * Math.sin(2 * Math.PI * t / steps));
-                points.add(temp);
-            }
-        }
-
-        // Start of time intensive process
-        long findEdgesTimerStart = System.currentTimeMillis();
-        ArrayList<int[]> edges = new ArrayList<>();
-        UByteRawIndexer indexer = mat.createIndexer();
-        for (int x = 0; x < mat.cols(); x++) {
-            for (int y = 0; y < mat.rows(); y++) {
-                if (indexer.get(y, x) > 0) {
-                    edges.add(new int[]{x, y});
-                }
-            }
-        }
-        // end of time intensive process
-
-        long accStartTime = System.currentTimeMillis();
-        Map<String, Integer> acc = new HashMap<>();
-        for (int[] edge : edges) {
-            int x = edge[0];
-            int y = edge[1];
-            for (int[] point : points) {
-                int r = point[0];
-                int a = x - point[1];
-                int b = y - point[2];
-                String key = a + "," + b + "," + r;
-                if (acc.containsKey(key)) {
-                    int tempVal = acc.get(key);
-                    acc.put(key, tempVal + 1);
-                } else {
-                    acc.put(key, 1);
-                }
-            }
-        }
-
-        long sortAccStartTime = System.currentTimeMillis();
-        Map<String, Integer> sorted = acc
-                .entrySet()
-                .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect(
-                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
-                                LinkedHashMap::new));
-
-        long findCirclesStartTime = System.currentTimeMillis();
-        ArrayList<int[]> circles = new ArrayList<>();
-        boolean first = true;
-        for (String key : sorted.keySet()) {
-            int v = sorted.get(key);
-            String[] strings = key.split(",");
-            int x = Integer.parseInt(strings[0]);
-            int y = Integer.parseInt(strings[1]);
-            int r = Integer.parseInt(strings[2]);
-            int[] toBeNamed = new int[]{x, y, r};
-
-            if ((double) v / steps >= threshold) {
-                boolean add = true;
-                if (first) {
-                    first = false;
-                    circles.add(toBeNamed);
-                } else {
-                    for (int[] circle : circles) {
-                        int xc = circle[0];
-                        int yc = circle[1];
-                        int rc = circle[2];
-                        if (!(Math.pow((x - xc), 2) + Math.pow((y - yc), 2) > Math.pow(rc, 2))) {
-                            add = false;
-                        }
-                    }
-                    if (add) {
-                        circles.add(toBeNamed);
-                    }
-                }
-
-            }
 
         }
-        long findCriclesEndTime = System.currentTimeMillis();
-//        System.out.println("Setup points: " + (findEdgesTimerStart - pointsTimerStart));
-//        System.out.println("Find edges: " + (accStartTime - findEdgesTimerStart));
-//        System.out.println("Accumulate: " + (sortAccStartTime - accStartTime));
-//        System.out.println("Sort acc: " + (findCirclesStartTime - sortAccStartTime));
-//        System.out.println("Find circles: " + (findCriclesEndTime - findCirclesStartTime));
-        return circles;
+
     }
 
     /**
-     * Shut down procedure. Called whenever the thread is stopped.
+     * The shutdown sequence for this instance. To be called when shutting down.
      */
-    private void shutdownProcedure() {
+    private void shutdownSequence() {
         this.canvas.dispose();
-        this.canvas2.dispose();
     }
 }

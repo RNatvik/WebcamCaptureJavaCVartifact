@@ -1,32 +1,41 @@
-import communication.UDPClient;
-import communication.UDPServer;
-import data.DataStorage;
-
-import java.net.InetAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
     public static void main(String[] args) {
-        int udpPort = 2345;
-
-        DataStorage dataStorage = new DataStorage();
-        ImageStorageBox imageStorageBox = new ImageStorageBox();
-        Camera camera = new Camera(0, imageStorageBox);
-        ImageProcessor imageProcessor = new ImageProcessor(imageStorageBox, dataStorage);
-        UDPServer udpServer = new UDPServer(udpPort, dataStorage, true, 3);
-        UDPClient udpClient = new UDPClient(InetAddress.getLoopbackAddress(), udpPort);
-
-        camera.setup();
-        imageProcessor.setup();
+        ScheduledExecutorService ses = Executors.newScheduledThreadPool(5);
+        Flag imFlag = new Flag(false);
+        Camera camera = new Camera(0, imFlag);
+        ImageProcessor processor = new ImageProcessor(imFlag);
 
         try {
-            Thread.sleep(5000);
-            udpServer.startThread();
-            Thread.sleep(2000);
-            udpClient.startThread();
-            Thread.sleep(100000);
-        } catch (InterruptedException e) {
+            camera.start();
+            processor.start(camera.getSrcIm());
+            ses.scheduleAtFixedRate(camera, 0, 40, TimeUnit.MILLISECONDS);
+            ses.schedule(processor, 1, TimeUnit.SECONDS);
+
+            try {
+                Thread.sleep(30000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
+        processor.stop();
+        camera.stop();
+
+
+        boolean finished = false;
+        while (!finished) {
+            System.out.print("");
+            if (camera.isTerminated() && processor.isTerminated()) {
+                System.out.println("process should terminate");
+                finished = true;
+            }
+        }
+        ses.shutdown();
     }
 }
