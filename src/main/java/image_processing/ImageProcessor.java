@@ -102,7 +102,6 @@ public class ImageProcessor implements Runnable {
      * This class' runnable method
      * This method starts a while-loop where the source image feed is processed by thresholding and filtering
      * to locate an object and paint its location on a copy of the source image.
-     * TODO: This resulting image and the object location should be forwarded to a storage space for distribution
      */
     @Override
     public void run() {
