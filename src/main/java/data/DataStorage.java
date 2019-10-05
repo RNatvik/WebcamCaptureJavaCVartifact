@@ -1,7 +1,5 @@
 package data;
 
-import org.bytedeco.javacv.Frame;
-
 public class DataStorage {
 
     private Image imageToGUI;
@@ -9,11 +7,11 @@ public class DataStorage {
     private PidParameter pidParameter1;
     private PidParameter pidParameter2;
 
-    public DataStorage() {
-        this.imageToGUI = new Image(new Frame());
-        this.circle = new Circle(new int[]{0, 0, 0});
-        this.pidParameter1 = new PidParameter(0,0,0);
-        this.pidParameter2 = new PidParameter(0,0,0);
+    public DataStorage(Image imageToGUI, Circle circle, PidParameter pidParameter1, PidParameter pidParameter2) {
+        this.imageToGUI = imageToGUI;
+        this.circle = circle;
+        this.pidParameter1 = pidParameter1;
+        this.pidParameter2 = pidParameter2;
     }
 
     public synchronized Image getImageToGUI() {

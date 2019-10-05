@@ -1,3 +1,5 @@
+package data;
+
 /**
  * A simple flag for notification across threads
  */

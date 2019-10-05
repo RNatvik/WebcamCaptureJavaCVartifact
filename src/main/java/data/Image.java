@@ -1,17 +1,21 @@
 package data;
 
-import org.bytedeco.javacv.Frame;
+import java.awt.image.BufferedImage;
 
 public class Image extends Data{
 
-    private Frame frame;
+    private BufferedImage image;
 
-    public Image(Frame frame) {
-        super(DataType.IMAGE);
-        this.frame = frame;
+    public Image(boolean initialFlag) {
+        super(DataType.IMAGE, initialFlag);
     }
 
-    public Frame getFrame() {
-        return frame;
+    public synchronized BufferedImage getImage() {
+        return image;
     }
+
+    public synchronized void setImage(BufferedImage image) {
+        this.image = image;
+    }
+
 }

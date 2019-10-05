@@ -58,8 +58,8 @@ public class TCPServer implements Runnable {
         }
     }
 
-    public static void main(String[] args) {
-        TCPServer server = new TCPServer(12345, new DataStorage(), false, 3);
-        server.startThread();
-    }
+//    public static void main(String[] args) {
+//        TCPServer server = new TCPServer(12345, new DataStorage(), false, 3);
+//        server.startThread();
+//    }
 }

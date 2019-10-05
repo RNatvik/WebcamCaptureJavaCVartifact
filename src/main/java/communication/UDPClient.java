@@ -1,8 +1,10 @@
 package communication;
 
+import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.opencv.opencv_java;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -19,6 +21,7 @@ public class UDPClient implements Runnable {
     private int hostPort;
     private DatagramSocket socket;
     private boolean alive;
+    private boolean terminated;
 
     private CanvasFrame canvasFrame;
 
@@ -29,6 +32,7 @@ public class UDPClient implements Runnable {
             this.hostPort = hostPort;
             this.socket = new DatagramSocket();
             this.alive = true;
+            this.terminated = false;
             this.canvasFrame = new CanvasFrame("UDP Client");
             this.canvasFrame.setCanvasSize(640, 480);
         } catch (SocketException e) {
@@ -41,7 +45,12 @@ public class UDPClient implements Runnable {
     }
 
     public void stop() {
+        System.out.println("Client:: in stop");
         this.alive = false;
+    }
+
+    public boolean isTerminated() {
+        return terminated;
     }
 
     @Override
@@ -60,11 +69,16 @@ public class UDPClient implements Runnable {
                 byte[] buffer = new byte[32768];
                 DatagramPacket response = new DatagramPacket(buffer, buffer.length);
                 this.socket.receive(response);
-                BufferedImage img = ImageIO.read(new ByteArrayInputStream(response.getData()));
-
-                Frame frame = frameConverter.getFrame(img);
-                this.canvasFrame.showImage(frame);
-                //String stringResponse = new String(buffer, 0, response.getLength());
+                this.hostAddress = response.getAddress();
+                this.hostPort = response.getPort();
+                String stringResponse = new String(buffer, 0, response.getLength());
+                if (stringResponse.equals("END")) {
+                    this.alive = false;
+                } else {
+                    BufferedImage img = ImageIO.read(new ByteArrayInputStream(response.getData()));
+                    Frame frame = frameConverter.getFrame(img);
+                    this.canvasFrame.showImage(frame);
+                }
             } catch (SocketTimeoutException e) {
 
             } catch (IOException e) {
@@ -73,11 +87,33 @@ public class UDPClient implements Runnable {
                 System.out.println(Thread.currentThread() + " exiting due to IO exception");
             }
         }
-        this.socket.close();
+        System.out.println("before socket close");
+        this.shutdownProcedure();
+        System.out.println("client finished run");
+    }
+
+    private void shutdownProcedure() {
+        try {
+            String message = "END";
+            byte[] buffer = message.getBytes();
+            System.out.println();
+            DatagramPacket packet = new DatagramPacket(
+                    buffer,
+                    buffer.length,
+                    this.hostAddress,
+                    this.hostPort
+            );
+            this.socket.send(packet);
+            this.socket.close();
+            this.canvasFrame.dispose();
+            this.terminated = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
-
+        Loader.load(opencv_java.class);
         ArrayList<UDPClient> clients = new ArrayList<>();
 
         for (int i = 0; i < 1; i++) {
@@ -93,7 +129,15 @@ public class UDPClient implements Runnable {
         for (UDPClient client : clients) {
             System.out.println("stopping " + client);
             client.stop();
+            boolean finished = false;
+            while (!finished) {
+                System.out.print("");
+                if (client.isTerminated()) {
+                    System.out.println("process should terminate");
+                    finished = true;
+                }
+            }
         }
-
+        System.out.println("end of file");
     }
 }

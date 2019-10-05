@@ -1,3 +1,5 @@
+package image_processing;
+
 /**
  * This class represents a low pass filter for signals
  * TODO: implement several filter methods and support for custom convolution kernel

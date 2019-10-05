@@ -1,6 +1,12 @@
+package image_processing;
+
+import data.Circle;
+import data.Flag;
+import data.Image;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_imgproc.CvMoments;
@@ -14,7 +20,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
 /**
  * This class is an image processor for object detection.
  * When its run() method is invoked it is designed to run until stop() method is called
- * It needs an instance of the Flag class, shared with a capturing device to be notified when a new image is available.
+ * It needs an instance of the data.Flag class, shared with a capturing device to be notified when a new image is available.
  * An instance of this class needs to have its start() method called ONCE before invoking the run() method.
  */
 public class ImageProcessor implements Runnable {
@@ -23,12 +29,15 @@ public class ImageProcessor implements Runnable {
     private IplImage binIm;
     private LowPassFilter filter;
     private Flag flag;
+    private Image outputImage;
+    private Circle outputCircle;
+    private OpenCVFrameConverter.ToIplImage converter;
+    private Java2DFrameConverter bufferedImageConverter;
     private boolean shutdown;
     private boolean initialized;
     private boolean terminated;
 
     private CanvasFrame canvas;
-    private OpenCVFrameConverter.ToIplImage converter;
     private long timeTest;
 
     /**
@@ -36,16 +45,19 @@ public class ImageProcessor implements Runnable {
      *
      * @param flag a flag for cross thread notifications that a new image has been produced
      */
-    public ImageProcessor(Flag flag) {
+    public ImageProcessor(Flag flag, Image outputImage, Circle outputCircle) {
         this.srcIm = cvCreateImage(new CvSize(640, 480), 8, 3);
         this.binIm = cvCreateImage(new CvSize(640, 480), 8, 1);
         this.filter = new LowPassFilter(5);
         this.flag = flag;
+        this.outputImage = outputImage;
+        this.outputCircle = outputCircle;
+        this.converter = new OpenCVFrameConverter.ToIplImage();
+        this.bufferedImageConverter = new Java2DFrameConverter();
         this.shutdown = false;
         this.initialized = false;
         this.terminated = false;
-        this.canvas = new CanvasFrame("ImageProcessor");
-        this.converter = new OpenCVFrameConverter.ToIplImage();
+        this.canvas = new CanvasFrame("image_processing.ImageProcessor");
         this.timeTest = 0;
 
     }
@@ -119,7 +131,7 @@ public class ImageProcessor implements Runnable {
 //                );
 //                this.paintCircle(image, locations);
                 this.canvas.showImage(this.converter.convert(image));
-
+                this.setOutputs(image, location);
                 cvReleaseImage(image);
             }
         }
@@ -260,6 +272,13 @@ public class ImageProcessor implements Runnable {
 
         }
 
+    }
+
+    private void setOutputs(IplImage image, int[] location) {
+        this.outputImage.setImage(this.bufferedImageConverter.getBufferedImage(this.converter.convert(image)));
+        this.outputImage.setFlag(true);
+        this.outputCircle.setLocation(location);
+        this.outputCircle.setFlag(true);
     }
 
     /**
