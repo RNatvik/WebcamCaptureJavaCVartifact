@@ -2,15 +2,16 @@ package communication;
 
 import data.DataStorage;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 public class TCPClientSocket implements Runnable {
 
     private Socket socket;
     private DataStorage dataStorage;
-    private InputStream inputStream;
-    private OutputStream outputStream;
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
 
@@ -20,10 +21,8 @@ public class TCPClientSocket implements Runnable {
         try {
             this.socket.setKeepAlive(true);
             this.dataStorage = dataStorage;
-            this.inputStream = this.socket.getInputStream();
-            this.outputStream = this.socket.getOutputStream();
-            this.bufferedReader = new BufferedReader(new InputStreamReader(this.inputStream));
-            this.printWriter = new PrintWriter(this.outputStream);
+            this.bufferedReader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            this.printWriter = new PrintWriter(this.socket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Could not create TCP client socket");
@@ -32,25 +31,7 @@ public class TCPClientSocket implements Runnable {
 
     @Override
     public void run() {
-        try {
-            boolean shutdown = false;
-            while (!shutdown) {
-                String messageIn = this.bufferedReader.readLine();
-                System.out.println("Client wrote: " + messageIn);
-                if (messageIn.equals("GET:DATA")) {
-                    this.printWriter.println(this.dataStorage.getData());
-                } else if (messageIn.equals("QUIT")) {
-                    shutdown = true;
-                    this.printWriter.println("Goodbye");
-                } else {
-                    this.printWriter.println(messageIn);
-                }
-                this.printWriter.flush();
 
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         try {
             this.socket.close();

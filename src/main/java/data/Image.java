@@ -2,12 +2,12 @@ package data;
 
 import java.awt.image.BufferedImage;
 
-public class Image extends Data{
+public class Image extends Data {
 
     private BufferedImage image;
 
     public Image(boolean initialFlag) {
-        super(DataType.IMAGE, initialFlag);
+        super(initialFlag, Data.IMAGE);
     }
 
     public synchronized BufferedImage getImage() {

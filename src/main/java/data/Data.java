@@ -1,17 +1,16 @@
 package data;
 
 public abstract class Data {
+    public static final String PID_PARAM = "PID";
+    public static final String CIRCLE = "CIRCLE";
+    public static final String IMAGE = "IMAGE";
 
-    private DataType type;
     private Flag flag;
+    private String type;
 
-    public Data(DataType type, boolean initialFlag) {
-        this.type = type;
+    public Data(boolean initialFlag, String type) {
         this.flag = new Flag(initialFlag);
-    }
-
-    public DataType getType() {
-        return this.type;
+        this.type = type;
     }
 
     public boolean getFlag() {
@@ -21,4 +20,13 @@ public abstract class Data {
     public void setFlag(boolean state) {
         this.flag.set(state);
     }
+
+    public String getType() {
+        return type;
+    }
+
+    public <T> T safeCast(Object o, Class<T> clazz) {
+        return clazz != null && clazz.isInstance(o) ? clazz.cast(o) : null;
+    }
+
 }

@@ -1,11 +1,11 @@
 package data;
 
-public class Circle extends Data{
+public class Circle extends JSONData{
 
     private int[] location;
 
     public Circle(int[] location, boolean initialFlag) {
-        super(DataType.CIRCLE, initialFlag);
+        super(initialFlag, Data.CIRCLE);
         this.location = location;
     }
 
