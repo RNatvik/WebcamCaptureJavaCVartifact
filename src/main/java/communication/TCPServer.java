@@ -1,6 +1,9 @@
 package communication;
 
+import data.Circle;
 import data.DataStorage;
+import data.Image;
+import data.PidParameter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -58,8 +61,13 @@ public class TCPServer implements Runnable {
         }
     }
 
-//    public static void main(String[] args) {
-//        TCPServer server = new TCPServer(12345, new DataStorage(), false, 3);
-//        server.startThread();
-//    }
+    public static void main(String[] args) {
+        Image image = new Image(false);
+        PidParameter pidParameter1 = new PidParameter(1,2,3,false);
+        PidParameter pidParameter2 = new PidParameter(4,5,6,true);
+        Circle circle = new Circle(new int[]{1,2,3}, false);
+        DataStorage storage = new DataStorage(image, circle, pidParameter1, pidParameter2);
+        TCPServer server = new TCPServer(4567, storage, false, 3);
+        server.startThread();
+    }
 }

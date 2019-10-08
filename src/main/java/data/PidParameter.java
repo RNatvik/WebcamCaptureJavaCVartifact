@@ -13,6 +13,18 @@ public class PidParameter extends JSONData {
         this.kd = kd;
     }
 
+    public void setKp(int kp) {
+        this.kp = kp;
+    }
+
+    public void setKi(int ki) {
+        this.ki = ki;
+    }
+
+    public void setKd(int kd) {
+        this.kd = kd;
+    }
+
     public int getKp() {
         return kp;
     }

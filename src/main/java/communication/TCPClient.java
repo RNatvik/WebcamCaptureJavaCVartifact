@@ -1,5 +1,7 @@
 package communication;
 
+import data.PidParameter;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -9,26 +11,36 @@ public class TCPClient {
 
     public static void main(String[] args) {
         try {
-            Socket socket = new Socket(InetAddress.getLocalHost(), 12345);
+            PidParameter pidParameter = new PidParameter(9,8,7, true);
+            Socket socket = new Socket(InetAddress.getLocalHost(), 4567);
+            System.out.println(socket.isConnected());
             OutputStream outputStream = socket.getOutputStream();
             PrintWriter printWriter = new PrintWriter(outputStream);
 
             InputStream inputStream = socket.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
-            System.out.println("TCPClient:: printWriter writing");
-            printWriter.println("GET:DATA");
+            String message = String.format("SET::%s::%s", TCPClientSocket.PID1, pidParameter.toJSON());
+            System.out.println(message);
+            printWriter.println(message);
             printWriter.flush();
-            String line = bufferedReader.readLine();
-            System.out.println("TCPClient:: Server responded: " + line);
-            printWriter.println("Does this echo?");
+            String response = bufferedReader.readLine();
+            System.out.println(response);
+
+            message = String.format("GET::%s", TCPClientSocket.PID1);
+            System.out.println(message);
+            printWriter.println(message);
             printWriter.flush();
-            line = bufferedReader.readLine();
-            System.out.println("TCPClient:: Server responded: " + line);
-            printWriter.println("QUIT");
+            response = bufferedReader.readLine();
+            System.out.println(response);
+
+
+            message = String.format("QUIT::%s", TCPClientSocket.PID2);
+            printWriter.println(message);
             printWriter.flush();
-            line = bufferedReader.readLine();
-            System.out.println("TCPClient:: Server responded: " + line);
+
+            socket.close();
+
 
         } catch (UnknownHostException e) {
             e.printStackTrace();

@@ -1,3 +1,4 @@
+import communication.TCPClientSocket;
 import data.Circle;
 import data.Data;
 import data.PidParameter;
@@ -5,9 +6,9 @@ import data.PidParameter;
 public class TestMain {
 
     public static void main(String[] args) {
-        Circle pidParameter = new Circle(new int[]{1,2,3},false);
-        String jsonString = pidParameter.toJSON();
-        System.out.println(jsonString);
+        String result = String.format("\"type\":\"%s\"", TCPClientSocket.ERROR);
+        System.out.println(result);
+
     }
 
     public static <T> T safeCast(Object o, Class<T> clazz) {
