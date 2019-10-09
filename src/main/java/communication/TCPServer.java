@@ -1,9 +1,6 @@
 package communication;
 
-import data.Circle;
-import data.DataStorage;
-import data.Image;
-import data.PidParameter;
+import pub_sub_service.Broker;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,15 +14,15 @@ public class TCPServer implements Runnable {
 
     private Thread thread;
     private int port;
-    private DataStorage dataStorage;
+    private Broker broker;
     private ServerSocket serverSocket;
     private ExecutorService executorService;
 
-    public TCPServer(int port, DataStorage dataStorage, boolean loopback, int threadPoolSize) {
+    public TCPServer(int port, boolean loopback, int threadPoolSize, Broker broker) {
         try {
             this.thread = new Thread(this);
             this.port = port;
-            this.dataStorage = dataStorage;
+            this.broker = broker;
             if (loopback) {
                 this.serverSocket = new ServerSocket(this.port, 3, InetAddress.getLoopbackAddress());
             } else {
@@ -50,7 +47,7 @@ public class TCPServer implements Runnable {
         while (!shutdown) {
             try {
                 Socket socket = this.serverSocket.accept();
-                TCPClientSocket clientSocket = new TCPClientSocket(socket, this.dataStorage);
+                TCPClientSocket clientSocket = new TCPClientSocket(socket, this.broker);
                 this.executorService.submit(clientSocket);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -62,12 +59,12 @@ public class TCPServer implements Runnable {
     }
 
     public static void main(String[] args) {
-        Image image = new Image(false);
-        PidParameter pidParameter1 = new PidParameter(1,2,3,false);
-        PidParameter pidParameter2 = new PidParameter(4,5,6,true);
-        Circle circle = new Circle(new int[]{1,2,3}, false);
-        DataStorage storage = new DataStorage(image, circle, pidParameter1, pidParameter2);
-        TCPServer server = new TCPServer(4567, storage, false, 3);
-        server.startThread();
+//        Image image = new Image(false);
+//        PidParameter pidParameter1 = new PidParameter(1,2,3,false);
+//        PidParameter pidParameter2 = new PidParameter(4,5,6,true);
+//        Circle circle = new Circle(new int[]{1,2,3}, false);
+//        DataStorage storage = new DataStorage(image, circle, pidParameter1, pidParameter2);
+//        TCPServer server = new TCPServer(4567, storage, false, 3);
+//        server.startThread();
     }
 }

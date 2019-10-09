@@ -1,8 +1,11 @@
 package communication;
 
-import data.DataStorage;
+import data.Data;
 import data.Flag;
-import data.Image;
+import data.ImageProcessorData;
+import pub_sub_service.Broker;
+import pub_sub_service.Message;
+import pub_sub_service.Subscriber;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -11,21 +14,22 @@ import java.io.IOException;
 import java.net.*;
 
 
-public class UDPClientSocket implements Runnable {
+public class UDPClientSocket extends Subscriber implements Runnable {
 
     private DatagramSocket socket;
-    private DataStorage dataStorage;
     private InetAddress clientAddress;
     private int clientPort;
     private Flag serverShutdownFlag;
+    private boolean shutdown;
 
-    public UDPClientSocket(InetAddress address, int port, DataStorage dataStorage, Flag serverShutdownFlag) {
+    public UDPClientSocket(InetAddress address, int port, Broker broker, Flag serverShutdownFlag) {
+        super(broker);
         try {
             this.socket = new DatagramSocket();
-            this.dataStorage = dataStorage;
             this.clientAddress = address;
             this.clientPort = port;
             this.serverShutdownFlag = serverShutdownFlag;
+            this.shutdown = false;
             this.socket.setSoTimeout(5);
             this.socket.connect(this.clientAddress, this.clientPort);
             System.out.println("Client socket created at: " + this.socket.getLocalAddress() + " (" + this.socket.getLocalPort() + ")");
@@ -37,33 +41,16 @@ public class UDPClientSocket implements Runnable {
     @Override
     public void run() {
         System.out.println("UDPClientSocket:: In run");
-        boolean shutdown = false;
-
-        while (!(this.serverShutdownFlag.get() || shutdown)) {
+        this.getBroker().subscribeTo("IMAGE_DATA", this);
+        while (!(this.serverShutdownFlag.get() || this.shutdown)) {
             try {
-                Image image = this.dataStorage.getImageToGUI();
-                if (image != null) {
-                    if (image.getFlag()) {
-                        BufferedImage bufferedImage = image.getImage();
-                        image.setFlag(false);
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        ImageIO.write(bufferedImage, "jpg", baos);
-                        byte[] imBuffer = baos.toByteArray();
-                        DatagramPacket packet = new DatagramPacket(
-                                imBuffer,
-                                imBuffer.length,
-                                this.clientAddress,
-                                this.clientPort
-                        );
-                        this.socket.send(packet);
-                    }
-                }
+                this.readMessages();
                 byte[] buffer = new byte[1024];
                 DatagramPacket response = new DatagramPacket(buffer, buffer.length);
                 this.socket.receive(response);
                 String stringResponse = new String(buffer, 0, response.getLength());
                 if (stringResponse.equals("END")) {
-                    shutdown = true;
+                    this.shutdown = true;
                 }
             } catch (SocketTimeoutException e) {
 
@@ -96,4 +83,40 @@ public class UDPClientSocket implements Runnable {
     }
 
 
+    @Override
+    protected synchronized void readMessages() {
+        System.out.println("ClientSocket:: start readMessages()");
+        while (!this.getMessageQueue().isEmpty()) {
+            Message message = this.getMessageQueue().remove();
+            Data data = message.getData();
+            String topic = message.getTopic();
+
+            if (topic.equals("IMAGE_DATA")) {
+                System.out.println("ClientSocket:: got message for IMAGE_DATA");
+                ImageProcessorData image = data.safeCast(ImageProcessorData.class);
+                try {
+                    if (image != null) {
+                        BufferedImage bufferedImage = image.getImage();
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        ImageIO.write(bufferedImage, "jpg", baos);
+                        byte[] imBuffer = baos.toByteArray();
+                        DatagramPacket packet = new DatagramPacket(
+                                imBuffer,
+                                imBuffer.length,
+                                this.clientAddress,
+                                this.clientPort
+                        );
+                        this.socket.send(packet);
+                    } else {
+                        System.out.println("ClientSocket:: image is null");
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Topic Error");
+            }
+        }
+    }
 }

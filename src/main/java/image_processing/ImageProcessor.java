@@ -1,8 +1,7 @@
 package image_processing;
 
-import data.Circle;
 import data.Flag;
-import data.Image;
+import data.ImageProcessorData;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
@@ -10,6 +9,9 @@ import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_imgproc.CvMoments;
+import pub_sub_service.Broker;
+import pub_sub_service.Message;
+import pub_sub_service.Publisher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,42 +25,38 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
  * It needs an instance of the data.Flag class, shared with a capturing device to be notified when a new image is available.
  * An instance of this class needs to have its start() method called ONCE before invoking the run() method.
  */
-public class ImageProcessor implements Runnable {
+public class ImageProcessor implements Runnable, Publisher {
 
     private IplImage srcIm;
     private IplImage binIm;
-    private LowPassFilter filter;
-    private Flag flag;
-    private Image outputImage;
-    private Circle outputCircle;
     private OpenCVFrameConverter.ToIplImage converter;
     private Java2DFrameConverter bufferedImageConverter;
+    private LowPassFilter filter;
+    private Flag flag;
+    private Broker broker;
     private boolean shutdown;
     private boolean initialized;
     private boolean terminated;
 
     private CanvasFrame canvas;
-    private long timeTest;
 
     /**
      * Instance constructor
      *
      * @param flag a flag for cross thread notifications that a new image has been produced
      */
-    public ImageProcessor(Flag flag, Image outputImage, Circle outputCircle) {
+    public ImageProcessor(Flag flag, Broker broker) {
         this.srcIm = cvCreateImage(new CvSize(640, 480), 8, 3);
         this.binIm = cvCreateImage(new CvSize(640, 480), 8, 1);
-        this.filter = new LowPassFilter(5);
-        this.flag = flag;
-        this.outputImage = outputImage;
-        this.outputCircle = outputCircle;
         this.converter = new OpenCVFrameConverter.ToIplImage();
         this.bufferedImageConverter = new Java2DFrameConverter();
+        this.filter = new LowPassFilter(5);
+        this.flag = flag;
+        this.broker = broker;
         this.shutdown = false;
         this.initialized = false;
         this.terminated = false;
         this.canvas = new CanvasFrame("image_processing.ImageProcessor");
-        this.timeTest = 0;
 
     }
 
@@ -129,9 +127,17 @@ public class ImageProcessor implements Runnable {
 //                        200
 //                );
 //                this.paintCircle(image, locations);
+                Message message = new Message(
+                        "IMAGE_DATA",
+                        new ImageProcessorData(
+                                this.bufferedImageConverter.convert(this.converter.convert(image)),
+                                location
+                        )
+                );
+                this.publish(this.broker, message);
                 this.canvas.showImage(this.converter.convert(image));
-                this.setOutputs(image, location);
                 cvReleaseImage(image);
+
             }
         }
         if (!this.isTerminated()) {
@@ -273,17 +279,15 @@ public class ImageProcessor implements Runnable {
 
     }
 
-    private void setOutputs(IplImage image, int[] location) {
-        this.outputImage.setImage(this.bufferedImageConverter.getBufferedImage(this.converter.convert(image)));
-        this.outputImage.setFlag(true);
-        this.outputCircle.setLocation(location);
-        this.outputCircle.setFlag(true);
-    }
-
     /**
      * The shutdown sequence for this instance. To be called when shutting down.
      */
     private void shutdownSequence() {
         this.canvas.dispose();
+    }
+
+    @Override
+    public void publish(Broker broker, Message message) {
+        broker.addMessage(message);
     }
 }

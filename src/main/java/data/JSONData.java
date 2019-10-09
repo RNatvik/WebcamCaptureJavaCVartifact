@@ -4,8 +4,8 @@ import org.json.JSONObject;
 
 public abstract class JSONData extends Data {
 
-    public JSONData(boolean initialFlag, String type) {
-        super(initialFlag, type);
+    public JSONData(String type) {
+        super(type);
     }
 
     public String toJSON() {

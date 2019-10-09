@@ -1,7 +1,7 @@
 package communication;
 
-import data.DataStorage;
 import data.Flag;
+import pub_sub_service.Broker;
 
 import java.io.IOException;
 import java.net.*;
@@ -14,23 +14,23 @@ public class UDPServer implements Runnable {
 
     private Thread thread;
     private int port;
-    private DataStorage dataStorage;
     private DatagramSocket serverSocket;
     private ExecutorService executorService;
+    private Broker broker;
     private Flag shutdown;
     private boolean terminated;
 
-    public UDPServer(int port, DataStorage dataStorage, boolean loopback, int threadPoolSize) {
+    public UDPServer(int port, boolean loopback, int threadPoolSize, Broker broker) {
         try {
             this.thread = new Thread(this);
             this.port = port;
-            this.dataStorage = dataStorage;
             if (loopback) {
                 this.serverSocket = new DatagramSocket(this.port, InetAddress.getLoopbackAddress());
             } else {
                 this.serverSocket = new DatagramSocket(this.port, InetAddress.getLocalHost());
             }
             this.executorService = Executors.newFixedThreadPool(threadPoolSize);
+            this.broker = broker;
             this.shutdown = new Flag(false);
             this.terminated = false;
             this.serverSocket.setSoTimeout(5);
@@ -65,7 +65,7 @@ public class UDPServer implements Runnable {
                 System.out.println("UDPServer:: received datagram");
                 InetAddress address = hello.getAddress();
                 int port = hello.getPort();
-                UDPClientSocket clientSocket = new UDPClientSocket(address, port, this.dataStorage, this.shutdown);
+                UDPClientSocket clientSocket = new UDPClientSocket(address, port, this.broker, this.shutdown);
                 this.executorService.submit(clientSocket);
                 System.out.println("UDPServer:: submitted client socket to executor");
             } catch (SocketTimeoutException e) {

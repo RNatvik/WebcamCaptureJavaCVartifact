@@ -6,8 +6,8 @@ public class PidParameter extends JSONData {
     private int ki;
     private int kd;
 
-    public PidParameter(int kp, int ki, int kd, boolean initialFlag) {
-        super(initialFlag, Data.PID_PARAM);
+    public PidParameter(int kp, int ki, int kd) {
+        super(Data.PID_PARAM);
         this.kp = kp;
         this.ki = ki;
         this.kd = kd;

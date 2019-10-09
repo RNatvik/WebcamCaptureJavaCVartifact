@@ -72,6 +72,7 @@ public class UDPClient implements Runnable {
                 this.hostAddress = response.getAddress();
                 this.hostPort = response.getPort();
                 String stringResponse = new String(buffer, 0, response.getLength());
+                System.out.println("Received data");
                 if (stringResponse.equals("END")) {
                     this.alive = false;
                 } else {
