@@ -4,6 +4,7 @@ public abstract class Data {
     public static final String PID_PARAM = "PID";
     public static final String CIRCLE = "CIRCLE";
     public static final String IMAGE = "IMAGE";
+    public static final String IMPROC_PARAM = "IMPROC_PARAM";
 
     private String type;
 

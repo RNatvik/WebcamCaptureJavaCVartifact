@@ -1,6 +1,7 @@
 package pub_sub_service;
 
 import data.Data;
+import org.json.JSONObject;
 
 public class Message {
 
@@ -18,5 +19,10 @@ public class Message {
 
     public Data getData() {
         return data;
+    }
+
+    public String toJSON() {
+        JSONObject jsonObject = new JSONObject(this);
+        return jsonObject.toString();
     }
 }

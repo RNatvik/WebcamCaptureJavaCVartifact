@@ -1,6 +1,6 @@
 package data;
 
-public class PidParameter extends JSONData {
+public class PidParameter extends Data {
 
     private int kp;
     private int ki;

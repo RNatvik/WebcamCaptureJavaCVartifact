@@ -1,5 +1,6 @@
 package communication;
 
+import data.Flag;
 import pub_sub_service.Broker;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ public class TCPServer implements Runnable {
 
     private Thread thread;
     private int port;
+    private Flag shutdownFlag;
     private Broker broker;
     private ServerSocket serverSocket;
     private ExecutorService executorService;
@@ -22,6 +24,7 @@ public class TCPServer implements Runnable {
         try {
             this.thread = new Thread(this);
             this.port = port;
+            this.shutdownFlag = new Flag(false);
             this.broker = broker;
             if (loopback) {
                 this.serverSocket = new ServerSocket(this.port, 3, InetAddress.getLoopbackAddress());
@@ -42,16 +45,15 @@ public class TCPServer implements Runnable {
 
     @Override
     public void run() {
-        boolean shutdown = false;
 
-        while (!shutdown) {
+        while (!this.shutdownFlag.get()) {
             try {
                 Socket socket = this.serverSocket.accept();
-                TCPClientSocket clientSocket = new TCPClientSocket(socket, this.broker);
+                TCPClientSocket clientSocket = new TCPClientSocket(socket, this.shutdownFlag, this.broker);
                 this.executorService.submit(clientSocket);
             } catch (IOException e) {
                 e.printStackTrace();
-                shutdown = true;
+                this.shutdownFlag.set(true);
             } catch (RejectedExecutionException e) {
                 e.printStackTrace();
             }

@@ -12,6 +12,7 @@ import org.bytedeco.opencv.opencv_imgproc.CvMoments;
 import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Publisher;
+import pub_sub_service.Subscriber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ import static org.bytedeco.opencv.global.opencv_imgproc.*;
  * It needs an instance of the data.Flag class, shared with a capturing device to be notified when a new image is available.
  * An instance of this class needs to have its start() method called ONCE before invoking the run() method.
  */
-public class ImageProcessor implements Runnable, Publisher {
+public class ImageProcessor extends Subscriber implements Runnable, Publisher {
 
     private IplImage srcIm;
     private IplImage binIm;
@@ -33,7 +34,6 @@ public class ImageProcessor implements Runnable, Publisher {
     private Java2DFrameConverter bufferedImageConverter;
     private LowPassFilter filter;
     private Flag flag;
-    private Broker broker;
     private boolean shutdown;
     private boolean initialized;
     private boolean terminated;
@@ -46,13 +46,13 @@ public class ImageProcessor implements Runnable, Publisher {
      * @param flag a flag for cross thread notifications that a new image has been produced
      */
     public ImageProcessor(Flag flag, Broker broker) {
+        super(broker);
         this.srcIm = cvCreateImage(new CvSize(640, 480), 8, 3);
         this.binIm = cvCreateImage(new CvSize(640, 480), 8, 1);
         this.converter = new OpenCVFrameConverter.ToIplImage();
         this.bufferedImageConverter = new Java2DFrameConverter();
         this.filter = new LowPassFilter(5);
         this.flag = flag;
-        this.broker = broker;
         this.shutdown = false;
         this.initialized = false;
         this.terminated = false;
@@ -104,6 +104,7 @@ public class ImageProcessor implements Runnable, Publisher {
     @Override
     public void run() {
         while (!this.shutdown) {
+            this.readMessages();
             if (this.flag.get()) {
 
                 IplImage image = cvCloneImage(this.srcIm);
@@ -134,7 +135,7 @@ public class ImageProcessor implements Runnable, Publisher {
                                 location
                         )
                 );
-                this.publish(this.broker, message);
+                this.publish(this.getBroker(), message);
                 this.canvas.showImage(this.converter.convert(image));
                 cvReleaseImage(image);
 
@@ -289,5 +290,10 @@ public class ImageProcessor implements Runnable, Publisher {
     @Override
     public void publish(Broker broker, Message message) {
         broker.addMessage(message);
+    }
+
+    @Override
+    protected void readMessages() {
+        // TODO: Implement method for handling subscriptions
     }
 }
