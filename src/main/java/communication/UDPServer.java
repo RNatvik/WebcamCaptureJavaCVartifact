@@ -97,9 +97,4 @@ public class UDPServer implements Runnable {
 
         return success;
     }
-
-//    public static void main(String[] args) {
-//        UDPServer server = new UDPServer(2345, new DataStorage(), true, 3);
-//        server.startThread();
-//    }
 }

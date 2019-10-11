@@ -1,18 +1,14 @@
 package communication;
 
-import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
-import org.bytedeco.opencv.opencv_java;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 public class UDPClient implements Runnable {
 
@@ -72,7 +68,6 @@ public class UDPClient implements Runnable {
                 this.hostAddress = response.getAddress();
                 this.hostPort = response.getPort();
                 String stringResponse = new String(buffer, 0, response.getLength());
-                System.out.println("Received data");
                 if (stringResponse.equals("END")) {
                     this.alive = false;
                 } else {
@@ -111,34 +106,5 @@ public class UDPClient implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        Loader.load(opencv_java.class);
-        ArrayList<UDPClient> clients = new ArrayList<>();
-
-        for (int i = 0; i < 1; i++) {
-            UDPClient client = new UDPClient(InetAddress.getLoopbackAddress(), 2345);
-            clients.add(client);
-            client.startThread();
-        }
-
-        System.out.println("Waiting to close");
-        Scanner scanner = new Scanner(System.in);
-        scanner.nextLine();
-        System.out.println("got next line");
-        for (UDPClient client : clients) {
-            System.out.println("stopping " + client);
-            client.stop();
-            boolean finished = false;
-            while (!finished) {
-                System.out.print("");
-                if (client.isTerminated()) {
-                    System.out.println("process should terminate");
-                    finished = true;
-                }
-            }
-        }
-        System.out.println("end of file");
     }
 }

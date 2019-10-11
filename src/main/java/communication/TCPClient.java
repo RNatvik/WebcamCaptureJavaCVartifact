@@ -1,38 +1,92 @@
 package communication;
 
 import data.Topic;
+import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.SocketTimeoutException;
 
-public class TCPClient {
+public class TCPClient implements Runnable {
 
-    public static void main(String[] args) {
+    private Thread thread;
+    private Socket socket;
+    private PrintWriter printWriter;
+    private BufferedReader bufferedReader;
+    private boolean shutdown;
+    private boolean terminated;
+
+    private String ouputMessage;
+
+    public TCPClient(InetAddress hostAddress, int hostPort) {
         try {
-            Socket socket = new Socket(InetAddress.getLoopbackAddress(), 1234);
-            System.out.println(socket.isConnected());
-            OutputStream outputStream = socket.getOutputStream();
-            PrintWriter printWriter = new PrintWriter(outputStream);
-
-            InputStream inputStream = socket.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String message = String.format("SUB::%s", Topic.IMAGE_DATA);
-            printWriter.println(message);
-            printWriter.flush();
-
-            for (int i = 0; i < 10; i++) {
-                String response = bufferedReader.readLine();
-                System.out.println(response);
-            }
-
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
+            this.thread = new Thread(this);
+            this.socket = new Socket(hostAddress, hostPort);
+            this.printWriter = new PrintWriter(this.socket.getOutputStream());
+            this.bufferedReader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            this.shutdown = false;
+            this.terminated = false;
+            this.socket.setSoTimeout(5);
+            this.ouputMessage = null;
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void startThread() {
+
+        this.thread.start();
+    }
+
+    public void stop() {
+        this.shutdown = true;
+    }
+
+    public boolean isTerminated() {
+        return this.terminated;
+    }
+
+    public void setOutputMessage(String command, String body) {
+        this.ouputMessage = String.format(command+"::%s", body);
+    }
+
+    @Override
+    public void run() {
+        this.printWriter.println(String.format("SUB::%s", Topic.IMAGE_DATA));
+        this.printWriter.flush();
+        while (!this.shutdown) {
+            try {
+                if (this.ouputMessage != null) {
+                    this.printWriter.println(this.ouputMessage);
+                    this.printWriter.flush();
+                    this.ouputMessage = null;
+                }
+                String response = this.bufferedReader.readLine();
+                if (response != null) {
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONObject data = jsonObject.getJSONObject("data");
+                    String location = data.getJSONArray("location").toString();
+                    System.out.println(location);
+                }
+            } catch (SocketTimeoutException e) {
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private boolean shutdownProcedure() {
+        boolean success = true;
+        try {
+            this.socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return success;
     }
 }
