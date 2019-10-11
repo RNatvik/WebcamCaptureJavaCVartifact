@@ -1,5 +1,8 @@
 package data;
 
+/**
+ * Constant list for topics.
+ */
 public abstract class Topic {
 
     public static final String IMAGE_DATA = "IMAGE_DATA";
