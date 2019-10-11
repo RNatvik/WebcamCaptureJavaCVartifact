@@ -2,6 +2,8 @@ package image_processing;
 
 import data.Flag;
 import data.ImageProcessorData;
+import data.ImageProcessorParameter;
+import data.Topic;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
@@ -14,6 +16,7 @@ import pub_sub_service.Message;
 import pub_sub_service.Publisher;
 import pub_sub_service.Subscriber;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +37,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
     private Java2DFrameConverter bufferedImageConverter;
     private LowPassFilter filter;
     private Flag flag;
+    private ImageProcessorParameter parameters;
     private boolean shutdown;
     private boolean initialized;
     private boolean terminated;
@@ -53,6 +57,9 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         this.bufferedImageConverter = new Java2DFrameConverter();
         this.filter = new LowPassFilter(5);
         this.flag = flag;
+        this.parameters = new ImageProcessorParameter(
+                79, 125, 94, 255, 125, 255, false
+        );
         this.shutdown = false;
         this.initialized = false;
         this.terminated = false;
@@ -72,6 +79,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         boolean success = false;
         if (!this.initialized) {
             this.srcIm = srcIm;
+            this.getBroker().subscribeTo(Topic.IMPROC_PARAM, this);
             this.canvas.setCanvasSize(this.srcIm.width(), this.srcIm.height());
             this.initialized = true;
             this.shutdown = false;
@@ -118,25 +126,21 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 int[] location = this.getCoordinates(this.binIm);
                 this.paintCircle(image, new int[]{location[0], location[1], 2});
                 this.paintCircle(image, location);
-//                List<int[]> locations = this.getCircles(
-//                        this.binIm,
-//                        1,
-//                        50,
-//                        50,
-//                        50,
-//                        10,
-//                        200
-//                );
-//                this.paintCircle(image, locations);
-                Message message = new Message(
-                        "IMAGE_DATA",
-                        new ImageProcessorData(
-                                this.bufferedImageConverter.convert(this.converter.convert(image)),
-                                location
-                        )
-                );
+
+                BufferedImage buffIm;
+                if (this.parameters.isStoreProcessedImage()) {
+                    buffIm = this.bufferedImageConverter.convert(this.converter.convert(this.binIm));
+                } else {
+                    buffIm = this.bufferedImageConverter.convert(this.converter.convert(image));
+                }
+                Message message = new Message(Topic.IMAGE_DATA, new ImageProcessorData(buffIm, location));
                 this.publish(this.getBroker(), message);
-                this.canvas.showImage(this.converter.convert(image));
+
+                if (!this.parameters.isStoreProcessedImage()) {
+                    this.canvas.showImage(this.converter.convert(image));
+                } else {
+                    this.canvas.showImage(this.converter.convert(this.binIm));
+                }
                 cvReleaseImage(image);
 
             }
@@ -158,7 +162,13 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         CvSize size = new CvSize(image.width(), image.height());
         IplImage imghsv = cvCreateImage(size, 8, 3);
         cvCvtColor(image, imghsv, CV_BGR2HSV);
-        cvInRangeS(imghsv, new CvScalar(79, 94, 125, 0), new CvScalar(125, 255, 255, 0), imgbin);
+        CvScalar lowerRange = new CvScalar(
+                this.parameters.getHueMin(), this.parameters.getSatMin(), this.parameters.getValMin(), 0
+        );
+        CvScalar upperRange = new CvScalar(
+                this.parameters.getHueMax(), this.parameters.getSatMax(), this.parameters.getValMax(), 0
+        );
+        cvInRangeS(imghsv, lowerRange, upperRange, imgbin);
         cvReleaseImage(imghsv);
         cvReleaseImageHeader(imghsv);
     }
@@ -294,6 +304,14 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
 
     @Override
     protected void readMessages() {
-        // TODO: Implement method for handling subscriptions
+        while (!this.getMessageQueue().isEmpty()) {
+            Message message = this.getMessageQueue().remove();
+            if (message.getTopic().equals(Topic.IMPROC_PARAM)) {
+                ImageProcessorParameter newParams = message.getData().safeCast(ImageProcessorParameter.class);
+                if (newParams != null) {
+                    this.parameters = newParams;
+                }
+            }
+        }
     }
 }
