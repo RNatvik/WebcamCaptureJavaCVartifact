@@ -1,4 +1,5 @@
 import communication.TCPServer;
+import communication.UDPServer;
 import data.Flag;
 import image_processing.Camera;
 import image_processing.ImageProcessor;
@@ -18,6 +19,7 @@ public class TestMain {
         Camera camera = new Camera(0, imFlag);
         ImageProcessor processor = new ImageProcessor(imFlag, broker);
         TCPServer tcpServer = new TCPServer(1234, true, 3, broker);
+        UDPServer udpServer = new UDPServer(2345, true, 3, broker);
 
         try {
             camera.start();
@@ -26,9 +28,10 @@ public class TestMain {
             ses.scheduleAtFixedRate(broker, 0, 5, TimeUnit.MILLISECONDS);
             ses.schedule(processor, 1, TimeUnit.SECONDS);
             ses.schedule(tcpServer, 0, TimeUnit.SECONDS);
+            ses.schedule(udpServer, 0, TimeUnit.SECONDS);
 
             try {
-                Thread.sleep(60000);
+                Thread.sleep(20000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -38,12 +41,14 @@ public class TestMain {
 
         processor.stop();
         camera.stop();
+        tcpServer.stop();
+        udpServer.stop();
 
 
         boolean finished = false;
         while (!finished) {
             System.out.print("");
-            if (camera.isTerminated() && processor.isTerminated()) {
+            if (camera.isTerminated() && processor.isTerminated() && tcpServer.isTerminated() && udpServer.isTerminated()) {
                 System.out.println("process should terminate");
                 finished = true;
             }

@@ -55,6 +55,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                 this.readMessages();
                 if (this.bufferedReader.ready()) {
                     String line = this.bufferedReader.readLine();
+                    System.out.println(this + " received line: " + line);
                     if (line != null) {
                         String[] lineParts = line.split("::");
                         String command = lineParts[0];
@@ -79,15 +80,19 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                     } else {
                         this.stop();
                     }
+                } else if (this.printWriter.checkError()) {
+                    this.stop();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                this.stop();
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
                 System.out.println("TCPClientSocket:: client wrote invalid syntax");
             }
         }
-        this.shutdownProcedure();
+        this.terminated = this.shutdownProcedure();
+        System.out.println(this + " is terminated: " + this.terminated);
     }
 
     private void set(String json) {
@@ -130,8 +135,15 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         this.getBroker().unsubscribeFrom(topic, this);
     }
 
-    private void shutdownProcedure() {
-        // TODO: Implement shutdown procedure
+    private boolean shutdownProcedure() {
+        boolean success = false;
+        try {
+            this.socket.close();
+            success = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return success;
     }
 
     @Override
