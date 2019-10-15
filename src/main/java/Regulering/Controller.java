@@ -69,7 +69,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
 
 
     /**
-     * Maps the output from the pid to approtiete values to send to the motors
+     * Maps the output from the pid to appropriate values to send to the motors
      *
      * @param motors the motor values to map.
      * @return the motors values maped in desired range
