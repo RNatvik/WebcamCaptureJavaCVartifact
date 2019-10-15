@@ -5,22 +5,24 @@ package data;
  */
 public class PidParameter extends Data {
 
-    private int kp;
-    private int ki;
-    private int kd;
+    private double kp;
+    private double ki;
+    private double kd;
 
-    /**
-     * Construct a new instance
-     *
-     * @param kp proportional gain
-     * @param ki integral gain
-     * @param kd derivative gain
-     */
-    public PidParameter(int kp, int ki, int kd) {
+    private double maxOutput;
+    private double minOutput;
+
+    private double setpoint;
+
+
+    public PidParameter(double kp, double ki, double kd, double maxOutput, double minOutput, double setpoint) {
         super(Data.PID_PARAM);
         this.kp = kp;
         this.ki = ki;
         this.kd = kd;
+        this.maxOutput = maxOutput;
+        this.minOutput = minOutput;
+        this.setpoint = setpoint;
     }
 
     /**
@@ -55,7 +57,7 @@ public class PidParameter extends Data {
      *
      * @return the instance's proportional gain value
      */
-    public int getKp() {
+    public double getKp() {
         return kp;
     }
 
@@ -64,7 +66,7 @@ public class PidParameter extends Data {
      *
      * @return the instance's integral gain value
      */
-    public int getKi() {
+    public double getKi() {
         return ki;
     }
 
@@ -73,7 +75,20 @@ public class PidParameter extends Data {
      *
      * @return the instance's derivative gain value
      */
-    public int getKd() {
+    public double getKd() {
         return kd;
     }
+
+    public double getMaxOutput() {
+        return maxOutput;
+    }
+
+    public double getMinOutput() {
+        return minOutput;
+    }
+
+    public double getSetpoint() {
+        return setpoint;
+    }
+
 }

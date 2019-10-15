@@ -1,5 +1,7 @@
 package Regulering;
 
+import data.PidParameter;
+
 /**
  * Taken from https://github.com/tekdemo/MiniPID-Java/blob/master/src/com/stormbots/MiniPID.java
  * and http://brettbeauregard.com/blog/2011/04/improving-the-beginners-pid-direction/improving-the-beginners-pid-introduction
@@ -13,19 +15,11 @@ public class PID {
     // Class private variables
     //**********************************
 
-    private double P=0;
-    private double I=0;
-    private double D=0;
     private double F=0;
 
     private double maxIOutput=0;
     private double maxError=0;
     private double errorSum=0;
-
-    private double maxOutput=0;
-    private double minOutput=0;
-
-    private double setpoint=0;
 
     private double lastActual=0;
 
@@ -39,142 +33,20 @@ public class PID {
 
     private double setpointRange=0;
 
+    private PidParameter parameters;
+
     //**********************************
     // Constructor functions
     //**********************************
 
-    /**
-     * Create a PID class object.
-     * See setP, setI, setD methods for more detailed parameters.
-     * @param p Proportional gain. Large if large difference between setpoint and target.
-     * @param i Integral gain.  Becomes large if setpoint cannot reach target quickly.
-     * @param d Derivative gain. Responds quickly to large changes in error. Small values prevents P and I terms from causing overshoot.
-     */
-    public PID(double p, double i, double d){
-        P=p; I=i; D=d;
-        checkSigns();
+
+    public PID(PidParameter parameters){
+        this.parameters = parameters;
     }
 
-    /**
-     * Create a MiniPID class object.
-     * See setP, setI, setD, setF methods for more detailed parameters.
-     * @param p Proportional gain. Large if large difference between setpoint and target.
-     * @param i Integral gain.  Becomes large if setpoint cannot reach target quickly.
-     * @param d Derivative gain. Responds quickly to large changes in error. Small values prevents P and I terms from causing overshoot.
-     * @param f Feed-forward gain. Open loop "best guess" for the output should be. Only useful if setpoint represents a rate.
-     */
-    public PID(double p, double i, double d, double f){
-        P=p; I=i; D=d; F=f;
-        checkSigns();
-    }
 
-    //**********************************
-    // Configuration functions
-    //**********************************
-    /**
-     * Configure the Proportional gain parameter. <br>
-     * This responds quickly to changes in setpoint, and provides most of the initial driving force
-     * to make corrections. <br>
-     * Some systems can be used with only a P gain, and many can be operated with only PI.<br>
-     * For position based controllers, this is the first parameter to tune, with I second. <br>
-     * For rate controlled systems, this is often the second after F.
-     *
-     * @param p Proportional gain. Affects output according to <b>output+=P*(setpoint-current_value)</b>
-     */
-    public void setP(double p){
-        P=p;
-        checkSigns();
-    }
 
-    /**
-     * Changes the I parameter <br>
-     * This is used for overcoming disturbances, and ensuring that the controller always gets to the control mode.
-     * Typically tuned second for "Position" based modes, and third for "Rate" or continuous based modes. <br>
-     * Affects output through <b>output+=previous_errors*Igain ;previous_errors+=current_error</b>
-     *
-     * @see {@link #setMaxIOutput(double) setMaxIOutput} for how to restrict
-     *
-     * @param i New gain value for the Integral term
-     */
-    public void setI(double i){
-        if(I!=0){
-            errorSum=errorSum*I/i;
-        }
-        if(maxIOutput!=0){
-            maxError=maxIOutput/i;
-        }
-        I=i;
-        checkSigns();
-        // Implementation note:
-        // This Scales the accumulated error to avoid output errors.
-        // As an example doubling the I term cuts the accumulated error in half, which results in the
-        // output change due to the I term constant during the transition.
-    }
 
-    /**
-     * Changes the D parameter <br>
-     * This has two primary effects:
-     * <list>
-     * <li> Adds a "startup kick" and speeds up system response during setpoint changes
-     * <li> Adds "drag" and slows the system when moving toward the target
-     * </list>
-     * A small D value can be useful for both improving response times, and preventing overshoot.
-     * However, in many systems a large D value will cause significant instability, particularly
-     * for large setpoint changes.
-     * <br>
-     * Affects output through <b>output += -D*(current_input_value - last_input_value)</b>
-     *
-     * @param d New gain value for the Derivative term
-     */
-    public void setD(double d){
-        D=d;
-        checkSigns();
-    }
-
-    /**
-     * Configure the FeedForward parameter. <br>
-     * This is excellent for velocity, rate, and other  continuous control modes where you can
-     * expect a rough output value based solely on the setpoint.<br>
-     * Should not be used in "position" based control modes.<br>
-     * Affects output according to <b>output+=F*Setpoint</b>. Note, that a F-only system is actually open loop.
-     *
-     * @param f Feed forward gain.
-     */
-    public void setF(double f){
-        F=f;
-        checkSigns();
-    }
-
-    /**
-     * Configure the PID object.
-     * See setP, setI, setD methods for more detailed parameters.
-     * @param p Proportional gain. Large if large difference between setpoint and target.
-     * @param i Integral gain.  Becomes large if setpoint cannot reach target quickly.
-     * @param d Derivative gain. Responds quickly to large changes in error. Small values prevents P and I terms from causing overshoot.
-     */
-    public void setPID(double p, double i, double d){
-        P=p;D=d;
-        //Note: the I term has additional calculations, so we need to use it's
-        //specific method for setting it.
-        setI(i);
-        checkSigns();
-    }
-
-    /**
-     * Configure the PID object.
-     * See setP, setI, setD, setF methods for more detailed parameters.
-     * @param p Proportional gain. Large if large difference between setpoint and target.
-     * @param i Integral gain.  Becomes large if setpoint cannot reach target quickly.
-     * @param d Derivative gain. Responds quickly to large changes in error. Small values prevents P and I terms from causing overshoot.
-     * @param f Feed-forward gain. Open loop "best guess" for the output should be. Only useful if setpoint represents a rate.
-     */
-    public void setPID(double p, double i, double d,double f){
-        P=p;D=d;F=f;
-        //Note: the I term has additional calculations, so we need to use it's
-        //specific method for setting it.
-        setI(i);
-        checkSigns();
-    }
 
     /**
      * Set the maximum output value contributed by the I component of the system
@@ -186,38 +58,11 @@ public class PID {
         // The maxError is generated for simplifying math, since calculations against
         // the max error are far more common than changing the I term or Izone.
         maxIOutput=maximum;
-        if(I!=0){
-            maxError=maxIOutput/I;
+        if(this.parameters.getKi()!=0){
+            maxError=maxIOutput/this.parameters.getKi();
         }
     }
 
-    /**
-     * Specify a maximum output range. <br>
-     * When one input is specified, output range is configured to
-     * <b>[-output, output]</b>
-     * @param output
-     */
-    public void setOutputLimits(double output){
-        setOutputLimits(-output,output);
-    }
-
-    /**
-     * Specify a  maximum output.
-     * When two inputs specified, output range is configured to
-     * <b>[minimum, maximum]</b>
-     * @param minimum possible output value
-     * @param maximum possible output value
-     */
-    public void setOutputLimits(double minimum,double maximum){
-        if(maximum<minimum)return;
-        maxOutput=maximum;
-        minOutput=minimum;
-
-        // Ensure the bounds of the I term are within the bounds of the allowable output swing
-        if(maxIOutput==0 || maxIOutput>(maximum-minimum) ){
-            setMaxIOutput(maximum-minimum);
-        }
-    }
 
     /**
      * Set the operating direction of the PID controller
@@ -231,31 +76,24 @@ public class PID {
     // Primary operating functions
     //**********************************
 
-    /**
-     * Configure setpoint for the PID calculations<br>
-     * This represents the target for the PID system's, such as a
-     * position, velocity, or angle. <br>
-     * @see PID # getOutput(actual) <br>
-     * @param setpoint
-     */
-    public void setSetpoint(double setpoint){
-        this.setpoint=setpoint;
-    }
 
     /**
      * Calculate the output value for the current PID cycle.<br>
      * @param actual The monitored value, typically as a sensor input.
-     * @param setpoint The target value for the system
      * @return calculated output value for driving the system
      */
-    public double getOutput(double actual, double setpoint){
+    public double getOutput(double actual){
         double output;
         double Poutput;
         double Ioutput;
         double Doutput;
         double Foutput;
-
-        this.setpoint=setpoint;
+        double setpoint = this.parameters.getSetpoint();
+        double P = this.parameters.getKp();
+        double I = this.parameters.getKi();
+        double D = this.parameters.getKd();
+        double minOutput = this.parameters.getMinOutput();
+        double maxOutput = this.parameters.getMaxOutput();
 
         // Ramp the setpoint used for calculations if user has opted to do so
         if(setpointRange!=0){
@@ -338,28 +176,7 @@ public class PID {
         return output;
     }
 
-    /**
-     * Calculate the output value for the current PID cycle.<br>
-     * In no-parameter mode, this uses the last sensor value,
-     * and last setpoint value. <br>
-     * Not typically useful, and use of parameter modes is suggested. <br>
-     * @return calculated output value for driving the system
-     */
-    public double getOutput(){
-        return getOutput(lastActual,setpoint);
-    }
 
-    /**
-     * Calculate the output value for the current PID cycle.<br>
-     * In one parameter mode, the last configured setpoint will be used.<br>
-     * @see PID # setSetpoint()
-     * @param actual The monitored value, typically as a sensor input.
-     *  setpoint The target value for the system
-     * @return calculated output value for driving the system
-     */
-    public double getOutput(double actual){
-        return getOutput(actual,setpoint);
-    }
 
     /**
      * Resets the controller. This erases the I term buildup, and removes
@@ -447,22 +264,11 @@ public class PID {
         return (min<value) && (value<max);
     }
 
-    /**
-     * To operate correctly, all PID parameters require the same sign
-     * This should align with the {@literal}reversed value
-     */
-    private void checkSigns(){
-        if(reversed){  // all values should be below zero
-            if(P>0) P*=-1;
-            if(I>0) I*=-1;
-            if(D>0) D*=-1;
-            if(F>0) F*=-1;
-        }
-        else{  // all values should be above zero
-            if(P<0) P*=-1;
-            if(I<0) I*=-1;
-            if(D<0) D*=-1;
-            if(F<0) F*=-1;
-        }
+    public PidParameter getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(PidParameter parameters) {
+        this.parameters = parameters;
     }
 }
