@@ -8,6 +8,7 @@ public abstract class Data {
     public static final String CIRCLE = "CIRCLE";
     public static final String IMAGE = "IMAGE";
     public static final String IMPROC_PARAM = "IMPROC_PARAM";
+    public static final String MOTOR_CONTROL_VALUES = "MCV";
 
     private String type;
 

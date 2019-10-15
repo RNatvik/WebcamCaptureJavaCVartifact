@@ -71,16 +71,22 @@ public class TCPClient implements Runnable {
                     JSONObject data = jsonObject.getJSONObject("data");
                     String location = data.getJSONArray("location").toString();
                     System.out.println(location);
+                } else {
+                    System.out.println("TCPClient:: Socket closed remotely");
+                    this.stop();
                 }
             } catch (SocketTimeoutException e) {
 
             } catch (IOException e) {
                 e.printStackTrace();
+                this.stop();
             }
         }
+        this.terminated = this.shutdownProcedure();
     }
 
     private boolean shutdownProcedure() {
+        System.out.println("TCPClient:: in shutdown procedure");
         boolean success = true;
         try {
             this.socket.close();
