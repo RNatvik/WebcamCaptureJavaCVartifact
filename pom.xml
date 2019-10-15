@@ -22,6 +22,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>13</version>
+        </dependency>
+        <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
             <version>1.5.1</version>
@@ -33,15 +38,16 @@
         </dependency>
         <dependency>
             <groupId>org.bytedeco</groupId>
-            <artifactId>${moduleName}-platform</artifactId>
-            <version>${moduleVersion}-1.5.1</version>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.1</version>
         </dependency>
+
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20190722</version>
-            <type>bundle</type>
         </dependency>
+
     </dependencies>
 
 </project>

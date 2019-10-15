@@ -8,7 +8,7 @@ import pub_sub_service.Publisher;
 import pub_sub_service.Subscriber;
 
 /**
- * Testing timer based controller
+ *
  */
 
 
@@ -18,7 +18,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     private PID pidTurn;
 
     private RegulatorParameter regParam;
-    private int[] location;
+    private int[] location; //x, y, radius, area
 
     private boolean newLocation;
 
@@ -28,7 +28,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
 
         this.pidForward = new PID(new PidParameter(1,2,3,200,-200, 100));
         this.pidTurn = new PID(new PidParameter(1,2,3,200,-200, 100));
-        this.regParam = new RegulatorParameter(-20, -100, 20, 100);
+        this.regParam = new RegulatorParameter(-20, -100, 20, 100,-200,200);
         this.location = new int[]{0,0,0,0};
         this.newLocation = false;
 
@@ -51,13 +51,17 @@ public class Controller extends Subscriber implements Runnable, Publisher {
             int radius = this.location[2];
             int area = this.location[3];
 
+            double pidOutputs[];
             double pidOut1 = this.pidForward.getOutput(radius);
             double pidOut2 = this.pidTurn.getOutput(x);
 
-            double[] mappedValues = this.mapPIDValue(new double[]{pidOut1, pidOut2});
-            double[] summedValues = this.sumPID(mappedValues[0], mappedValues[1]);
-            System.out.println(summedValues[0] + " : " + summedValues[1]);
-            Data outputData = new RegulatorOutput(summedValues[0], summedValues[1]);
+            double[] motorOutput = this.sumPID(pidOut1, pidOut2);
+            motorOutput[0] = clamp(motorOutput[0], this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
+            motorOutput[1] = clamp(motorOutput[1],this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
+            double[] mappedValues = this.mapMotorValue(motorOutput);
+
+            System.out.println(mappedValues[0] + " : " + mappedValues[1]);
+            Data outputData = new RegulatorOutput(mappedValues[0], mappedValues[1]);
             Message outputMessage = new Message(Topic.REGULATOR_OUTPUT, outputData);
             this.publish(this.getBroker(), outputMessage);
         }
@@ -70,7 +74,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      * @param motors the motor values to map.
      * @return the motors values maped in desired range
      */
-    private double[] mapPIDValue(double[] motors) {
+    private double[] mapMotorValue(double[] motors) {
         if (motors[0] < 0) {
             motors[0] = transformation(this.pidForward.getParameters().getMinOutput(),
                     0,
