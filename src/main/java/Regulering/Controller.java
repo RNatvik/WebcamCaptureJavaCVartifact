@@ -44,7 +44,6 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         this.readMessages();
 
         if (this.newLocation) {
-            System.out.println("Controller:: Received Location");
             this.newLocation = false;
             int x = this.location[0];
             int y = this.location[1];
@@ -60,7 +59,6 @@ public class Controller extends Subscriber implements Runnable, Publisher {
             motorOutput[1] = clamp(motorOutput[1],this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
             double[] mappedValues = this.mapMotorValue(motorOutput);
 
-            System.out.println(mappedValues[0] + " : " + mappedValues[1]);
             Data outputData = new RegulatorOutput(mappedValues[0], mappedValues[1]);
             Message outputMessage = new Message(Topic.REGULATOR_OUTPUT, outputData);
             this.publish(this.getBroker(), outputMessage);
