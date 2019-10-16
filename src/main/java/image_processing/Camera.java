@@ -1,10 +1,7 @@
 package image_processing;
 
 import data.Flag;
-import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.bytedeco.javacv.VideoInputFrameGrabber;
+import org.bytedeco.javacv.*;
 import org.bytedeco.opencv.opencv_core.CvSize;
 import org.bytedeco.opencv.opencv_core.IplImage;
 
@@ -22,7 +19,8 @@ import static org.bytedeco.opencv.global.opencv_core.cvCreateImage;
  */
 public class Camera implements Runnable {
 
-    private VideoInputFrameGrabber grabber;
+    private OpenCVFrameGrabber grabber; //VideoInput
+
     private IplImage srcIm;
     private OpenCVFrameConverter.ToIplImage converter;
     private Flag flag;
@@ -39,7 +37,7 @@ public class Camera implements Runnable {
      * @param flag a flag for cross thread notifications that a new image has been produced
      */
     public Camera(int deviceNumber, Flag flag) {
-        this.grabber = new VideoInputFrameGrabber(deviceNumber);
+        this.grabber = new OpenCVFrameGrabber(deviceNumber);
         this.srcIm = cvCreateImage(new CvSize(640, 480), 8, 3);
         this.converter = new OpenCVFrameConverter.ToIplImage();
         this.flag = flag;
@@ -115,8 +113,12 @@ public class Camera implements Runnable {
 //            this.timeTest = time;
 //            System.out.println("image_processing.Camera:: " + dt);
             try {
+
+                long startTime = System.currentTimeMillis();
                 this.grabber.grab();
                 this.flag.set(true);
+                long endTime = System.currentTimeMillis();
+                System.out.println("Camera:: " + (endTime-startTime));
             } catch (FrameGrabber.Exception e) {
                 e.printStackTrace();
                 this.shutdown = true;
@@ -130,6 +132,8 @@ public class Camera implements Runnable {
             }
             this.shutdownProcedure();
         }
+
+
     }
 
     /**
