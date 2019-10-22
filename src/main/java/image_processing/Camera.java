@@ -5,6 +5,11 @@ import org.bytedeco.javacv.*;
 import org.bytedeco.opencv.opencv_core.CvSize;
 import org.bytedeco.opencv.opencv_core.IplImage;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
 import static org.bytedeco.opencv.global.opencv_core.cvCreateImage;
 
 /**
@@ -59,6 +64,7 @@ public class Camera implements Runnable {
         if (!this.initialized) {
             try {
                 this.grabber.start();
+
                 System.out.println(this.grabber.getFormat());
                 System.out.println(this.grabber.getImageMode());
                 Frame capturedFrame = this.grabber.grabFrame();
@@ -108,24 +114,24 @@ public class Camera implements Runnable {
     public void run() {
 
         if (!this.shutdown) {
-//            long time = System.currentTimeMillis();
-//            long dt = time - this.timeTest;
-//            this.timeTest = time;
-//            System.out.println("image_processing.Camera:: " + dt);
+            long time = System.currentTimeMillis();
+            long dt = time - this.timeTest;
+            this.timeTest = time;
+            //System.out.println("Camera:: Executor timer: " + dt);
             try {
 
                 long startTime = System.currentTimeMillis();
                 this.grabber.grab();
                 this.flag.set(true);
                 long endTime = System.currentTimeMillis();
-                System.out.println("Camera:: " + (endTime-startTime));
+                //System.out.println("Camera:: Grab time: " + (endTime-startTime));
             } catch (FrameGrabber.Exception e) {
                 e.printStackTrace();
                 this.shutdown = true;
             }
         } else if (!this.terminated) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 System.out.println("sleep was interrupted");
@@ -144,6 +150,7 @@ public class Camera implements Runnable {
     private boolean shutdownProcedure() {
         boolean success = true;
         try {
+            this.storeImage();
             this.grabber.release();
             this.grabber.stop();
             this.terminated = true;
@@ -152,5 +159,20 @@ public class Camera implements Runnable {
             success = false;
         }
         return success;
+    }
+
+    private void storeImage() {
+        try {
+            Java2DFrameConverter converter = new Java2DFrameConverter();
+            this.grabber.grab();
+            BufferedImage image = converter.convert(this.converter.convert(this.srcIm));
+            File outputFile = new File("image.png");
+            ImageIO.write(image, "png", outputFile);
+        } catch (FrameGrabber.Exception e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

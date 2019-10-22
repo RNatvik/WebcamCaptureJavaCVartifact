@@ -27,7 +27,7 @@ public class UDPServer implements Runnable {
             if (loopback) {
                 this.serverSocket = new DatagramSocket(this.port, InetAddress.getLoopbackAddress());
             } else {
-                this.serverSocket = new DatagramSocket(this.port, InetAddress.getLocalHost());
+                this.serverSocket = new DatagramSocket(this.port, InetAddress.getByName("192.168.0.50"));
             }
             this.executorService = Executors.newFixedThreadPool(threadPoolSize);
             this.broker = broker;

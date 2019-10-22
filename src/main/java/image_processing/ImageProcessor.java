@@ -42,7 +42,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
     private boolean initialized;
     private boolean terminated;
 
-    private CanvasFrame canvas;
+    //private CanvasFrame canvas;
 
     /**
      * Instance constructor
@@ -58,12 +58,12 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         this.filter = new LowPassFilter(5);
         this.flag = flag;
         this.parameters = new ImageProcessorParameter(
-                79, 125, 94, 255, 125, 255, false
+                52, 98, 0, 204, 52, 208, false
         );
         this.shutdown = false;
         this.initialized = false;
         this.terminated = false;
-        this.canvas = new CanvasFrame("image_processing.ImageProcessor");
+        //this.canvas = new CanvasFrame("image_processing.ImageProcessor");
 
     }
 
@@ -80,7 +80,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         if (!this.initialized) {
             this.srcIm = srcIm;
             this.getBroker().subscribeTo(Topic.IMPROC_PARAM, this);
-            this.canvas.setCanvasSize(this.srcIm.width(), this.srcIm.height());
+            //this.canvas.setCanvasSize(this.srcIm.width(), this.srcIm.height());
             this.initialized = true;
             this.shutdown = false;
             success = true;
@@ -114,18 +114,27 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         while (!this.shutdown) {
             this.readMessages();
             if (this.flag.get()) {
+                long startTime = System.currentTimeMillis();
 
                 IplImage image = cvCloneImage(this.srcIm);
+                long cloneImTime = System.currentTimeMillis();
+
                 IplConvKernel kernel = IplConvKernel.create(5, 5, 2, 2, CV_SHAPE_ELLIPSE, null);
                 this.flag.set(false);
-
                 this.threshold(image, this.binIm);
-                this.morph(this.binIm, kernel, 5, 3);
+                long thresholdTime = System.currentTimeMillis();
+
+                //this.morph(this.binIm, kernel, 5, 3);
                 cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 5, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
 
+                long morphTime = System.currentTimeMillis();
+
                 int[] location = this.getCoordinates(this.binIm);
+                long locationTime = System.currentTimeMillis();
+
                 this.paintCircle(image, new int[]{location[0], location[1], 2});
                 this.paintCircle(image, location);
+                long paintTime = System.currentTimeMillis();
 
                 BufferedImage buffIm;
                 if (this.parameters.isStoreProcessedImage()) {
@@ -135,14 +144,20 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 }
                 Message message = new Message(Topic.IMAGE_DATA, new ImageProcessorData(buffIm, location));
                 this.publish(this.getBroker(), message);
-
+                long publishTime = System.currentTimeMillis();
+                /*
                 if (!this.parameters.isStoreProcessedImage()) {
                     this.canvas.showImage(this.converter.convert(image));
                 } else {
                     this.canvas.showImage(this.converter.convert(this.binIm));
                 }
+                 */
                 cvReleaseImage(image);
-
+                long endTime = System.currentTimeMillis();
+                System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
+                        (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
+                long endEndTime = System.currentTimeMillis();
+                System.out.println("PrintTime: " + (endEndTime-endTime));
             }
         }
         if (!this.isTerminated()) {
@@ -294,7 +309,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
      * The shutdown sequence for this instance. To be called when shutting down.
      */
     private void shutdownSequence() {
-        this.canvas.dispose();
+       // this.canvas.dispose();
     }
 
     @Override

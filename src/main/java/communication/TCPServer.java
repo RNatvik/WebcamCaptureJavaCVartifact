@@ -33,7 +33,7 @@ public class TCPServer implements Runnable {
             if (loopback) {
                 this.serverSocket = new ServerSocket(this.port, 3, InetAddress.getLoopbackAddress());
             } else {
-                this.serverSocket = new ServerSocket(this.port, 3, InetAddress.getLocalHost());
+                this.serverSocket = new ServerSocket(this.port, 3, InetAddress.getByName("192.168.0.50"));
             }
             this.serverSocket.setSoTimeout(5);
             System.out.println("Server:: " + this.serverSocket.getInetAddress() + " (" + this.serverSocket.getLocalPort() + ")");

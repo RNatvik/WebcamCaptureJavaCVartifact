@@ -1,6 +1,7 @@
 package communication;
 
 import data.Topic;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -20,7 +21,7 @@ public class TCPClient implements Runnable {
     private boolean shutdown;
     private boolean terminated;
 
-    private String ouputMessage;
+    private String outputMessage;
 
     public TCPClient(InetAddress hostAddress, int hostPort) {
         try {
@@ -31,7 +32,22 @@ public class TCPClient implements Runnable {
             this.shutdown = false;
             this.terminated = false;
             this.socket.setSoTimeout(5);
-            this.ouputMessage = null;
+            this.outputMessage = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public TCPClient(String hostAddress, int hostPort) {
+        try {
+            this.thread = new Thread(this);
+            this.socket = new Socket(hostAddress, hostPort);
+            this.printWriter = new PrintWriter(this.socket.getOutputStream());
+            this.bufferedReader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            this.shutdown = false;
+            this.terminated = false;
+            this.socket.setSoTimeout(5);
+            this.outputMessage = null;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,7 +67,7 @@ public class TCPClient implements Runnable {
     }
 
     public void setOutputMessage(String command, String body) {
-        this.ouputMessage = String.format(command+"::%s", body);
+        this.outputMessage = String.format(command+"::%s", body);
     }
 
     @Override
@@ -60,17 +76,22 @@ public class TCPClient implements Runnable {
         this.printWriter.flush();
         while (!this.shutdown) {
             try {
-                if (this.ouputMessage != null) {
-                    this.printWriter.println(this.ouputMessage);
+                if (this.outputMessage != null) {
+                    this.printWriter.println(this.outputMessage);
                     this.printWriter.flush();
-                    this.ouputMessage = null;
+                    this.outputMessage = null;
                 }
                 String response = this.bufferedReader.readLine();
                 if (response != null) {
-                    JSONObject jsonObject = new JSONObject(response);
-                    JSONObject data = jsonObject.getJSONObject("data");
-                    String location = data.getJSONArray("location").toString();
-                    System.out.println(location);
+                    try {
+                        JSONObject jsonObject = new JSONObject(response);
+                        JSONObject data = jsonObject.getJSONObject("data");
+                        String location = data.getJSONArray("location").toString();
+                        System.out.println(location);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        System.out.println("Error when parsing JSON object.\n   Response: " + response);
+                    }
                 } else {
                     System.out.println("TCPClient:: Socket closed remotely");
                     this.stop();

@@ -36,6 +36,21 @@ public class UDPClient implements Runnable {
         }
     }
 
+    public UDPClient(String hostAddress, int hostPort) {
+        try {
+            this.thread = new Thread(this);
+            this.hostAddress = InetAddress.getByName("192.168.0.50");
+            this.hostPort = hostPort;
+            this.socket = new DatagramSocket();
+            this.alive = true;
+            this.terminated = false;
+            this.canvasFrame = new CanvasFrame("UDP Client");
+            this.canvasFrame.setCanvasSize(640, 480);
+        } catch (SocketException | UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void startThread() {
         this.thread.start();
     }
@@ -51,6 +66,8 @@ public class UDPClient implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("UDPClient in run");
+        int counter = 0;
         try {
             DatagramPacket hello = new DatagramPacket(new byte[1], 1, hostAddress, hostPort);
             this.socket.send(hello);
@@ -74,6 +91,7 @@ public class UDPClient implements Runnable {
                     BufferedImage img = ImageIO.read(new ByteArrayInputStream(response.getData()));
                     Frame frame = frameConverter.getFrame(img);
                     this.canvasFrame.showImage(frame);
+                    counter += 1;
                 }
             } catch (SocketTimeoutException e) {
 
@@ -85,7 +103,7 @@ public class UDPClient implements Runnable {
         }
         System.out.println("before socket close");
         this.shutdownProcedure();
-        System.out.println("client finished run");
+        System.out.println("client finished run " + counter);
     }
 
     private void shutdownProcedure() {

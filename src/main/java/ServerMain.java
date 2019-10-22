@@ -19,8 +19,8 @@ public class ServerMain {
         Flag imFlag = new Flag(false);
         Camera camera = new Camera(0, imFlag);
         ImageProcessor processor = new ImageProcessor(imFlag, broker);
-        TCPServer tcpServer = new TCPServer(9876, true, 3, broker);
-        UDPServer udpServer = new UDPServer(2345, true, 3, broker);
+        TCPServer tcpServer = new TCPServer(9876, false, 3, broker);
+        UDPServer udpServer = new UDPServer(2345, false, 3, broker);
         Controller controller = new Controller(broker);
 
         try {
@@ -34,7 +34,7 @@ public class ServerMain {
             ses.schedule(udpServer, 0, TimeUnit.SECONDS);
 
             try {
-                Thread.sleep(30000);
+                Thread.sleep(90000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
