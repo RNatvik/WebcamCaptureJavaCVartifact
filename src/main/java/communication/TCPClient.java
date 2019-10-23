@@ -54,11 +54,12 @@ public class TCPClient implements Runnable {
     }
 
     public void startThread() {
-
+        System.out.println(this + ":: starting thread");
         this.thread.start();
     }
 
     public void stop() {
+        System.out.println(this + ":: stop() called");
         this.shutdown = true;
     }
 
@@ -68,6 +69,7 @@ public class TCPClient implements Runnable {
 
     public void setOutputMessage(String command, String body) {
         this.outputMessage = String.format(command+"::%s", body);
+        System.out.println(this + ":: set output message: " + this.outputMessage);
     }
 
     @Override
@@ -87,13 +89,13 @@ public class TCPClient implements Runnable {
                         JSONObject jsonObject = new JSONObject(response);
                         JSONObject data = jsonObject.getJSONObject("data");
                         String location = data.getJSONArray("location").toString();
-                        System.out.println(location);
+                        System.out.println(this + ":: " + location);
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        System.out.println("Error when parsing JSON object.\n   Response: " + response);
+                        System.out.println(this + ":: Error when parsing JSON object.\n   Response: " + response);
                     }
                 } else {
-                    System.out.println("TCPClient:: Socket closed remotely");
+                    System.out.println(this + ":: Socket closed remotely");
                     this.stop();
                 }
             } catch (SocketTimeoutException e) {
@@ -104,10 +106,10 @@ public class TCPClient implements Runnable {
             }
         }
         this.terminated = this.shutdownProcedure();
+        System.out.println(this + ":: terminated: " + this.terminated);
     }
 
     private boolean shutdownProcedure() {
-        System.out.println("TCPClient:: in shutdown procedure");
         boolean success = true;
         try {
             this.socket.close();

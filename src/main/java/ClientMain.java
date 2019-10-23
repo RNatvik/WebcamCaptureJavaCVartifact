@@ -12,8 +12,8 @@ public class ClientMain {
 
     public static void main(String[] args) {
         Loader.load(opencv_java.class);
-        TCPClient tcpClient = new TCPClient("192.168.0.50", 9876); //InetAddress.getLoopbackAddress(),
-        UDPClient udpClient = new UDPClient("192.168.0.50", 2345); //InetAddress.getLoopbackAddress(),
+        TCPClient tcpClient = new TCPClient(InetAddress.getLoopbackAddress(), 9876); //InetAddress.getLoopbackAddress(),
+        UDPClient udpClient = new UDPClient(InetAddress.getLoopbackAddress(), 2345); //InetAddress.getLoopbackAddress(),
 
         ImageProcessorParameter parameters = new ImageProcessorParameter(
                 79, 125, 94, 255, 125, 255, false
@@ -24,9 +24,9 @@ public class ClientMain {
         udpClient.startThread();
         tcpClient.startThread();
         boolean state = false;
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

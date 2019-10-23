@@ -34,9 +34,10 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
             this.serverShutdown = serverShutdown;
             this.shutdown = false;
             this.terminated = false;
+            System.out.println(this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getPort() + ")");
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Could not create TCP client socket");
+            System.out.println(this + ":: Could not create TCP client socket");
         }
     }
 
@@ -88,7 +89,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                 this.stop();
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
-                System.out.println("TCPClientSocket:: client wrote invalid syntax");
+                System.out.println(this + ":: client wrote invalid syntax");
             }
         }
         this.terminated = this.shutdownProcedure();
