@@ -34,7 +34,7 @@ public class UDPServer implements Runnable {
             this.shutdown = new Flag(false);
             this.terminated = false;
             this.serverSocket.setSoTimeout(5);
-            System.out.println("Server:: " + this.serverSocket.getLocalAddress() + " (" + this.serverSocket.getLocalPort() + ")");
+            System.out.println(this + ":: created socket at: " + this.serverSocket.getInetAddress() + " (" + this.serverSocket.getLocalPort() + ")");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (SocketException e) {
@@ -62,12 +62,12 @@ public class UDPServer implements Runnable {
             try {
                 DatagramPacket hello = new DatagramPacket(new byte[1], 1);
                 this.serverSocket.receive(hello);
-                System.out.println("UDPServer:: received datagram");
+                System.out.println(this + ":: received datagram");
                 InetAddress address = hello.getAddress();
                 int port = hello.getPort();
                 UDPClientSocket clientSocket = new UDPClientSocket(address, port, this.broker, this.shutdown);
                 this.executorService.submit(clientSocket);
-                System.out.println("UDPServer:: submitted client socket to executor");
+                System.out.println(this + ":: submitted client socket to executor");
             } catch (SocketTimeoutException e) {
 
             } catch (IOException e) {
@@ -78,13 +78,13 @@ public class UDPServer implements Runnable {
             }
         }
         this.terminated = shutdownProcedure();
-        System.out.println("Server terminated: " + this.terminated);
+        System.out.println(this + ":: terminated: " + this.terminated);
     }
 
 
 
     private boolean shutdownProcedure() {
-        System.out.println("Server in shutdown procedure");
+        System.out.println(this + ":: in shutdown procedure");
         boolean success = false;
         try {
             this.executorService.awaitTermination(5, TimeUnit.SECONDS);

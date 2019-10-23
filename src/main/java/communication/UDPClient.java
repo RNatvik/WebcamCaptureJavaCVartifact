@@ -39,7 +39,7 @@ public class UDPClient implements Runnable {
     public UDPClient(String hostAddress, int hostPort) {
         try {
             this.thread = new Thread(this);
-            this.hostAddress = InetAddress.getByName("192.168.0.50");
+            this.hostAddress = InetAddress.getByName(hostAddress);
             this.hostPort = hostPort;
             this.socket = new DatagramSocket();
             this.alive = true;
@@ -52,11 +52,12 @@ public class UDPClient implements Runnable {
     }
 
     public void startThread() {
+        System.out.println(this + ":: starting thread");
         this.thread.start();
     }
 
     public void stop() {
-        System.out.println("Client:: in stop");
+        System.out.println(this + ":: stop() called");
         this.alive = false;
     }
 
@@ -66,7 +67,7 @@ public class UDPClient implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("UDPClient in run");
+        System.out.println(this + ":: in run");
         int counter = 0;
         try {
             DatagramPacket hello = new DatagramPacket(new byte[1], 1, hostAddress, hostPort);
@@ -98,12 +99,11 @@ public class UDPClient implements Runnable {
             } catch (IOException e) {
                 this.alive = false;
                 e.printStackTrace();
-                System.out.println(Thread.currentThread() + " exiting due to IO exception");
+                System.out.println(this + ":: exiting due to IO exception");
             }
         }
-        System.out.println("before socket close");
         this.shutdownProcedure();
-        System.out.println("client finished run " + counter);
+        System.out.println(this + ":: terminated: " + this.terminated + " " + counter);
     }
 
     private void shutdownProcedure() {
