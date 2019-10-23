@@ -34,7 +34,7 @@ public class ServerMain {
             ses.schedule(udpServer, 0, TimeUnit.SECONDS);
 
             try {
-                Thread.sleep(90000);
+                Thread.sleep(1200000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

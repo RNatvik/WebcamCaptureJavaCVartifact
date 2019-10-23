@@ -154,10 +154,10 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                  */
                 cvReleaseImage(image);
                 long endTime = System.currentTimeMillis();
-                System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
-                        (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
+                //System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
+                 //       (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
                 long endEndTime = System.currentTimeMillis();
-                System.out.println("PrintTime: " + (endEndTime-endTime));
+                //System.out.println("PrintTime: " + (endEndTime-endTime));
             }
         }
         if (!this.isTerminated()) {
