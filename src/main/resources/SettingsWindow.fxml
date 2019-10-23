@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.SettingsController">
+    <children>
+        <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <tabs>
+                <Tab text="Network Configuration">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <VBox alignment="CENTER" layoutX="219.0" layoutY="86.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="0.0">
+                                    <children>
+                                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                            <children>
+                                                <Label alignment="CENTER_RIGHT" prefWidth="80.0" text="Port Number:" />
+                                                <TextField fx:id="portNumber" prefWidth="250.0" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER">
+                                            <children>
+                                                <Label alignment="CENTER_RIGHT" prefWidth="80.0" text="IP Address: " />
+                                                <TextField fx:id="IPadr" prefWidth="250.0" />
+                                            </children>
+                                        </HBox>
+                                        <Separator prefHeight="35.0" prefWidth="400.0" />
+                                        <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connectButtonClicked" prefWidth="100.0" text="Connect" />
+                                    </children></VBox>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab text="Controller parameters">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="0.0">
+                                    <children>
+                                        <Separator prefHeight="50.0" prefWidth="400.0" visible="false" />
+                                        <Label alignment="CENTER" prefHeight="30.0" prefWidth="250.0" text="PID Tuning Settings" />
+                                        <Separator prefWidth="200.0" />
+                                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                            <children>
+                                                <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Proportional:" />
+                                                <TextField fx:id="propGainFX" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                            <children>
+                                                <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Integral:" />
+                                                <TextField fx:id="intGainFX" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                            <children>
+                                                <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Derivation:" />
+                                                <TextField fx:id="derGainFX" />
+                                            </children>
+                                        </HBox>
+                                        <Separator prefHeight="43.0" prefWidth="400.0" />
+                                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                            <children>
+                                                <Button fx:id="controllerApply" mnemonicParsing="false" onAction="#controllerApplyPressed" prefWidth="100.0" text="Apply" />
+                                            </children>
+                                        </HBox>
+                                        <Separator prefHeight="80.0" prefWidth="200.0" visible="false" />
+                                    </children>
+                                </VBox>
+                            </children></AnchorPane>
+                    </content>
+                </Tab>
+                <Tab text="Picture?">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </children>
+</AnchorPane>

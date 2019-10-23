@@ -30,7 +30,7 @@ public class PidParameter extends Data {
      *
      * @param kp new proportional gain
      */
-    public void setKp(int kp) {
+    public void setKp(double kp) {
         this.kp = kp;
     }
 
@@ -39,7 +39,7 @@ public class PidParameter extends Data {
      *
      * @param ki new integral gain
      */
-    public void setKi(int ki) {
+    public void setKi(double ki) {
         this.ki = ki;
     }
 
@@ -48,7 +48,7 @@ public class PidParameter extends Data {
      *
      * @param kd new derivative gain
      */
-    public void setKd(int kd) {
+    public void setKd(double kd) {
         this.kd = kd;
     }
 
