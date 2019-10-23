@@ -44,7 +44,7 @@ public class Controller extends Thread implements Initializable {
             this.udpClient = new UDPClient(InetAddress.getByName("192.168.0.50"), 2345);
             this.settingsController = new SettingsController(this.udpClient);
             this.udpClient.startThread();
-            File file = new File("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\loadpic.png");
+            File file = new File("/loadpic.png");
             Image image = new Image(file.toURI().toString());
             imageView.setImage(image);
             modeText.setText("Select Mode");

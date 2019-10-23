@@ -29,6 +29,7 @@ public class App extends Application {
 
         // Create the FXMLLoader
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/GUI.fxml"));
+        System.out.println("AFter loader: " + loader);
         // Path to the FXML File
 
         // Create the Pane and all Details
