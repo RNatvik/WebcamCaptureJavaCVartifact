@@ -22,6 +22,8 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     private int[] location; //x, y, radius, area
 
     private boolean newLocation;
+    private boolean manualMode;
+    private boolean newManualCommand;
 
 
     public Controller(Broker broker) {
@@ -32,8 +34,9 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         this.regParam = new RegulatorParameter(-20, -100, 20, 100,-200,200);
         this.location = new int[]{0,0,0,0};
         this.newLocation = false;
-        this.manualControlInput = new ControlInput(false,0,0);
-
+        this.manualControlInput = new ControlInput(true,0,0);
+        this.manualMode = this.manualControlInput.isManualControl();
+        this.newManualCommand = false;
 
         this.getBroker().subscribeTo(Topic.PID_PARAM1, this);
         this.getBroker().subscribeTo(Topic.PID_PARAM2, this);
@@ -47,26 +50,49 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     public void run() {
         this.readMessages();
 
-        if (this.newLocation) {
-            this.newLocation = false;
-            int x = this.location[0];
-            int y = this.location[1];
-            int radius = this.location[2];
-            int area = this.location[3];
-
-            double pidOutputs[];
-            double pidOut1 = this.pidForward.getOutput(radius);
-            double pidOut2 = this.pidTurn.getOutput(x);
-
-            double[] motorOutput = this.sumPID(pidOut1, pidOut2);
-            motorOutput[0] = clamp(motorOutput[0], this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
-            motorOutput[1] = clamp(motorOutput[1],this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
-            double[] mappedValues = this.mapMotorValue(motorOutput);
-
-            Data outputData = new RegulatorOutput(mappedValues[0], mappedValues[1]);
-            Message outputMessage = new Message(Topic.REGULATOR_OUTPUT, outputData);
-            this.publish(this.getBroker(), outputMessage);
+        if (this.manualMode && this.newManualCommand) {
+            calculateMotorSpeed(this.manualControlInput.getForwardSpeed(),this.manualControlInput.getTurnSpeed());
+            this.pidForward.reset();
+            this.pidTurn.reset();
+            this.newManualCommand = false;
         }
+
+        if( this.newLocation && !this.manualMode )
+        {
+            double[] pidOutputs = calculatePID();
+            calculateMotorSpeed(pidOutputs[0],pidOutputs[1]);
+            this.newLocation = false;
+        }
+    }
+
+    /**
+     * Calculate the pid outputs
+     */
+    private double[] calculatePID() {
+        int x = this.location[0];
+        int y = this.location[1];
+        int radius = this.location[2];
+        int area = this.location[3];
+
+        double pidOut1 = this.pidForward.getOutput(radius);
+        double pidOut2 = this.pidTurn.getOutput(x);
+
+        double[] pidOutputs = {pidOut1,pidOut2};
+        return pidOutputs;
+    }
+
+    /**
+     * Calculate the motorspeeds based
+     */
+    private void calculateMotorSpeed(double forward,double turn) {
+        double[] motorOutput = this.sumMotorVal(forward, turn);
+        motorOutput[0] = clamp(motorOutput[0], this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
+        motorOutput[1] = clamp(motorOutput[1],this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
+        double[] mappedValues = this.mapMotorValue(motorOutput);
+
+        Data outputData = new RegulatorOutput(mappedValues[0], mappedValues[1]);
+        Message outputMessage = new Message(Topic.REGULATOR_OUTPUT, outputData);
+        this.publish(this.getBroker(), outputMessage);
     }
 
 
@@ -142,7 +168,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      * @param inputTurn speed turning
      * @return
      */
-    private double[] sumPID(double inputFW, double inputTurn) {
+    private double[] sumMotorVal(double inputFW, double inputTurn) {
         double leftMotor = 0, rightMotor = 0;
         if (inputTurn < 0) {
             leftMotor = inputFW - inputTurn;
@@ -188,6 +214,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                     PidParameter pidParam1 = data.safeCast(PidParameter.class);
                     if (pidParam1 != null) {
                         this.pidForward.setParameters(pidParam1);
+                        //TODO: Maybe add reset
                     }
                     break;
 
@@ -195,6 +222,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                     PidParameter pidParam2 = data.safeCast(PidParameter.class);
                     if (pidParam2 != null) {
                         this.pidTurn.setParameters(pidParam2);
+                        //TODO: Maybe add reset
                     }
                     break;
 
@@ -215,6 +243,10 @@ public class Controller extends Subscriber implements Runnable, Publisher {
 
                 case Topic.CONTROLER_INPUT:
                     ControlInput ci = data.safeCast(ControlInput.class);
+                    if (ci != null) {
+                        this.manualControlInput = ci;
+                        this.manualMode = this.manualControlInput.isManualControl(); // Simpler
+                    }
 
                 default:
                     break;
