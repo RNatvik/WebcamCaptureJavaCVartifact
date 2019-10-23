@@ -36,7 +36,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         this.newLocation = false;
         this.manualControlInput = new ControlInput(true,0,0);
         this.manualMode = this.manualControlInput.isManualControl();
-        this.newManualCommand = false;
+        this.newManualCommand = true;
 
         this.getBroker().subscribeTo(Topic.PID_PARAM1, this);
         this.getBroker().subscribeTo(Topic.PID_PARAM2, this);
