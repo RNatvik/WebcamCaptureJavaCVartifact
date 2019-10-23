@@ -11,5 +11,6 @@ public abstract class Topic {
     public static final String PID_PARAM2 = "PID_PARAM2";
     public static final String REGULATOR_PARAM = "REG_PARAM";
     public static final String REGULATOR_OUTPUT = "REG_OUTPUT";
+    public static final String CONTROLER_INPUT = "CONTROLER_INPUT";
 
 }

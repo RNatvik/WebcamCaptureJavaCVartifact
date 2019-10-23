@@ -18,6 +18,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     private PID pidTurn;
 
     private RegulatorParameter regParam;
+    private ControlInput manualControlInput;
     private int[] location; //x, y, radius, area
 
     private boolean newLocation;
@@ -31,11 +32,14 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         this.regParam = new RegulatorParameter(-20, -100, 20, 100,-200,200);
         this.location = new int[]{0,0,0,0};
         this.newLocation = false;
+        this.manualControlInput = new ControlInput(false,0,0);
+
 
         this.getBroker().subscribeTo(Topic.PID_PARAM1, this);
         this.getBroker().subscribeTo(Topic.PID_PARAM2, this);
         this.getBroker().subscribeTo(Topic.REGULATOR_PARAM, this);
         this.getBroker().subscribeTo(Topic.IMAGE_DATA, this);
+        this.getBroker().subscribeTo(Topic.CONTROLER_INPUT,this);
 
     }
 
@@ -208,6 +212,9 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                         this.newLocation = true;
                     }
                     break;
+
+                case Topic.CONTROLER_INPUT:
+                    ControlInput ci = data.safeCast(ControlInput.class);
 
                 default:
                     break;
