@@ -13,7 +13,11 @@ import java.io.IOException;
 public class App extends Application {
 
     public static void main (String[] args) throws Exception {
+        if (!SharedResource.isInitialized()) {
+            SharedResource.initialize("127.0.0.1", 9876, 2345);
+        }
         launch(args);
+        SharedResource.clear();
     }
 
     /**

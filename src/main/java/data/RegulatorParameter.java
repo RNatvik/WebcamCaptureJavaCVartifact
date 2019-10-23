@@ -1,6 +1,6 @@
 package data;
 
-public class RegulatorParameter {
+public class RegulatorParameter extends Data{
 
     private double mcMinimumReverse = -20;
     private double mcMaximumReverse = -100;
@@ -10,6 +10,7 @@ public class RegulatorParameter {
     private double controllerMaxOutput = 200;
 
     public RegulatorParameter(double mcMinimumReverse, double mcMaximumReverse, double mcMinimumForward, double mcMaximumForward, double controllerMinOutput, double controllerMaxOutput) {
+        super(Data.REG_PARAM);
         this.mcMinimumReverse = mcMinimumReverse;
         this.mcMaximumReverse = mcMaximumReverse;
         this.mcMinimumForward = mcMinimumForward;

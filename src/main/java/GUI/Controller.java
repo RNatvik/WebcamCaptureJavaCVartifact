@@ -9,9 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ResourceBundle;
 
 public class Controller extends Thread implements Initializable {
@@ -41,15 +39,15 @@ public class Controller extends Thread implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            this.udpClient = new UDPClient(InetAddress.getByName("192.168.0.50"), 2345);
+            //this.udpClient = new UDPClient(InetAddress.getByName("192.168.0.50"), 2345);
             this.settingsController = new SettingsController(this.udpClient);
-            this.udpClient.startThread();
+            //this.udpClient.startThread();
             File file = new File("/loadpic.png");
             Image image = new Image(file.toURI().toString());
             imageView.setImage(image);
             modeText.setText("Select Mode");
             updateImages();
-        } catch (UnknownHostException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

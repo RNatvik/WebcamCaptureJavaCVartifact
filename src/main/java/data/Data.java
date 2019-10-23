@@ -5,7 +5,7 @@ package data;
  */
 public abstract class Data {
     public static final String PID_PARAM = "PID";
-    public static final String CIRCLE = "CIRCLE";
+    public static final String REG_PARAM = "REG_PARAM";
     public static final String IMAGE = "IMAGE";
     public static final String IMPROC_PARAM = "IMPROC_PARAM";
     public static final String MOTOR_CONTROL_VALUES = "MCV";
