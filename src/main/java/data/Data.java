@@ -10,6 +10,7 @@ public abstract class Data {
     public static final String IMPROC_PARAM = "IMPROC_PARAM";
     public static final String MOTOR_CONTROL_VALUES = "MCV";
     public static final String REGULATOR_OUTPUT = "regout";
+    public static final String CONTROLER_INPUT = "controllInput";
 
     private String type;
 
