@@ -2,6 +2,11 @@ package GUI;
 
 import communication.TCPClient;
 import communication.UDPClient;
+import pub_sub_service.Broker;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class SharedResource {
 
@@ -10,6 +15,8 @@ public class SharedResource {
 
     private TCPClient tcpClient;
     private UDPClient udpClient;
+    private ScheduledExecutorService ses;
+    private Broker broker;
 
     public static boolean initialize(String host, int tcpPort, int udpPort) {
         boolean success = false;
@@ -17,6 +24,7 @@ public class SharedResource {
             instance = new SharedResource(host, tcpPort, udpPort);
             instance.getTcpClient().startThread();
             instance.getUdpClient().startThread();
+            instance.getSes().scheduleAtFixedRate(instance.getBroker(), 0, 30, TimeUnit.MILLISECONDS);
             initialized = true;
             success = true;
         }
@@ -46,6 +54,8 @@ public class SharedResource {
     private SharedResource(String host, int tcpPort, int udpPort) {
         this.tcpClient = new TCPClient(host, tcpPort);
         this.udpClient = new UDPClient(host, udpPort);
+        this.ses = Executors.newScheduledThreadPool(1);
+        this.broker = new Broker();
     }
 
     public TCPClient getTcpClient() {
@@ -54,5 +64,13 @@ public class SharedResource {
 
     public UDPClient getUdpClient() {
         return udpClient;
+    }
+
+    public ScheduledExecutorService getSes() {
+        return ses;
+    }
+
+    public Broker getBroker() {
+        return broker;
     }
 }

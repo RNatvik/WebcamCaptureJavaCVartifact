@@ -2,21 +2,22 @@ package GUI;
 
 import communication.TCPClient;
 import communication.UDPClient;
-import data.ImageProcessorParameter;
-import data.PidParameter;
-import data.RegulatorParameter;
-import data.Topic;
+import data.*;
 import javafx.fxml.Initializable;
 import pub_sub_service.Message;
+import pub_sub_service.Subscriber;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class SettingsControllerV2 implements Initializable {
+public class SettingsControllerV2 extends Subscriber implements Initializable {
 
     private TCPClient tcpClient;
     private UDPClient udpClient;
 
+    public SettingsControllerV2() {
+        super(SharedResource.getInstance().getBroker());
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -25,6 +26,7 @@ public class SettingsControllerV2 implements Initializable {
             this.tcpClient = SharedResource.getInstance().getTcpClient();
             this.udpClient = SharedResource.getInstance().getUdpClient();
         }
+        this.tcpClient.setOutputMessage("SUB", Topic.REGULATOR_OUTPUT);
     }
 
     private void doSendPidParameter1() {
@@ -93,4 +95,24 @@ public class SettingsControllerV2 implements Initializable {
         this.tcpClient.setOutputMessage("SET", message.toJSON());
     }
 
+    @Override
+    protected void readMessages() {
+        while (!this.getMessageQueue().isEmpty()) {
+            Message message = this.getMessageQueue().remove();
+            String topic = message.getTopic();
+            Data data = message.getData();
+
+            switch (topic) {
+                case Topic.REGULATOR_OUTPUT:
+                    RegulatorOutput regulatorOutput = data.safeCast(RegulatorOutput.class);
+                    if (regulatorOutput != null) {
+                        regulatorOutput.getLeftMotor();
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
 }

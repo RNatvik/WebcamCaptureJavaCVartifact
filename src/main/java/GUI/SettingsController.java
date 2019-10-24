@@ -10,13 +10,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import pub_sub_service.Subscriber;
 
 import java.net.URL;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.ResourceBundle;
 
-public class SettingsController implements Initializable {
+public class SettingsController extends Subscriber implements Initializable {
 
 
     private Stage primaryStage1;
@@ -24,7 +25,7 @@ public class SettingsController implements Initializable {
     private UDPClient udpClient;
 
     @FXML
-    private Button connectBtn;
+    private Button connectButton;
     @FXML
     private TextField portNumber;
     @FXML
@@ -39,9 +40,10 @@ public class SettingsController implements Initializable {
     private Button controllerApply;
 
 
-    public SettingsController(UDPClient udpClient){
+    public SettingsController(){
+        super(SharedResource.getInstance().getBroker());
         this.pidParameter = new PidParameter(1,1,1,1,1,1);
-        this.udpClient = udpClient;
+
     }
 
     public void initialize(URL location, ResourceBundle resources){
@@ -157,5 +159,10 @@ public class SettingsController implements Initializable {
             num = Double.parseDouble(str);
         }
         return num;
+    }
+
+    @Override
+    protected void readMessages() {
+
     }
 }

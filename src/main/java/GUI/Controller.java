@@ -7,12 +7,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import pub_sub_service.Subscriber;
 
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class Controller extends Thread implements Initializable {
+public class Controller extends Subscriber implements Initializable {
 
     String mode;
     private UDPClient udpClient;
@@ -36,11 +37,15 @@ public class Controller extends Thread implements Initializable {
 
     SettingsController settingsController;
 
+    public Controller() {
+        super(SharedResource.getInstance().getBroker());
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
             //this.udpClient = new UDPClient(InetAddress.getByName("192.168.0.50"), 2345);
-            this.settingsController = new SettingsController(this.udpClient);
+            this.settingsController = new SettingsController();
             //this.udpClient.startThread();
             File file = new File("/loadpic.png");
             Image image = new Image(file.toURI().toString());
@@ -93,4 +98,8 @@ public class Controller extends Thread implements Initializable {
     }
 
 
+    @Override
+    protected void readMessages() {
+
+    }
 }
