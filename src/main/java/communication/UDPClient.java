@@ -1,13 +1,13 @@
 package communication;
 
 import org.bytedeco.javacv.CanvasFrame;
-import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.*;
 
 public class UDPClient implements Runnable {
@@ -20,6 +20,8 @@ public class UDPClient implements Runnable {
     private boolean terminated;
 
     private CanvasFrame canvasFrame;
+    private InputStream inputStream;
+    private BufferedImage bufferedImage;
 
     public UDPClient(InetAddress hostAddress, int hostPort) {
         try {
@@ -44,6 +46,8 @@ public class UDPClient implements Runnable {
             this.socket = new DatagramSocket();
             this.alive = true;
             this.terminated = false;
+            this.inputStream = null;
+            this.bufferedImage = null;
             this.canvasFrame = new CanvasFrame("UDP Client");
             this.canvasFrame.setCanvasSize(640, 480);
         } catch (SocketException | UnknownHostException e) {
@@ -89,10 +93,8 @@ public class UDPClient implements Runnable {
                 if (stringResponse.equals("END")) {
                     this.alive = false;
                 } else {
-                    BufferedImage img = ImageIO.read(new ByteArrayInputStream(response.getData()));
-                    Frame frame = frameConverter.getFrame(img);
-                    this.canvasFrame.showImage(frame);
-                    counter += 1;
+                    this.inputStream = new ByteArrayInputStream(response.getData());
+                    this.bufferedImage = ImageIO.read(new ByteArrayInputStream(response.getData()));
                 }
             } catch (SocketTimeoutException e) {
 
@@ -105,6 +107,17 @@ public class UDPClient implements Runnable {
         this.shutdownProcedure();
         System.out.println(this + ":: terminated: " + this.terminated + " " + counter);
     }
+
+    public synchronized BufferedImage getImage() {
+        //Image image  = SwingFXUtils.toFXImage(this.bufferedImage, null);
+
+        System.out.println("getImCalled");
+
+        //File file = new File("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\loadpic.png");
+        //image = new Image(file.toURI().toString());
+        return this.bufferedImage;
+    }
+
 
     private void shutdownProcedure() {
         try {

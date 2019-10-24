@@ -1,6 +1,11 @@
 package GUI;
 
 import communication.UDPClient;
+import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -9,14 +14,16 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import pub_sub_service.Subscriber;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class Controller extends Subscriber implements Initializable {
 
-    String mode;
+    private String mode;
     private UDPClient udpClient;
+    private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
 
     @FXML
     private Button manuelBtn;
@@ -44,9 +51,8 @@ public class Controller extends Subscriber implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            //this.udpClient = new UDPClient(InetAddress.getByName("192.168.0.50"), 2345);
+            this.udpClient = SharedResource.getInstance().getUdpClient();
             this.settingsController = new SettingsController();
-            //this.udpClient.startThread();
             File file = new File("/loadpic.png");
             Image image = new Image(file.toURI().toString());
             imageView.setImage(image);
@@ -62,23 +68,36 @@ public class Controller extends Subscriber implements Initializable {
     public void openSettingsWindow() {
         settingsController.openSettingsWindow();
     }
+
     public void updateImages() {
-//        Task<Void> task = new Task<Void>() {
-//            @Override
-//            protected Void call() throws Exception {
-//                while (true) {
-//                    InputStream im = udpClient.getBufferedImage();
-//                    if (im !=null) {
-//                        Platform.runLater(() -> {
-//                            Image image = new Image(im);
-//                            imageView.setImage(image);
-//                        });
-//                    }
-//                }
-//            }
-//        };
-//        Thread thread = new Thread(task);
-//        thread.start();
+       Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                while (true) {
+                    System.out.println("while");
+                    BufferedImage im = udpClient.getImage();
+
+                    System.out.println("while2");
+                    System.out.println(im);
+                    if (im !=null) {
+                        System.out.println("notnull");
+                        Platform.runLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                final Image mainiamge = SwingFXUtils
+                                        .toFXImage(im, null);
+                                imageProperty.set(mainiamge);
+                            }
+                        });
+                    }
+                }
+            }
+        };
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+        imageView.imageProperty().bind(imageProperty);
     }
     public void setModeBtnPressed(){
         if(mode != null) {
