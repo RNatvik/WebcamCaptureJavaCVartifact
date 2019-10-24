@@ -110,9 +110,6 @@ public class UDPClient implements Runnable {
 
     public synchronized BufferedImage getImage() {
         //Image image  = SwingFXUtils.toFXImage(this.bufferedImage, null);
-
-        System.out.println("getImCalled");
-
         //File file = new File("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\loadpic.png");
         //image = new Image(file.toURI().toString());
         return this.bufferedImage;

@@ -1,10 +1,8 @@
 package GUI;
 
 import communication.UDPClient;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -62,48 +60,55 @@ public class Controller extends Subscriber implements Initializable {
             e.printStackTrace();
         }
     }
+
     public void helpBtnPressed() {
 
     }
+
     public void openSettingsWindow() {
         settingsController.openSettingsWindow();
     }
 
     public void updateImages() {
-       Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                while (true) {
-                    System.out.println("while");
-                    BufferedImage im = udpClient.getImage();
-
-                    System.out.println("while2");
-                    System.out.println(im);
-                    if (im !=null) {
-                        System.out.println("notnull");
-                        Platform.runLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                final Image mainiamge = SwingFXUtils
-                                        .toFXImage(im, null);
-                                imageProperty.set(mainiamge);
-                            }
-                        });
-                    }
-                }
-            }
-        };
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
-        imageView.imageProperty().bind(imageProperty);
+//       Task<Void> task = new Task<>() {
+//            @Override
+//            protected Void call() throws Exception {
+//                while (true) {
+//                    BufferedImage im = udpClient.getImage();
+//                    System.out.println(im);
+//                    if (im !=null) {
+//                        Platform.runLater(() -> {
+//                            final Image mainiamge = SwingFXUtils
+//                                    .toFXImage(im, null);
+//                            imageProperty.set(mainiamge);
+//                        });
+//                    }
+//                }
+//            }
+//        };
+//        Thread thread = new Thread(task);
+//        thread.setDaemon(false);
+//        thread.start();
+//        imageView.imageProperty().bind(imageProperty);
+        BufferedImage image = null;
+        while (image == null) {
+            image = this.udpClient.getImage();
+        }
+        Image im = SwingFXUtils.toFXImage(image, null);
+        this.imageProperty.set(im);
+        imageView.imageProperty().bind(this.imageProperty);
+//        Platform.runLater(() -> {
+//            this.imageProperty.set(im);
+//            imageView.imageProperty().bind(this.imageProperty);
+//        });
     }
-    public void setModeBtnPressed(){
-        if(mode != null) {
+
+    public void setModeBtnPressed() {
+        if (mode != null) {
             modeText.setText(mode);
         }
     }
+
     public void trackingBtnPressed() {
         mode = "Tracking";
     }
