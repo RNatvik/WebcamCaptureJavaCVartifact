@@ -16,12 +16,17 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Controller extends Subscriber implements Initializable {
 
     private String mode;
     private UDPClient udpClient;
     private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
+    private ImageUpdater imageUpdater;
+    private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
 
     @FXML
     private Button manuelBtn;
@@ -55,7 +60,8 @@ public class Controller extends Subscriber implements Initializable {
             Image image = new Image(file.toURI().toString());
             imageView.setImage(image);
             modeText.setText("Select Mode");
-            updateImages();
+            this.imageUpdater = new ImageUpdater(this.imageProperty, this.imageView, this.udpClient);
+            ses.scheduleAtFixedRate(this.imageUpdater, 0, 50, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             e.printStackTrace();
         }
