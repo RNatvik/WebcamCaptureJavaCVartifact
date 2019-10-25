@@ -1,14 +1,11 @@
-import communication.TCPClientV2;
+import communication.TCPClient;
 import communication.TCPServer;
 import data.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Publisher;
 import pub_sub_service.Subscriber;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
@@ -26,7 +23,7 @@ public class TestMain {
             Subber subber = new Subber(broker2);
             TCPServer server = new TCPServer(1234, true, 2, broker1);
             TCPServer server2 = new TCPServer(1235, true, 2, broker1);
-            TCPClientV2 client = new TCPClientV2("127.0.0.1", 1234, broker2);
+            TCPClient client = new TCPClient("127.0.0.1", 1234, broker2);
             server2.startThread();
             server.startThread();
             Thread.sleep(3000);
