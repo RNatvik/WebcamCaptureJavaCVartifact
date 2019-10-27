@@ -153,7 +153,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
     }
 
     @Override
-    protected void readMessages() {
+    protected void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {
             Message message = this.getMessageQueue().remove();
             this.printWriter.println(message.toJSON());

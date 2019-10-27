@@ -84,7 +84,7 @@ public class UDPClientSocket extends Subscriber implements Runnable {
 
 
     @Override
-    protected synchronized void readMessages() {
+    protected synchronized void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {
             Message message = this.getMessageQueue().remove();
             Data data = message.getData();

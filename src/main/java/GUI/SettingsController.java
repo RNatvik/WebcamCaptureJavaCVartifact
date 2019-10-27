@@ -162,7 +162,7 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     @Override
-    protected void readMessages() {
+    protected void doReadMessages() {
 
     }
 }

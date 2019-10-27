@@ -5,7 +5,6 @@ import data.ImageProcessorData;
 import data.ImageProcessorParameter;
 import data.Topic;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
-import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
@@ -318,7 +317,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
     }
 
     @Override
-    protected void readMessages() {
+    protected void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {
             Message message = this.getMessageQueue().remove();
             if (message.getTopic().equals(Topic.IMPROC_PARAM)) {

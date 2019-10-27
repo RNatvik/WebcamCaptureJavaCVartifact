@@ -96,7 +96,7 @@ public class SettingsControllerV2 extends Subscriber implements Initializable {
     }
 
     @Override
-    protected void readMessages() {
+    protected void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {
             Message message = this.getMessageQueue().remove();
             String topic = message.getTopic();

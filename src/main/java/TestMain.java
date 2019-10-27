@@ -107,7 +107,7 @@ public class TestMain {
         }
 
         @Override
-        protected void readMessages() {
+        protected void doReadMessages() {
             synchronized (this) {
                 int length = this.getMessageQueue().size();
                 if (length > 0) {

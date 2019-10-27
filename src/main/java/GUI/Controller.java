@@ -129,7 +129,7 @@ public class Controller extends Subscriber implements Initializable {
 
 
     @Override
-    protected void readMessages() {
+    protected void doReadMessages() {
 
     }
 }
