@@ -91,13 +91,11 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     public void initialize(URL location, ResourceBundle resources) {
-        System.out.println(2);
         if (SharedResource.isInitialized()) {
             this.tcpClient = SharedResource.getInstance().getTcpClient();
             this.udpClient = SharedResource.getInstance().getUdpClient();
         }
         //this.tcpClient.setOutputMessage("SUB", Topic.REGULATOR_OUTPUT);
-        setDefaultValuesGui();
 
     }
 
@@ -125,8 +123,10 @@ public class SettingsController extends Subscriber implements Initializable {
         this.primaryStage1.toFront();
     }
 
-    public void controllerApplyPressed() {
+    public void controllerForwardApplyPressed() {
         doSendPidParameter(1);
+    }
+    public void controllerTurningApplyPressed() {
         doSendPidParameter(2);
     }
 
@@ -196,7 +196,7 @@ public class SettingsController extends Subscriber implements Initializable {
         String propGain = "0";
         if (paramNum == 1) {
             propGain = propGainOne.getText();
-        } else if (paramNum == 2) {
+        } if (paramNum == 2) {
             propGain = propGainTwo.getText();
         }
         if (propGain.isEmpty() && !isNumeric(propGain)) {
@@ -209,7 +209,7 @@ public class SettingsController extends Subscriber implements Initializable {
         String stringIntGain = "0";
         if (paramNum == 1) {
             stringIntGain = intGainOne.getText();
-        } else if (paramNum == 2) {
+        } if (paramNum == 2) {
             stringIntGain = intGainTwo.getText();
         }
         if (stringIntGain.isEmpty() && !isNumeric(stringIntGain)) {

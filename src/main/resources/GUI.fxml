@@ -25,7 +25,7 @@
          <children>
                     <Label text="RC-Car Modes" />
                     <Separator prefHeight="20.0" />
-                    <Button fx:id="trackingBtn" mnemonicParsing="false" onAction="#trackingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Tracking" />
+                    <Button fx:id="trackingBtn" mnemonicParsing="false" onAction="#tracingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Tracking" />
                     <Separator prefWidth="200.0" />
                     <Button fx:id="catchingBtn" mnemonicParsing="false" onAction="#catchingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Catching" />
                     <Separator prefWidth="200.0" />
@@ -41,8 +41,6 @@
                             </Label>
                         </children>
                     </Pane>
-                    <Separator prefWidth="200.0" />
-                    <Button fx:id="setModeBtn" mnemonicParsing="false" onAction="#setModeBtnPressed" prefHeight="35.0" prefWidth="150.0" text="Set Mode" />
          </children>
       </VBox>
         <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="760.0" AnchorPane.leftAnchor="800.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

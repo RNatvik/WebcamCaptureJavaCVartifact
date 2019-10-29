@@ -51,9 +51,6 @@ public class KeyboardInput {
 
 
     public ControlInput getControlInput(String keys) {
-
-        System.out.println("The keys are: " + keys);
-
         double forwardSpeed = 0;
         double turnSpeed = 0;
 
