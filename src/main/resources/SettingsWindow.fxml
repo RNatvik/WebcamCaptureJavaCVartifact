@@ -38,7 +38,13 @@
                                             </children>
                                         </HBox>
                                         <Separator prefHeight="35.0" prefWidth="400.0" />
-                                        <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connectButtonClicked" prefWidth="100.0" text="Connect" />
+                              <HBox alignment="CENTER">
+                                 <children>
+                                              <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connectButtonUDPClicked" prefWidth="100.0" text="Connect UDP" />
+                                    <Separator orientation="VERTICAL" prefWidth="20.0" visible="false" />
+                                    <Button mnemonicParsing="false" onAction="#connectButtonTCPClicked" prefWidth="100.0" text="Connect TCP" />
+                                 </children>
+                              </HBox>
                                     </children></VBox>
                             </children>
                         </AnchorPane>
@@ -55,9 +61,9 @@
                                         <Separator prefWidth="200.0" />
                               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                  <children>
-                                    <Label alignment="CENTER" prefWidth="200.0" text="PID One" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" />
-                                    <Label alignment="CENTER" prefWidth="200.0" text="PID Two" />
+                                    <Label alignment="CENTER" prefWidth="200.0" text="Forward PID" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
+                                    <Label alignment="CENTER" prefWidth="200.0" text="Turning PID" />
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" />
@@ -65,7 +71,7 @@
                                             <children>
                                                 <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Proportional:" />
                                                 <TextField fx:id="propGainOne" prefWidth="130.0" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Proportional:" />
                                     <TextField fx:id="propGainTwo" prefWidth="130.0" />
                                             </children>
@@ -74,7 +80,7 @@
                                             <children>
                                                 <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Integral:" />
                                                 <TextField fx:id="intGainOne" prefWidth="130.0" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Integral:" />
                                     <TextField fx:id="intGainTwo" prefWidth="130.0" />
                                             </children>
@@ -83,7 +89,7 @@
                                             <children>
                                                 <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Derivation:" />
                                                 <TextField fx:id="derGainOne" prefWidth="130.0" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Derivation:" />
                                     <TextField fx:id="derGainTwo" prefWidth="130.0" />
                                             </children>
@@ -92,7 +98,7 @@
                                  <children>
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Max Output:" />
                                     <TextField fx:id="contrMaxOutOne" prefWidth="130.0" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Max Output:" />
                                     <TextField fx:id="contrMaxOutTwo" prefWidth="130.0" />
                                  </children>
@@ -101,7 +107,7 @@
                                  <children>
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Min Output:" />
                                     <TextField fx:id="contrMinOutOne" prefWidth="130.0" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Min Output:" />
                                     <TextField fx:id="contrMinOutTwo" prefWidth="130.0" />
                                  </children>
@@ -110,7 +116,7 @@
                                  <children>
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Setpoint:" />
                                     <TextField fx:id="contrSetPointOne" prefWidth="130.0" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
                                     <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Setpoint:" />
                                     <TextField fx:id="contrSetPointTwo" prefWidth="130.0" />
                                  </children>
@@ -118,7 +124,9 @@
                                         <Separator prefHeight="43.0" prefWidth="400.0" />
                                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                             <children>
-                                                <Button fx:id="controllerApply" mnemonicParsing="false" onAction="#controllerApplyPressed" prefWidth="100.0" text="Apply" />
+                                                <Button fx:id="controllerApply" mnemonicParsing="false" onAction="#controllerApplyPressed" prefWidth="120.0" text="Apply Forward PID" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" prefWidth="20.0" visible="false" />
+                                    <Button mnemonicParsing="false" prefWidth="120.0" text="Apply Turning PID" />
                                             </children>
                                         </HBox>
                                         <Separator prefHeight="80.0" prefWidth="200.0" visible="false" />
@@ -218,7 +226,6 @@
                                  <children>
                                     <HBox alignment="TOP_CENTER">
                                        <children>
-                                          <CheckBox fx:id="normalVideo" mnemonicParsing="false" prefWidth="130.0" text="Normal Video" />
                                           <CheckBox fx:id="imProVideo" mnemonicParsing="false" prefWidth="150.0" text="Image Processed Video" />
                                        </children>
                                     </HBox>

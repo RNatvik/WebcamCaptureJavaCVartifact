@@ -82,8 +82,6 @@ public class SettingsController extends Subscriber implements Initializable {
     @FXML
     private Button connectButton;
     @FXML
-    private CheckBox normalVideo;
-    @FXML
     private CheckBox imProVideo;
 
 
@@ -136,7 +134,10 @@ public class SettingsController extends Subscriber implements Initializable {
         doSendImageProcessorParameter();
     }
 
-    public void connectButtonClicked() {
+    public void connectButtonUDPClicked(){
+
+    }
+    public void connectButtonTCPClicked() {
         try {
             this.tcpClient.setHost(getIpAdr(), getTCPport());
             // also set udp client
@@ -299,13 +300,8 @@ public class SettingsController extends Subscriber implements Initializable {
      */
     private boolean getVideoOpt() {
         boolean imageProcessed = false;
-        if (imProVideo.isSelected() && !normalVideo.isSelected()) {
+        if(imProVideo.isSelected()){
             imageProcessed = true;
-        } else if (!imProVideo.isSelected() && normalVideo.isSelected()) {
-            imageProcessed = false;
-        } else if (imProVideo.isSelected() && normalVideo.isSelected()) {
-            imProVideo.setSelected(false);
-            imageProcessed = false;
         }
         return imageProcessed;
     }
