@@ -69,7 +69,7 @@ public class TestMain {
 
             client.setHost("127.0.0.1", 1235);
 
-            Thread.sleep(10000);
+            Thread.sleep(20000);
 
             client.stopConnection();
             Thread.sleep(1000);
@@ -83,6 +83,12 @@ public class TestMain {
             while (!finished) {
                 finished = client.setOutputMessage("SUB", Topic.IMAGE_DATA);
             }
+            Thread.sleep(5000);
+            client.stopConnection();
+            server.stop();
+            server2.stop();
+            ses.shutdown();
+            ses.awaitTermination(100, TimeUnit.MILLISECONDS);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -163,7 +169,7 @@ public class TestMain {
             Message messagePid2 = new Message(Topic.PID_PARAM2, pidParameter2);
             Message messageRegOut = new Message(Topic.REGULATOR_OUTPUT, regulatorOutput);
             Message messageRegParam = new Message(Topic.REGULATOR_PARAM, regulatorParameter);
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 3; i++) {
                 this.publish(broker, messageControlInput);
                 this.publish(broker, messageImProcParam);
                 this.publish(broker, messageImProcData);
