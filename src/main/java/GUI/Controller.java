@@ -1,15 +1,18 @@
 package GUI;
 
 import communication.UDPClient;
+import data.ControlInput;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import pub_sub_service.Subscriber;
 
 import java.awt.image.BufferedImage;
@@ -27,6 +30,7 @@ public class Controller extends Subscriber implements Initializable {
     private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
     private ImageUpdater imageUpdater;
     private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+    private KeyboardInput keyboardInput;
 
     @FXML
     private Button manuelBtn;
@@ -56,10 +60,14 @@ public class Controller extends Subscriber implements Initializable {
         try {
             this.udpClient = SharedResource.getInstance().getUdpClient();
             this.settingsController = new SettingsController();
+            settingsController.startSettingsWindow();
+            System.out.println(1);
             File file = new File("/loadpic.png");
             Image image = new Image(file.toURI().toString());
             imageView.setImage(image);
-            modeText.setText("Select Mode");
+            modeText.setText("Manual Mode");
+            mode = "Manual";
+            keyboardInput = new KeyboardInput();
             this.imageUpdater = new ImageUpdater(this.imageProperty, this.imageView, this.udpClient);
             ses.scheduleAtFixedRate(this.imageUpdater, 0, 50, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
@@ -73,40 +81,6 @@ public class Controller extends Subscriber implements Initializable {
 
     public void openSettingsWindow() {
         settingsController.openSettingsWindow();
-    }
-
-    public void updateImages() {
-//       Task<Void> task = new Task<>() {
-//            @Override
-//            protected Void call() throws Exception {
-//                while (true) {
-//                    BufferedImage im = udpClient.getImage();
-//                    System.out.println(im);
-//                    if (im !=null) {
-//                        Platform.runLater(() -> {
-//                            final Image mainiamge = SwingFXUtils
-//                                    .toFXImage(im, null);
-//                            imageProperty.set(mainiamge);
-//                        });
-//                    }
-//                }
-//            }
-//        };
-//        Thread thread = new Thread(task);
-//        thread.setDaemon(false);
-//        thread.start();
-//        imageView.imageProperty().bind(imageProperty);
-        BufferedImage image = null;
-        while (image == null) {
-            image = this.udpClient.getImage();
-        }
-        Image im = SwingFXUtils.toFXImage(image, null);
-        this.imageProperty.set(im);
-        imageView.imageProperty().bind(this.imageProperty);
-//        Platform.runLater(() -> {
-//            this.imageProperty.set(im);
-//            imageView.imageProperty().bind(this.imageProperty);
-//        });
     }
 
     public void setModeBtnPressed() {
@@ -131,5 +105,33 @@ public class Controller extends Subscriber implements Initializable {
     @Override
     protected void readMessages() {
 
+    }
+
+    public void onKeyPressed(KeyEvent keyEvent) {
+        if (mode.equals("Manual")) {
+            String keysChanged =  this.keyboardInput.doHandleKeyEvent(keyEvent);
+            if (keysChanged != null){
+                ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
+
+                System.out.println("ForwardSpeed: " + ci.getForwardSpeed());
+                System.out.println("TurnSpeed: " + ci.getTurnSpeed());
+                //TODO Send the ControlInput
+
+            }
+        }
+    }
+
+    public void onKeyReleased(KeyEvent keyEvent) {
+        if (mode.equals("Manual")) {
+            String keysChanged =  this.keyboardInput.doHandleKeyEvent(keyEvent);
+            if (keysChanged != null){
+                ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
+
+                System.out.println("ForwardSpeed: " + ci.getForwardSpeed());
+                System.out.println("TurnSpeed: " + ci.getTurnSpeed());
+                //TODO Send the ControlInput
+
+            }
+        }
     }
 }

@@ -1,52 +1,98 @@
 package GUI;
-
+import data.ControlInput;
 import javafx.scene.input.KeyEvent;
 
 /**
- * Handles arrow key inputs from user, to manually control car. Can only use on key at the time, pressed key has to be
- * released before next key can be pressed.
+ * Handles input from keyboard to manually control the car.
  *
- * @author
- * @version
+ * @author Lars Berge
+ * @version 1.0
  */
 public class KeyboardInput {
     // String name of active key.
-    private String activeKey;
+    private String activeKeys;
     // Strings allowed to register.
-    private String allowedKey;
+    private String allowedKeys;
 
     /**
-     * Initializes the class.
+     * Initialises the class to handle the keyboardinputs
      */
     public KeyboardInput() {
-        this.activeKey = "";
-        this.allowedKey = "ASDW";
+        this.activeKeys = "";
+        this.allowedKeys = "ASDWQE";
     }
 
     /**
-     * Builds and returns string containing event type and what key is used.
      *
+     * Returns Null if there is the KeyEvent is not form an allowed key or if the
      * @param event Key event.
      */
     public String doHandleKeyEvent(KeyEvent event) {
-        // Code of button event.
-        String keyEvent = event.getEventType().toString().toUpperCase();
-        // Event type(press of release).
+
+        String keys = null;
+
+        String keyEventType = event.getEventType().toString().toUpperCase();
+
         String keyName = event.getCode().toString().toUpperCase();
-        // String to be returned.
-        String string = "";
 
-        // Activate a key if no other key is active.
-        if (keyEvent.equals("KEY_PRESSED") && this.activeKey.equals("") && this.allowedKey.contains(keyName)) {
-            this.activeKey = keyName;
-            string = keyEvent + ":" + keyName;
+        if (keyEventType.equals("KEY_PRESSED") && !this.activeKeys.contains(keyName) && this.allowedKeys.contains(keyName) ){
+            this.activeKeys = this.activeKeys+keyName;
+            System.out.println(this.activeKeys);
+            keys = this.activeKeys;
+        }
+        else if (keyEventType.equals("KEY_RELEASED") && this.activeKeys.contains(keyName) && this.allowedKeys.contains(keyName)){
+            this.activeKeys = removeKey(keyName); //this.activeKeys.replace(keyName,"");
+            keys = this.activeKeys;
 
-            // Releases a key if the released key equals the last active key.
-        } else if (keyEvent.equals("KEY_RELEASED") && keyName.equals(this.activeKey) && this.allowedKey.contains(keyName)) {
-            this.activeKey = "";
-            string = keyEvent + ":" + keyName;
         }
 
-        return string;
+        return keys;
+    }
+
+
+    public ControlInput getControlInput(String keys) {
+
+        System.out.println("The keys are: " + keys);
+
+        double forwardSpeed = 0;
+        double turnSpeed = 0;
+
+        while (!keys.isEmpty()){
+            if (keys.contains("W")){
+                forwardSpeed = forwardSpeed + 100;
+                keys = removeKey(keys,"W");
+            }
+            if (keys.contains("S")){
+                forwardSpeed = forwardSpeed - 100;
+                keys = removeKey(keys,"S");
+            }
+            if (keys.contains("A")){
+                turnSpeed = turnSpeed - 100;
+                keys = removeKey(keys,"A");
+            }
+            if (keys.contains("D")){
+                turnSpeed = turnSpeed + 100;
+                keys = removeKey(keys,"D");
+            }
+            if (keys.contains("Q")){
+                // Nothing yet, wait for gripper imp
+                keys = removeKey(keys,"Q");
+            }
+            if (keys.contains("E")){
+                // Nothing yet, wait for gripper imp
+                keys = removeKey(keys,"E");
+            }
+        }
+
+        return new ControlInput(true,forwardSpeed,turnSpeed);
+    }
+
+
+    private String removeKey(String keys) {
+        return this.activeKeys.replace(keys,"");
+    }
+
+    private String removeKey(String keys,String keyToRemove) {
+        return keys.replace(keyToRemove,"");
     }
 }

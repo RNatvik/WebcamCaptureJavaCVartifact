@@ -1,56 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<AnchorPane prefHeight="800.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.Controller">
+
+<AnchorPane onKeyPressed="#onKeyPressed" onKeyReleased="#onKeyReleased" prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.Controller">
     <children>
         <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="700.0" AnchorPane.topAnchor="0.0">
             <children>
                 <VBox>
                     <children>
-                        <Pane>
-                            <children>
-                                <ImageView fx:id="imageView" fitHeight="600.0" fitWidth="800.0" pickOnBounds="true" preserveRatio="true" />
-                            </children>
-                        </Pane>
+                          <ImageView fx:id="imageView" fitHeight="430.0" fitWidth="540.0" pickOnBounds="true" preserveRatio="true" />
                     </children>
                 </VBox>
             </children>
         </HBox>
-        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="800.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
-            <children>
-                <VBox alignment="TOP_CENTER">
-                    <children>
-                        <VBox alignment="CENTER">
-                            <children>
-                                <Label text="RC-Car Modes" />
-                                <Separator prefHeight="20.0" />
-                                <Button fx:id="trackingBtn" mnemonicParsing="false" onAction="#trackingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Tracking" />
-                                <Separator prefWidth="200.0" />
-                                <Button fx:id="catchingBtn" mnemonicParsing="false" onAction="#catchingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Catching" />
-                                <Separator prefWidth="200.0" />
-                                <Button fx:id="manualBtn" mnemonicParsing="false" onAction="#manualBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Manual" />
-                                <Separator prefWidth="200.0" />
-                                <Separator prefWidth="200.0" />
-                                <Pane>
-                                    <children>
-                                        <Label fx:id="modeText" alignment="CENTER" contentDisplay="TOP" prefHeight="50.0" prefWidth="200.0" text="Labelrl">
-                                            <font>
-                                                <Font size="18.0" />
-                                            </font>
-                                        </Label>
-                                    </children>
-                                </Pane>
-                                <Separator prefWidth="200.0" />
-                                <Button fx:id="setModeBtn" mnemonicParsing="false" onAction="#setModeBtnPressed" prefHeight="35.0" prefWidth="150.0" text="Set Mode" />
-                            </children>
-                        </VBox>
-                    </children>
-                </VBox>
-            </children>
-        </HBox>
+      <VBox alignment="CENTER" layoutX="600.0" layoutY="40.0" AnchorPane.rightAnchor="100.0">
+         <children>
+                    <Label text="RC-Car Modes" />
+                    <Separator prefHeight="20.0" />
+                    <Button fx:id="trackingBtn" mnemonicParsing="false" onAction="#trackingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Tracking" />
+                    <Separator prefWidth="200.0" />
+                    <Button fx:id="catchingBtn" mnemonicParsing="false" onAction="#catchingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Catching" />
+                    <Separator prefWidth="200.0" />
+                    <Button fx:id="manualBtn" mnemonicParsing="false" onAction="#manualBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Manual" />
+                    <Separator prefWidth="200.0" />
+                    <Separator prefWidth="200.0" />
+                    <Pane>
+                        <children>
+                            <Label fx:id="modeText" alignment="CENTER" contentDisplay="TOP" prefHeight="50.0" prefWidth="200.0" text="Labelrl">
+                                <font>
+                                    <Font size="18.0" />
+                                </font>
+                            </Label>
+                        </children>
+                    </Pane>
+                    <Separator prefWidth="200.0" />
+                    <Button fx:id="setModeBtn" mnemonicParsing="false" onAction="#setModeBtnPressed" prefHeight="35.0" prefWidth="150.0" text="Set Mode" />
+         </children>
+      </VBox>
         <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="760.0" AnchorPane.leftAnchor="800.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
                 <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#openSettingsWindow" prefHeight="40.0" prefWidth="80.0" text="Settings">
