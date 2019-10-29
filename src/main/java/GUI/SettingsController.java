@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
 
+import java.io.IOException;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
@@ -86,12 +87,12 @@ public class SettingsController extends Subscriber implements Initializable {
     private CheckBox imProVideo;
 
 
-    public SettingsController(){
+    public SettingsController() {
         super(SharedResource.getInstance().getBroker());
 
     }
 
-    public void initialize(URL location, ResourceBundle resources){
+    public void initialize(URL location, ResourceBundle resources) {
         System.out.println(2);
         if (SharedResource.isInitialized()) {
             this.tcpClient = SharedResource.getInstance().getTcpClient();
@@ -105,7 +106,6 @@ public class SettingsController extends Subscriber implements Initializable {
     /**
      * When settings is pressed, its opens a new window that contains :
      * Controller parameters, Communication, Image parameters and regulator parameters.
-     *
      */
     public void startSettingsWindow() {
         try {
@@ -116,31 +116,47 @@ public class SettingsController extends Subscriber implements Initializable {
             this.primaryStage1.setScene(scene);
             this.primaryStage1.setTitle("camcoa");
             // Set On Close Request so that the application does not shot down when closing the extra window
-            this.primaryStage1.setOnCloseRequest(event -> {
-                this.primaryStage1.close();
-            });
+            this.primaryStage1.setOnCloseRequest(event -> this.primaryStage1.close());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public void openSettingsWindow(){
+
+    public void openSettingsWindow() {
         this.primaryStage1.show();
         this.primaryStage1.toFront();
     }
 
-    public void controllerApplyPressed(){
+    public void controllerApplyPressed() {
         doSendPidParameter(1);
         doSendPidParameter(2);
     }
-    public void applyPicPar(){
+
+    public void applyPicPar() {
         doSendImageProcessorParameter();
     }
 
-    public void connectButtonClicked(){
-        /**
-         * Finne på no lurt..
-         */
+    public void connectButtonClicked() {
+        try {
+            this.tcpClient.setHost(getIpAdr(), getTCPport());
+            // also set udp client
+            if (!this.tcpClient.isConnected()) {
+                this.tcpClient.initialize();
+                this.udpClient.startThread();
+            } else {
+                this.tcpClient.stopConnection();
+                this.udpClient.stop();
+                while (!(this.tcpClient.isTerminated() && this.udpClient.isTerminated())) {
+                    // wait
+                }
+                this.tcpClient.initialize();
+                this.udpClient.startThread();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
     private void doSendPidParameter(int paramNum) {
         double kp = parseToDouble(getPropGainFX(paramNum));
         double ki = parseToDouble(getIntGainFX(paramNum));
@@ -151,19 +167,19 @@ public class SettingsController extends Subscriber implements Initializable {
 
         PidParameter param = new PidParameter(kp, ki, kd, maxOutput, minOutput, setpoint);
         Message message = null;
-        if(paramNum == 1) {
+        if (paramNum == 1) {
             message = new Message(Topic.PID_PARAM1, param);
-        }
-        else if(paramNum == 2){
+        } else if (paramNum == 2) {
             message = new Message(Topic.PID_PARAM2, param);
         }
         this.tcpClient.setOutputMessage("SET", message.toJSON());
     }
+
     private void doSendImageProcessorParameter() {
         int[] hue = compareMinMax(hueMin.getValue(), hueMax.getValue());
         int[] sat = compareMinMax(satMin.getValue(), satMax.getValue());
         int[] val = compareMinMax(valMin.getValue(), valMax.getValue());
-        updateSliders(hue[0], hue[1],sat[0], sat[1], val[0], val[1]);
+        updateSliders(hue[0], hue[1], sat[0], sat[1], val[0], val[1]);
         boolean imageToStore = getVideoOpt();
 
         ImageProcessorParameter param = new ImageProcessorParameter(
@@ -171,84 +187,70 @@ public class SettingsController extends Subscriber implements Initializable {
         );
         Message message = new Message(Topic.IMPROC_PARAM, param);
         this.tcpClient.setOutputMessage("SET", message.toJSON());
+        System.out.println(message.toJSON());
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private String getPropGainFX(int paramNum){
+    private String getPropGainFX(int paramNum) {
         String propGain = "0";
-        if(paramNum == 1){
+        if (paramNum == 1) {
             propGain = propGainOne.getText();
-        }
-        else if(paramNum == 2){
+        } else if (paramNum == 2) {
             propGain = propGainTwo.getText();
         }
-        if(propGain.isEmpty() && !isNumeric(propGain)) {
+        if (propGain.isEmpty() && !isNumeric(propGain)) {
             propGain = "0";
         }
         return propGain;
     }
-    private String getIntGainFX(int paramNum){
+
+    private String getIntGainFX(int paramNum) {
         String stringIntGain = "0";
-        if(paramNum == 1){
+        if (paramNum == 1) {
             stringIntGain = intGainOne.getText();
-        }
-        else if(paramNum == 2){
+        } else if (paramNum == 2) {
             stringIntGain = intGainTwo.getText();
         }
-        if(stringIntGain.isEmpty() && !isNumeric(stringIntGain)) {
+        if (stringIntGain.isEmpty() && !isNumeric(stringIntGain)) {
             stringIntGain = "0";
         }
         return stringIntGain;
     }
-    private String getDerGainFX(int paramNum){
+
+    private String getDerGainFX(int paramNum) {
         String stringDerGain = "null";
-        if(paramNum == 1){
+        if (paramNum == 1) {
             stringDerGain = derGainOne.getText();
-        }
-        else if(paramNum == 2){
+        } else if (paramNum == 2) {
             stringDerGain = derGainTwo.getText();
         }
-        if(stringDerGain.isEmpty() && !isNumeric(stringDerGain)) {
+        if (stringDerGain.isEmpty() && !isNumeric(stringDerGain)) {
             stringDerGain = "0";
         }
         return stringDerGain;
     }
-    private String getControllerMaxOut(int paramNum){
+
+    private String getControllerMaxOut(int paramNum) {
         String maxOut = "0";
-        if(paramNum == 1){
+        if (paramNum == 1) {
             maxOut = contrMaxOutOne.getText();
-        }
-        else if(paramNum == 2){
+        } else if (paramNum == 2) {
             maxOut = contrMaxOutTwo.getText();
         }
-        if(maxOut.isEmpty() && !isNumeric(maxOut)) {
+        if (maxOut.isEmpty() && !isNumeric(maxOut)) {
             maxOut = "0";
         }
         return maxOut;
     }
-    private String getControllerMinOut(int paramNum){
+
+    private String getControllerMinOut(int paramNum) {
         String minOut = "0";
-        if(paramNum == 1){
+        if (paramNum == 1) {
             minOut = contrMinOutOne.getText();
-        }
-        else if(paramNum == 2){
+        } else if (paramNum == 2) {
             minOut = contrMinOutTwo.getText();
         }
-        if(minOut.isEmpty() && !isNumeric(minOut)) {
+        if (minOut.isEmpty() && !isNumeric(minOut)) {
             minOut = "0";
         }
         return minOut;
@@ -257,18 +259,18 @@ public class SettingsController extends Subscriber implements Initializable {
     /**
      * Reads the text field from GUI/SettingsWindow tab->Controller parameters? and checks if they are
      * numerical.
+     *
      * @param paramNum Choose if you want parameter one or two.
      * @return The set point.
      */
-    private String getControllerSetPoint(int paramNum){
+    private String getControllerSetPoint(int paramNum) {
         String setPoint = "0";
-        if(paramNum == 1){
+        if (paramNum == 1) {
             setPoint = contrSetPointOne.getText();
-        }
-        else if(paramNum == 2){
+        } else if (paramNum == 2) {
             setPoint = contrSetPointTwo.getText();
         }
-        if(setPoint.isEmpty() && !isNumeric(setPoint)) {
+        if (setPoint.isEmpty() && !isNumeric(setPoint)) {
             setPoint = "0";
         }
         return setPoint;
@@ -277,10 +279,10 @@ public class SettingsController extends Subscriber implements Initializable {
     private int[] compareMinMax(double hMin, double hMax) {
         hMax = Math.max(hMax, hMin);
         hMin = Math.min(hMax, hMin);
-        return new int[]{(int)hMin, (int)hMax};
+        return new int[]{(int) hMin, (int) hMax};
     }
 
-    private void updateSliders(int hueMinPar, int hueMaxPar, int satMinPar, int satMaxPar, int valMinPar, int valMaxPar){
+    private void updateSliders(int hueMinPar, int hueMaxPar, int satMinPar, int satMaxPar, int valMinPar, int valMaxPar) {
         hueMin.setValue(hueMinPar);
         hueMax.setValue(hueMaxPar);
         satMin.setValue(satMinPar);
@@ -292,24 +294,25 @@ public class SettingsController extends Subscriber implements Initializable {
     /**
      * Checking check-boxes in GUI/SettingsWindow tab->Picture, default is set to normal video. If both checkboxes is chosen
      * when the method is called, its goes to normal video and unchecks image processed checkbox.
+     *
      * @return True, if image processed video is chosen. False, if normal video, both or non is selected.
      */
-    private boolean getVideoOpt(){
+    private boolean getVideoOpt() {
         boolean imageProcessed = false;
-        if(imProVideo.isSelected() && !normalVideo.isSelected()){
+        if (imProVideo.isSelected() && !normalVideo.isSelected()) {
             imageProcessed = true;
-        }
-        else if(!imProVideo.isSelected() && normalVideo.isSelected()){
+        } else if (!imProVideo.isSelected() && normalVideo.isSelected()) {
             imageProcessed = false;
-        }
-        else if(imProVideo.isSelected() && normalVideo.isSelected()){
+        } else if (imProVideo.isSelected() && normalVideo.isSelected()) {
             imProVideo.setSelected(false);
             imageProcessed = false;
         }
         return imageProcessed;
     }
+
     /**
      * Checks if string contains a number.
+     *
      * @param str The string that's need to be checked.
      * @return true, if the string contains a number (can be decimal). False, if there is a character inside it.
      */
@@ -319,6 +322,7 @@ public class SettingsController extends Subscriber implements Initializable {
 
     /**
      * Checks if string contains a whole number.
+     *
      * @param str The string that's need to be checked.
      * @return true, if the string contains a whole number. False, if there is a character inside it.
      */
@@ -331,12 +335,13 @@ public class SettingsController extends Subscriber implements Initializable {
 
     /**
      * Checks if string is a number and is not null, then converts string to double.
+     *
      * @param str The string you want to convert.
      * @return num. The double witch the string was converted to.
      */
-    private double parseToDouble(String str){
+    private double parseToDouble(String str) {
         double num = 0;
-        if(isNumeric(str) && (str.isEmpty())){
+        if (isNumeric(str) && (str.isEmpty())) {
             num = Double.parseDouble(str);
         }
         return num;
@@ -345,11 +350,12 @@ public class SettingsController extends Subscriber implements Initializable {
     /**
      * Gets the text fields from GUI/Settingswindow IP-address and adds it together as an IP-address format.
      * Its also checks if there are any characters in the input-strings.
+     *
      * @return adr. The fixed IP-address.
      */
-    private String getIpAdr(){
+    private String getIpAdr() {
         String adr = "0";
-        if(isWholeNum(adrOne.getText()) && isWholeNum(adrTwo.getText()) && isWholeNum(adrThree.getText()) && isWholeNum(adrFour.getText())) {
+        if (isWholeNum(adrOne.getText()) && isWholeNum(adrTwo.getText()) && isWholeNum(adrThree.getText()) && isWholeNum(adrFour.getText())) {
             if (!(adrOne.getText().isEmpty() && adrTwo.getText().isEmpty() && adrThree.getText().isEmpty() && adrFour.getText().isEmpty())) {
                 adr = adrOne.getText() + "." + adrTwo.getText() + "." + adrThree.getText() + "." + adrFour.getText();
             }
@@ -359,28 +365,31 @@ public class SettingsController extends Subscriber implements Initializable {
 
     /**
      * Gets the text fields from GUI/Settingswindow UDP-port, checks if its empty or has characters.
+     *
      * @return udpPort. A string that contains the portnumber to UDP-server.
      */
-    private String getUDPport(){
+    private String getUDPport() {
         String udpPort = "0";
-        if(isWholeNum(UDPport.getText()) && !UDPport.getText().isEmpty()){
+        if (isWholeNum(UDPport.getText()) && !UDPport.getText().isEmpty()) {
             udpPort = UDPport.getText();
         }
         return udpPort;
     }
+
     /**
      * Gets the text fields from GUI/Settingswindow TCP-port, checks if its empty or has characters.
+     *
      * @return tcpPort. A string that contains the portnumber to TCP-server.
      */
-    private String getTCPport(){
+    private int getTCPport() {
         String tcpPort = "0";
-        if(isWholeNum(TCPport.getText()) && !TCPport.getText().isEmpty()){
+        if (isWholeNum(TCPport.getText()) && !TCPport.getText().isEmpty()) {
             tcpPort = TCPport.getText();
         }
-        return tcpPort;
+        return Integer.parseInt(tcpPort);
     }
 
-    public void setDefaultValuesGui(){
+    public void setDefaultValuesGui() {
         propGainOne.setText("1");
         intGainOne.setText("1");
         derGainOne.setText("1");
@@ -396,7 +405,7 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     @Override
-    protected void readMessages() {
+    protected void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {
             Message message = this.getMessageQueue().remove();
             String topic = message.getTopic();

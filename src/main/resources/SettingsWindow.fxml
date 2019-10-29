@@ -145,7 +145,7 @@
                                  </font></Label>
                               <HBox alignment="CENTER">
                                  <children>
-                                    <Slider fx:id="hueMax" max="360.0" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
+                                    <Slider fx:id="hueMax" max="179.0" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
                                     <Label text="Label" />
                                  </children>
                               </HBox>
@@ -158,7 +158,7 @@
                               <Separator prefWidth="200.0" />
                               <HBox alignment="CENTER">
                                  <children>
-                                    <Slider fx:id="hueMin" max="360.0" minorTickCount="2" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
+                                    <Slider fx:id="hueMin" max="179.0" minorTickCount="2" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
                                     <Label text="Label" />
                                  </children>
                               </HBox>
@@ -169,7 +169,7 @@
                                  </font></Label>
                               <HBox alignment="CENTER">
                                  <children>
-                                    <Slider fx:id="satMax" majorTickUnit="5.0" minorTickCount="1" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
+                                    <Slider fx:id="satMax" majorTickUnit="5.0" max="255.0" minorTickCount="1" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
                                     <Label text="Label" />
                                  </children>
                               </HBox>
@@ -181,7 +181,7 @@
                               <Separator prefWidth="200.0" />
                               <HBox alignment="CENTER">
                                  <children>
-                                    <Slider fx:id="satMin" majorTickUnit="5.0" minorTickCount="1" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
+                                    <Slider fx:id="satMin" majorTickUnit="5.0" max="255.0" minorTickCount="1" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
                                     <Label text="Label" />
                                  </children>
                               </HBox>
@@ -192,7 +192,7 @@
                                  </font></Label>
                               <HBox alignment="CENTER">
                                  <children>
-                                    <Slider fx:id="valMax" majorTickUnit="5.0" minorTickCount="1" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
+                                    <Slider fx:id="valMax" majorTickUnit="5.0" max="255.0" minorTickCount="1" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
                                     <Label text="Label" />
                                  </children>
                               </HBox>
@@ -204,7 +204,7 @@
                               </Label>
                               <HBox alignment="CENTER">
                                  <children>
-                                    <Slider fx:id="valMin" majorTickUnit="5.0" minorTickCount="1" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
+                                    <Slider fx:id="valMin" majorTickUnit="5.0" max="255.0" minorTickCount="1" prefWidth="400.0" showTickLabels="true" showTickMarks="true" />
                                     <Label text="Label" />
                                  </children>
                               </HBox>
