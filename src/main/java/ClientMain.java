@@ -17,18 +17,20 @@ public class ClientMain {
         Loader.load(opencv_java.class);
         try {
             Broker broker = new Broker();
-            TCPClient tcpClient = new TCPClient("127.0.0.1", 9876, broker);
+            TCPClient tcpClient = new TCPClient(broker);
+            UDPClient udpClient = new UDPClient();
 
-            UDPClient udpClient = new UDPClient("127.0.0.1", 2345);
-
+            tcpClient.initialize("127.0.0.1", 9876, 30);
+            udpClient.initialize("127.0.0.1", 2345);
             ImageProcessorParameter parameters = new ImageProcessorParameter(
                     79, 125, 94, 255, 125, 255, false
             );
             Message message = new Message(Topic.IMPROC_PARAM, parameters);
             tcpClient.setOutputMessage("SET", message.toJSON());
 
-            udpClient.startThread();
-            tcpClient.initialize();
+            tcpClient.connect();
+            udpClient.start();
+
             boolean state = false;
             for (int i = 0; i < 10; i++) {
                 try {
