@@ -1,8 +1,6 @@
 package communication;
 
-import data.Data;
-import data.Flag;
-import data.ImageProcessorParameter;
+import data.*;
 import org.json.JSONObject;
 import pub_sub_service.Broker;
 import pub_sub_service.Message;
@@ -104,9 +102,9 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         String type = dataJson.getString("type");
         Message message = null;
 
-        switch (type) {
+        switch (topic) {
 
-            case Data.IMPROC_PARAM:
+            case Topic.IMPROC_PARAM:
                 ImageProcessorParameter improcParam = new ImageProcessorParameter(
                         dataJson.getInt("hueMin"),
                         dataJson.getInt("hueMax"),
@@ -119,13 +117,57 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                 message = new Message(topic, improcParam);
                 break;
 
-            case Data.PID_PARAM:
+            case Topic.PID_PARAM1:
+                PidParameter param1 = new PidParameter(
+                        dataJson.getDouble("kp"),
+                        dataJson.getDouble("ki"),
+                        dataJson.getDouble("kd"),
+                        dataJson.getDouble("maxOutput"),
+                        dataJson.getDouble("minOutput"),
+                        dataJson.getDouble("setpoint")
+                );
+                message = new Message(topic,param1);
                 break;
+
+            case Topic.PID_PARAM2:
+                PidParameter param2 = new PidParameter(
+                        dataJson.getDouble("kp"),
+                        dataJson.getDouble("ki"),
+                        dataJson.getDouble("kd"),
+                        dataJson.getDouble("maxOutput"),
+                        dataJson.getDouble("minOutput"),
+                        dataJson.getDouble("setpoint")
+                );
+                message = new Message(topic,param2);
+                break;
+
+            case Topic.REGULATOR_PARAM:
+                RegulatorParameter regParam = new RegulatorParameter(
+                        dataJson.getDouble("mcMinimumReverse"),
+                        dataJson.getDouble("mcMaximumReverse"),
+                        dataJson.getDouble("mcMinimumForward"),
+                        dataJson.getDouble("mcMaximumForward"),
+                        dataJson.getDouble("controllerMinOutput"),
+                        dataJson.getDouble("controllerMaxOutput")
+                );
+                message = new Message(topic,regParam);
+                break;
+
+            case Topic.CONTROLER_INPUT:
+                ControlInput ci = new ControlInput(
+                        dataJson.getBoolean("manualControl"),
+                        dataJson.getDouble("forwardSpeed"),
+                        dataJson.getDouble("turnSpeed")
+                );
+                message = new Message(topic,ci);
+
 
             default:
                 break;
         }
-        this.publish(this.getBroker(), message);
+        if (message != null) {
+            this.publish(this.getBroker(), message);
+        }
     }
 
     private void sub(String topic) {
