@@ -19,7 +19,7 @@ public class UDPClient implements Runnable {
     private BufferedImage bufferedImage;
 
 
-    public UDPClient() throws SocketException{
+    public UDPClient() {
         this.thread = null;
         this.hostAddress = null;
         this.hostPort = 0;

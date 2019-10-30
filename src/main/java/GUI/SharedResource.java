@@ -25,19 +25,15 @@ public class SharedResource {
     /**
      * Initialize the SharedResource singleton instance
      * The broker will be started and scheduled at a fixed rate.
-     * The tcp and udp client threads will not be started until they are explicitly called externally.
+     * The tcp and udp client threads will not be started until they are explicitly initialized externally.
      *
-     * @param host    the target host for client sockets.
-     * @param tcpPort the target host port for tcp client socket.
-     * @param udpPort the target host port for udp client socket.
      * @param brokerPeriod the broker scheduled execution period.
      * @return true if successful initialization, false if already initialized
-     * @throws UnknownHostException if host is not valid.
      */
-    public static boolean initialize(String host, int tcpPort, int udpPort, int brokerPeriod) throws UnknownHostException {
+    public static boolean initialize(int brokerPeriod) {
         boolean success = false;
         if (!initialized) {
-            instance = new SharedResource(host, tcpPort, udpPort);
+            instance = new SharedResource();
             instance.getSes().scheduleAtFixedRate(instance.getBroker(), 0, brokerPeriod, TimeUnit.MILLISECONDS);
             initialized = true;
             success = true;
@@ -80,16 +76,12 @@ public class SharedResource {
 
     /**
      * Constructor
-     * @param host target host address
-     * @param tcpPort target tcp server port
-     * @param udpPort target udp server port
-     * @throws UnknownHostException if not valid host
      */
-    private SharedResource(String host, int tcpPort, int udpPort) throws UnknownHostException {
+    private SharedResource() {
         this.ses = Executors.newScheduledThreadPool(1);
         this.broker = new Broker();
-        this.tcpClient = new TCPClient(host, tcpPort, this.broker);
-        this.udpClient = new UDPClient(host, udpPort);
+        this.tcpClient = new TCPClient(this.broker);
+        this.udpClient = new UDPClient();
     }
 
     /**
