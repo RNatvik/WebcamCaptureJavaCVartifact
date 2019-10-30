@@ -14,7 +14,7 @@ public class App extends Application {
 
     public static void main (String[] args) throws Exception {
         if (!SharedResource.isInitialized()) {
-            SharedResource.initialize("192.168.0.50", 9876, 2345, 30);
+            SharedResource.initialize(30);
         }
         launch(args);
         SharedResource.clear();

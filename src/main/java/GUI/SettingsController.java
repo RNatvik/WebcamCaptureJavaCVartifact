@@ -16,8 +16,9 @@ import javafx.stage.Stage;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
 
-import java.io.IOException;
+import java.net.SocketException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.ResourceBundle;
@@ -126,6 +127,7 @@ public class SettingsController extends Subscriber implements Initializable {
     public void controllerForwardApplyPressed() {
         doSendPidParameter(1);
     }
+
     public void controllerTurningApplyPressed() {
         doSendPidParameter(2);
     }
@@ -134,26 +136,37 @@ public class SettingsController extends Subscriber implements Initializable {
         doSendImageProcessorParameter();
     }
 
-    public void connectButtonUDPClicked(){
-
+    public void connectButtonUDPClicked() {
+        try {
+            if (!this.udpClient.isRunning()) {
+                this.udpClient.initialize(getIpAdr(), getUDPport());
+                boolean success = this.udpClient.start();
+            } else {
+                this.udpClient.stop();
+                boolean terminated = false;
+                while (!terminated) {
+                    terminated = this.udpClient.isTerminated();
+                }
+            }
+        } catch (SocketException | UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
+
     public void connectButtonTCPClicked() {
         try {
-            this.tcpClient.setHost(getIpAdr(), getTCPport());
-            // also set udp client
             if (!this.tcpClient.isConnected()) {
-                this.tcpClient.initialize();
-                this.udpClient.startThread();
+                this.tcpClient.initialize(getIpAdr(), getTCPport(), 20);
+                boolean success = this.tcpClient.connect();
+
             } else {
                 this.tcpClient.stopConnection();
-                this.udpClient.stop();
-                while (!(this.tcpClient.isTerminated() && this.udpClient.isTerminated())) {
-                    // wait
+                boolean terminated = false;
+                while (!terminated) {
+                    terminated = this.tcpClient.isTerminated();
                 }
-                this.tcpClient.initialize();
-                this.udpClient.startThread();
             }
-        } catch (IOException e) {
+        } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }
@@ -196,7 +209,8 @@ public class SettingsController extends Subscriber implements Initializable {
         String propGain = "0";
         if (paramNum == 1) {
             propGain = propGainOne.getText();
-        } if (paramNum == 2) {
+        }
+        if (paramNum == 2) {
             propGain = propGainTwo.getText();
         }
         if (propGain.isEmpty() && !isNumeric(propGain)) {
@@ -209,7 +223,8 @@ public class SettingsController extends Subscriber implements Initializable {
         String stringIntGain = "0";
         if (paramNum == 1) {
             stringIntGain = intGainOne.getText();
-        } if (paramNum == 2) {
+        }
+        if (paramNum == 2) {
             stringIntGain = intGainTwo.getText();
         }
         if (stringIntGain.isEmpty() && !isNumeric(stringIntGain)) {
@@ -300,7 +315,7 @@ public class SettingsController extends Subscriber implements Initializable {
      */
     private boolean getVideoOpt() {
         boolean imageProcessed = false;
-        if(imProVideo.isSelected()){
+        if (imProVideo.isSelected()) {
             imageProcessed = true;
         }
         return imageProcessed;
@@ -364,12 +379,12 @@ public class SettingsController extends Subscriber implements Initializable {
      *
      * @return udpPort. A string that contains the portnumber to UDP-server.
      */
-    private String getUDPport() {
+    private int getUDPport() {
         String udpPort = "0";
         if (isWholeNum(UDPport.getText()) && !UDPport.getText().isEmpty()) {
             udpPort = UDPport.getText();
         }
-        return udpPort;
+        return Integer.parseInt(udpPort);
     }
 
     /**
