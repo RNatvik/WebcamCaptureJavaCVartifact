@@ -246,6 +246,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                     if (ci != null) {
                         this.manualControlInput = ci;
                         this.manualMode = this.manualControlInput.isManualControl(); // Simpler
+                        this.newManualCommand = true;
                     }
 
                 default:
