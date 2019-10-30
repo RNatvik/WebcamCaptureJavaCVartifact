@@ -30,15 +30,19 @@ public class UDPClient implements Runnable {
         this.bufferedImage = null;
     }
 
-    public void start() {
+    public boolean start() {
+        boolean success = false;
         if (!this.running && this.initialized) {
+            this.running = true;
             this.thread.start();
+            success = true;
         }
+        return success;
     }
 
     public boolean initialize(String host, int port) throws UnknownHostException {
         boolean success = false;
-        if (!this.initialized) {
+        if (!this.running) {
             this.hostAddress = InetAddress.getByName(host);
             this.hostPort = port;
             this.thread = new Thread(this);
@@ -69,7 +73,6 @@ public class UDPClient implements Runnable {
 
     @Override
     public void run() {
-        this.running = true;
         System.out.println(this + ":: in run");
         try {
             DatagramPacket hello = new DatagramPacket(new byte[1], 1, hostAddress, hostPort);

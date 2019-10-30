@@ -22,6 +22,7 @@ public class TCPClient implements Runnable, Publisher {
     private Thread thread;
     private InetAddress hostAddress;
     private int hostPort;
+    private int timeout;
     private String outputMessage;
     private Socket socket;
     private Broker broker;
@@ -30,10 +31,11 @@ public class TCPClient implements Runnable, Publisher {
     private boolean shutdown;
     private boolean terminated;
 
-    public TCPClient(String hostAddress, int hostPort, Broker broker) throws UnknownHostException {
+    public TCPClient(Broker broker) {
         this.thread = null;
-        this.hostAddress = InetAddress.getByName(hostAddress);
-        this.hostPort = hostPort;
+        this.hostAddress = null;
+        this.hostPort = 0;
+        this.timeout = 0;
         this.outputMessage = null;
         this.socket = null;
         this.broker = broker;
@@ -43,27 +45,32 @@ public class TCPClient implements Runnable, Publisher {
         this.terminated = false;
     }
 
-    public void initialize() throws IOException {
-        if (!this.initialized) {
-            this.thread = new Thread(this);
-            if (this.connected = this.connect()) {
-                this.socket.setSoTimeout(20);
-                this.shutdown = false;
-                this.terminated = false;
-                this.initialized = true;
-                this.thread.start();
-            } else {
-                throw new IOException(String.format(
-                        "Failed to connect to: %s(%d)",
-                        this.hostAddress, this.hostPort)
-                );
-            }
-        }
+    public void initialize(String hostAddress, int hostPort, int timeout) throws UnknownHostException {
+       if (!this.connected) {
+           this.hostAddress = InetAddress.getByName(hostAddress);
+           this.hostPort = hostPort;
+           this.timeout = 0;
+           this.thread = new Thread(this);
+           this.shutdown = false;
+           this.terminated = false;
+           this.initialized = true;
+       }
     }
 
-    public void setHost(String hostAddress, int hostPort) throws UnknownHostException {
-        this.hostAddress = InetAddress.getByName(hostAddress);
-        this.hostPort = hostPort;
+    public boolean connect() {
+        boolean success = false;
+        try {
+            if (this.initialized && !this.connected) {
+                this.socket = new Socket(this.hostAddress, this.hostPort);
+                this.socket.setSoTimeout(this.timeout);
+                this.connected = true;
+                this.thread.start();
+                success = true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return success;
     }
 
     public synchronized boolean setOutputMessage(String command, String body) {
@@ -91,16 +98,6 @@ public class TCPClient implements Runnable, Publisher {
         return terminated;
     }
 
-    private boolean connect() {
-        boolean success = true;
-        try {
-            this.socket = new Socket(this.hostAddress, this.hostPort);
-        } catch (IOException e) {
-            success = false;
-            e.printStackTrace();
-        }
-        return success;
-    }
 
     private boolean shutdownProcedure() {
         boolean success = true;
