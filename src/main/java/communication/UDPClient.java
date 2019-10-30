@@ -19,10 +19,10 @@ public class UDPClient implements Runnable {
     private BufferedImage bufferedImage;
 
 
-    public UDPClient(String hostAddress, int hostPort) throws SocketException, UnknownHostException {
+    public UDPClient() throws SocketException, UnknownHostException {
         this.thread = null;
-        this.hostAddress = InetAddress.getByName(hostAddress);
-        this.hostPort = hostPort;
+        this.hostAddress = null;
+        this.hostPort = 0;
         this.socket = new DatagramSocket();
         this.shutdown = true;
         this.terminated = false;
