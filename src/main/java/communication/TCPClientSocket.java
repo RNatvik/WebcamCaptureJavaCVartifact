@@ -52,34 +52,30 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         while (!(this.shutdown || this.serverShutdown.get())) {
             try {
                 this.readMessages();
-                if (this.bufferedReader.ready()) {
-                    String line = this.bufferedReader.readLine();
-                    System.out.println(this + " received line: " + line);
-                    if (line != null) {
-                        String[] lineParts = line.split("::");
-                        String command = lineParts[0];
-                        String body = lineParts[1];
+                String line = this.bufferedReader.readLine();
+                System.out.println(this + " received line: " + line);
+                if (line != null) {
+                    String[] lineParts = line.split("::");
+                    String command = lineParts[0];
+                    String body = lineParts[1];
 
-                        switch (command) {
-                            case "SET":
-                                this.set(body);
-                                break;
+                    switch (command) {
+                        case "SET":
+                            this.set(body);
+                            break;
 
-                            case "SUB":
-                                this.sub(body);
-                                break;
+                        case "SUB":
+                            this.sub(body);
+                            break;
 
-                            case "UNSUB":
-                                this.unsub(body);
-                                break;
+                        case "UNSUB":
+                            this.unsub(body);
+                            break;
 
-                            default:
-                                break;
-                        }
-                    } else {
-                        this.stop();
+                        default:
+                            break;
                     }
-                } else if (this.printWriter.checkError()) {
+                } else {
                     this.stop();
                 }
             } catch (IOException e) {
@@ -126,7 +122,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                         dataJson.getDouble("minOutput"),
                         dataJson.getDouble("setpoint")
                 );
-                message = new Message(topic,param1);
+                message = new Message(topic, param1);
                 break;
 
             case Topic.PID_PARAM2:
@@ -138,7 +134,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                         dataJson.getDouble("minOutput"),
                         dataJson.getDouble("setpoint")
                 );
-                message = new Message(topic,param2);
+                message = new Message(topic, param2);
                 break;
 
             case Topic.REGULATOR_PARAM:
@@ -150,7 +146,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                         dataJson.getDouble("controllerMinOutput"),
                         dataJson.getDouble("controllerMaxOutput")
                 );
-                message = new Message(topic,regParam);
+                message = new Message(topic, regParam);
                 break;
 
             case Topic.CONTROLER_INPUT:
@@ -159,7 +155,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                         dataJson.getDouble("forwardSpeed"),
                         dataJson.getDouble("turnSpeed")
                 );
-                message = new Message(topic,ci);
+                message = new Message(topic, ci);
 
 
             default:
