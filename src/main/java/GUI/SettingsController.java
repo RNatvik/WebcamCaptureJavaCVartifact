@@ -3,6 +3,8 @@ package GUI;
 import communication.TCPClient;
 import communication.UDPClient;
 import data.*;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -12,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
@@ -129,11 +132,6 @@ public class SettingsController extends Subscriber implements Initializable {
     public void controllerTurningApplyPressed() {
         doSendPidParameter(2);
     }
-
-    public void applyPicPar() {
-        doSendImageProcessorParameter();
-    }
-
     public void connectButtonUDPClicked(){
 
     }
@@ -304,6 +302,28 @@ public class SettingsController extends Subscriber implements Initializable {
             imageProcessed = true;
         }
         return imageProcessed;
+    }
+
+    public void hueMaxDragClicked(){
+        doSendImageProcessorParameter();
+    }
+    public void hueMinDragClicked(){
+        doSendImageProcessorParameter();
+    }
+    public void satMaxDragClicked(){
+        doSendImageProcessorParameter();
+    }
+    public void satMinDragClicked(){
+        doSendImageProcessorParameter();
+    }
+    public void valMaxDragClicked(){
+        doSendImageProcessorParameter();
+    }
+    public void valMinDragClicked(){
+        doSendImageProcessorParameter();
+    }
+    public void imgProVidClicked(){
+        doSendImageProcessorParameter();
     }
 
     /**
