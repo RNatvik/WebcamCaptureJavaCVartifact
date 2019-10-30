@@ -19,11 +19,11 @@ public class UDPClient implements Runnable {
     private BufferedImage bufferedImage;
 
 
-    public UDPClient() throws SocketException, UnknownHostException {
+    public UDPClient() throws SocketException{
         this.thread = null;
         this.hostAddress = null;
         this.hostPort = 0;
-        this.socket = new DatagramSocket();
+        this.socket = null;
         this.shutdown = true;
         this.terminated = false;
         this.running = false;
@@ -40,9 +40,10 @@ public class UDPClient implements Runnable {
         return success;
     }
 
-    public boolean initialize(String host, int port) throws UnknownHostException {
+    public boolean initialize(String host, int port) throws UnknownHostException, SocketException {
         boolean success = false;
         if (!this.running) {
+            this.socket = new DatagramSocket();
             this.hostAddress = InetAddress.getByName(host);
             this.hostPort = port;
             this.thread = new Thread(this);
