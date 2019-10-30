@@ -161,10 +161,8 @@ public class SettingsController extends Subscriber implements Initializable {
 
             } else {
                 this.tcpClient.stopConnection();
-                boolean terminated = false;
-                while (!terminated) {
-                    terminated = this.tcpClient.isTerminated();
-                }
+                boolean terminated = this.tcpClient.isTerminated();
+                System.out.println("Tcp terminated: " + terminated);
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();

@@ -49,7 +49,7 @@ public class TCPClient implements Runnable, Publisher {
        if (!this.connected) {
            this.hostAddress = InetAddress.getByName(hostAddress);
            this.hostPort = hostPort;
-           this.timeout = 0;
+           this.timeout = timeout;
            this.thread = new Thread(this);
            this.shutdown = false;
            this.terminated = false;
