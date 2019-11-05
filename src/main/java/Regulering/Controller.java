@@ -29,7 +29,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     public Controller(Broker broker) {
         super(broker);
 
-        this.pidForward = new PID(new PidParameter(10,0,0,200,-200, 100));
+        this.pidForward = new PID(new PidParameter(0,0,0,200,-200, 100));
         this.pidTurn = new PID(new PidParameter(0,0,0,200,-200, 100));
         this.pidTurn.setDirection(false);
         this.regParam = new RegulatorParameter(-20, -120, 20, 120,-200,200);
