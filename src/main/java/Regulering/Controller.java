@@ -222,7 +222,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                     PidParameter pidParam1 = data.safeCast(PidParameter.class);
                     if (pidParam1 != null) {
                         this.pidForward.setParameters(pidParam1);
-                        //TODO: Maybe add reset
+                        this.pidForward.reset();
                     }
                     break;
 
@@ -230,7 +230,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                     PidParameter pidParam2 = data.safeCast(PidParameter.class);
                     if (pidParam2 != null) {
                         this.pidTurn.setParameters(pidParam2);
-                        //TODO: Maybe add reset
+                        this.pidTurn.reset();
                     }
                     break;
 
