@@ -26,10 +26,19 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.ResourceBundle;
 
+/**
+ * The SettingsController class controls all the necessary objects in the SettingsWindow.fxml.
+ * This class also do necessarily checks, comparisons and conversions.
+ *
+ *
+ * @author  Lars Berge, Jarl Eirik Heide, Ruben Natvik and Einar Samset.
+ * @version 1.0
+ * @since   30.10.2019
+ */
+
 public class SettingsController extends Subscriber implements Initializable {
 
     private Stage primaryStage1;
-    private PidParameter pidParameter;
     private UDPClient udpClient;
     private TCPClient tcpClient;
 
@@ -84,28 +93,31 @@ public class SettingsController extends Subscriber implements Initializable {
     @FXML
     private Button controllerApply;
     @FXML
-    private Button connectButton;
+    private Button conUdpBtn;
+    @FXML
+    private Button conTcpBtn;
     @FXML
     private CheckBox imProVideo;
 
 
     public SettingsController() {
         super(SharedResource.getInstance().getBroker());
-
     }
 
+    /**
+     * Initialize the tcp and udp shared resource.
+     * @param location
+     * @param resources
+     */
     public void initialize(URL location, ResourceBundle resources) {
         if (SharedResource.isInitialized()) {
             this.tcpClient = SharedResource.getInstance().getTcpClient();
             this.udpClient = SharedResource.getInstance().getUdpClient();
         }
-        //this.tcpClient.setOutputMessage("SUB", Topic.REGULATOR_OUTPUT);
-
     }
 
     /**
-     * When settings is pressed, its opens a new window that contains :
-     * Controller parameters, Communication, Image parameters and regulator parameters.
+     * Method is called in initialize in GUI-Controller, creates the scene and its properties from SettingsWindow.fxml.
      */
     public void startSettingsWindow() {
         try {
@@ -122,19 +134,33 @@ public class SettingsController extends Subscriber implements Initializable {
         }
     }
 
+    /**
+     * When Settings button is pressed in GUI, its calls this method that shows and brings the settings controller
+     * window to the front.
+     */
     public void openSettingsWindow() {
         this.primaryStage1.show();
         this.primaryStage1.toFront();
     }
 
+    /**
+     * When Apply Forward is pressed, it calls a send-method for the Pid-Parameters with parameter
+     * number one (Forward PID parameters).
+     */
     public void controllerForwardApplyPressed() {
         doSendPidParameter(1);
     }
-
+    /**
+     * When Apply Turning is pressed, it calls a send-method for the Pid-Parameters with parameter
+     * number one (Turning PID parameters).
+     */
     public void controllerTurningApplyPressed() {
         doSendPidParameter(2);
     }
 
+    /**
+     * Not functional yeet.
+     */
 
     public void connectButtonUDPClicked() {
         try {
@@ -153,6 +179,9 @@ public class SettingsController extends Subscriber implements Initializable {
         }
     }
 
+    /**
+     * Not sure works yeet.
+     */
     public void connectButtonTCPClicked() {
         try {
             if (!this.tcpClient.isConnected()) {
@@ -169,6 +198,11 @@ public class SettingsController extends Subscriber implements Initializable {
         }
     }
 
+    /**
+     * Creates all PID parameters and creates a Message. Then the message is given the correct Topic and command
+     * Then its sends the modified message to the setOutputMessage in TcpClient.
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     */
     private void doSendPidParameter(int paramNum) {
         double kp = parseToDouble(getPropGainFX(paramNum));
         double ki = parseToDouble(getIntGainFX(paramNum));
@@ -184,9 +218,13 @@ public class SettingsController extends Subscriber implements Initializable {
         } else if (paramNum == 2) {
             message = new Message(Topic.PID_PARAM2, param);
         }
+        System.out.println(message.toJSON());
         this.tcpClient.setOutputMessage("SET", message.toJSON());
     }
-
+    /**
+     * Creates all Image Processor parameters and creates a Message. Then the message is given the correct Topic
+     * and command. Then its sends the modified message to the setOutputMessage in TcpClient.
+     */
     private void doSendImageProcessorParameter() {
         int[] hue = compareMinMax(hueMin.getValue(), hueMax.getValue());
         int[] sat = compareMinMax(satMin.getValue(), satMax.getValue());
@@ -202,7 +240,12 @@ public class SettingsController extends Subscriber implements Initializable {
         System.out.println(message.toJSON());
     }
 
-
+    /**
+     * Reads the textfield from GUI/SettingsController tab-> Controller parameters, returns proportional Gain if its
+     * numerical and sets its to zero if not.
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The Proportional Gain.
+     */
     private String getPropGainFX(int paramNum) {
         String propGain = "0";
         if (paramNum == 1) {
@@ -216,6 +259,12 @@ public class SettingsController extends Subscriber implements Initializable {
         return propGain;
     }
 
+    /**
+     * Reads the textfield from GUI/SettingsController tab-> Controller parameters, returns Integral Gain if its
+     * numerical and sets its to zero if not.
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The Integral Gain.
+     */
     private String getIntGainFX(int paramNum) {
         String stringIntGain = "0";
         if (paramNum == 1) {
@@ -229,6 +278,12 @@ public class SettingsController extends Subscriber implements Initializable {
         return stringIntGain;
     }
 
+    /**
+     * Reads the textfield from GUI/SettingsController tab-> Controller parameters, returns Derivative Gain if its
+     * numerical and sets its to zero if not.
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The Derivative Gain.
+     */
     private String getDerGainFX(int paramNum) {
         String stringDerGain = "null";
         if (paramNum == 1) {
@@ -242,6 +297,12 @@ public class SettingsController extends Subscriber implements Initializable {
         return stringDerGain;
     }
 
+    /**
+     * Reads the textfield from GUI/SettingsController tab-> Controller parameters, returns Maximum Output if its
+     * numerical and sets its to zero if not.
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The Maximum Output.
+     */
     private String getControllerMaxOut(int paramNum) {
         String maxOut = "0";
         if (paramNum == 1) {
@@ -255,6 +316,12 @@ public class SettingsController extends Subscriber implements Initializable {
         return maxOut;
     }
 
+    /**
+     * Reads the textfield from GUI/SettingsController tab-> Controller parameters, returns Minimum Output if its
+     * numerical and sets its to zero if not.
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The Minimum Output.
+     */
     private String getControllerMinOut(int paramNum) {
         String minOut = "0";
         if (paramNum == 1) {
@@ -269,10 +336,10 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     /**
-     * Reads the text field from GUI/SettingsWindow tab->Controller parameters? and checks if they are
+     * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
      * numerical.
      *
-     * @param paramNum Choose if you want parameter one or two.
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
      * @return The set point.
      */
     private String getControllerSetPoint(int paramNum) {
@@ -288,13 +355,31 @@ public class SettingsController extends Subscriber implements Initializable {
         return setPoint;
     }
 
+    /**
+     * Compare the values of the parameters. If hmax is smaller than hmin, then hman = hmin. If hmin is bigger than
+     * hmax, then hmin = hmax. The method is used on the Sliders in GUI/settingsWindow tab-> Picture.
+     * @param hMin The value that is suppose to be smallest.
+     * @param hMax The value that is suppose to be biggest.
+     * @return
+     */
     private int[] compareMinMax(double hMin, double hMax) {
         hMax = Math.max(hMax, hMin);
         hMin = Math.min(hMax, hMin);
         return new int[]{(int) hMin, (int) hMax};
     }
 
-    private void updateSliders(int hueMinPar, int hueMaxPar, int satMinPar, int satMaxPar, int valMinPar, int valMaxPar) {
+    /**
+     * Updates the slider in GUI/SettingsWindow -> Picture, if one of the Slider is set on a illegal value and is
+     * being set to a legal one automatically.
+     * @param hueMinPar The actual hueMin value.
+     * @param hueMaxPar The actual hueMax value.
+     * @param satMinPar The actual satMin value.
+     * @param satMaxPar The actual satMax value.
+     * @param valMinPar The actual valMin value.
+     * @param valMaxPar The actual valMax value.
+     */
+    private void updateSliders(
+            int hueMinPar, int hueMaxPar, int satMinPar, int satMaxPar, int valMinPar, int valMaxPar) {
         hueMin.setValue(hueMinPar);
         hueMax.setValue(hueMaxPar);
         satMin.setValue(satMinPar);
@@ -304,7 +389,8 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     /**
-     * Checking check-boxes in GUI/SettingsWindow tab->Picture, default is set to normal video. If both checkboxes is chosen
+     * Checking check-boxes in GUI/SettingsWindow tab->Picture, default is set to normal video. If both
+     * checkboxes is chosen
      * when the method is called, its goes to normal video and unchecks image processed checkbox.
      *
      * @return True, if image processed video is chosen. False, if normal video, both or non is selected.
@@ -317,24 +403,45 @@ public class SettingsController extends Subscriber implements Initializable {
         return imageProcessed;
     }
 
+    /**
+     * Sends Image Process Parameters when the Slider has been clicked and released in GUI/SettingsWindow tab-> Picture.
+     */
     public void hueMaxDragClicked(){
         doSendImageProcessorParameter();
     }
+    /**
+     * Sends Image Process Parameters when the Slider has been clicked and released in GUI/SettingsWindow tab-> Picture.
+     */
     public void hueMinDragClicked(){
         doSendImageProcessorParameter();
     }
+    /**
+     * Sends Image Process Parameters when the Slider has been clicked and released in GUI/SettingsWindow tab-> Picture.
+     */
     public void satMaxDragClicked(){
         doSendImageProcessorParameter();
     }
+    /**
+     * Sends Image Process Parameters when the Slider has been clicked and released in GUI/SettingsWindow tab-> Picture.
+     */
     public void satMinDragClicked(){
         doSendImageProcessorParameter();
     }
+    /**
+     * Sends Image Process Parameters when the Slider has been clicked and released in GUI/SettingsWindow tab-> Picture.
+     */
     public void valMaxDragClicked(){
         doSendImageProcessorParameter();
     }
+    /**
+     * Sends Image Process Parameters when the Slider has been clicked and released in GUI/SettingsWindow tab-> Picture.
+     */
     public void valMinDragClicked(){
         doSendImageProcessorParameter();
     }
+    /**
+     * Sends Image Process Parameters when the Check-box has been changed in GUI/SettingsWindow tab-> Picture..
+     */
     public void imgProVidClicked(){
         doSendImageProcessorParameter();
     }
@@ -346,7 +453,7 @@ public class SettingsController extends Subscriber implements Initializable {
      * @return true, if the string contains a number (can be decimal). False, if there is a character inside it.
      */
     private static boolean isNumeric(String str) {
-        return str.matches("\\d+(\\.\\d+)?");  //match a number with optional decimal.
+        return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional decimal.
     }
 
     /**
@@ -370,7 +477,7 @@ public class SettingsController extends Subscriber implements Initializable {
      */
     private double parseToDouble(String str) {
         double num = 0;
-        if (isNumeric(str) && (str.isEmpty())) {
+        if (isNumeric(str)) {
             num = Double.parseDouble(str);
         }
         return num;
@@ -384,8 +491,10 @@ public class SettingsController extends Subscriber implements Initializable {
      */
     private String getIpAdr() {
         String adr = "0";
-        if (isWholeNum(adrOne.getText()) && isWholeNum(adrTwo.getText()) && isWholeNum(adrThree.getText()) && isWholeNum(adrFour.getText())) {
-            if (!(adrOne.getText().isEmpty() && adrTwo.getText().isEmpty() && adrThree.getText().isEmpty() && adrFour.getText().isEmpty())) {
+        if (isWholeNum(adrOne.getText()) && isWholeNum(adrTwo.getText()) && isWholeNum(adrThree.getText())
+                && isWholeNum(adrFour.getText())) {
+            if (!(adrOne.getText().isEmpty() && adrTwo.getText().isEmpty() && adrThree.getText().isEmpty()
+                    && adrFour.getText().isEmpty())) {
                 adr = adrOne.getText() + "." + adrTwo.getText() + "." + adrThree.getText() + "." + adrFour.getText();
             }
         }
@@ -408,7 +517,7 @@ public class SettingsController extends Subscriber implements Initializable {
     /**
      * Gets the text fields from GUI/Settingswindow TCP-port, checks if its empty or has characters.
      *
-     * @return tcpPort. A string that contains the portnumber to TCP-server.
+     * @return tcpPort. A string that contains the port number to TCP-server.
      */
     private int getTCPport() {
         String tcpPort = "0";
@@ -418,19 +527,93 @@ public class SettingsController extends Subscriber implements Initializable {
         return Integer.parseInt(tcpPort);
     }
 
-    public void setDefaultValuesGui() {
-        propGainOne.setText("1");
-        intGainOne.setText("1");
-        derGainOne.setText("1");
-        propGainTwo.setText("1");
-        intGainTwo.setText("1");
-        derGainTwo.setText("1");
-        TCPport.setText("2345");
-        UDPport.setText("2345");
-        adrOne.setText("192");
-        adrTwo.setText("168");
-        adrThree.setText("0");
-        adrThree.setText("50");
+    /**
+     * Adds a default value to the hueMax parameter when button is pressed.
+     */
+    public void hueMaxAdd() {
+        double val = hueMax.getValue();
+        hueMax.setValue(val + 1);
+        doSendImageProcessorParameter();
+    }
+
+    public void hueMinAdd() {
+        double val = hueMin.getValue();
+        hueMin.setValue(val + 1);
+        doSendImageProcessorParameter();
+    }
+    /**
+     * Adds a default value to the satMax parameter when button is pressed.
+     */
+    public void satMaxAdd() {
+        double val = satMax.getValue();
+        satMax.setValue(val + 1);
+        doSendImageProcessorParameter();
+    }
+    /**
+     * Adds a default value to the hueMax parameter when button is pressed.
+     */
+    public void satMinAdd() {
+        double val = satMin.getValue();
+        satMin.setValue(val + 1);
+        doSendImageProcessorParameter();
+    }
+    /**
+     * Adds a default value to the valMax parameter when button is pressed.
+     */
+    public void valMaxAdd() {
+        double val = valMax.getValue();
+        valMax.setValue(val + 1);
+        doSendImageProcessorParameter();
+    }
+
+    public void valMinAdd() {
+        double val = valMin.getValue();
+        valMin.setValue(val + 1);
+        doSendImageProcessorParameter();
+    }
+    /**
+     * Adds a default value to the hueMax parameter when button is pressed.
+     */
+    public void hueMaxSub() {
+        double val = hueMax.getValue();
+        hueMax.setValue(val - 1);
+        doSendImageProcessorParameter();
+    }
+
+    public void hueMinSub() {
+        double val = hueMin.getValue();
+        hueMin.setValue(val - 1);
+        doSendImageProcessorParameter();
+    }
+    /**
+     * Adds a default value to the satMax parameter when button is pressed.
+     */
+    public void satMaxSub() {
+        double val = satMax.getValue();
+        satMax.setValue(val - 1);
+        doSendImageProcessorParameter();
+    }
+    /**
+     * Adds a default value to the hueMax parameter when button is pressed.
+     */
+    public void satMinSub() {
+        double val = satMin.getValue();
+        satMin.setValue(val - 1);
+        doSendImageProcessorParameter();
+    }
+    /**
+     * Adds a default value to the valMax parameter when button is pressed.
+     */
+    public void valMaxSub() {
+        double val = valMax.getValue();
+        valMax.setValue(val - 1);
+        doSendImageProcessorParameter();
+    }
+
+    public void valMinSub() {
+        double val = valMin.getValue();
+        valMin.setValue(val - 1);
+        doSendImageProcessorParameter();
     }
 
     @Override

@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.SettingsController">
+<AnchorPane prefHeight="575.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.SettingsController">
     <children>
         <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <tabs>
@@ -49,9 +49,9 @@
                                               <Separator prefHeight="55.0" prefWidth="400.0" visible="false" />
                                     <HBox alignment="CENTER">
                                        <children>
-                                                    <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connectButtonUDPClicked" prefWidth="100.0" text="Connect UDP" />
+                                                    <Button fx:id="conUdpBtn" mnemonicParsing="false" onAction="#connectButtonUDPClicked" prefWidth="100.0" text="Connect UDP" />
                                           <Separator orientation="VERTICAL" prefWidth="20.0" visible="false" />
-                                          <Button mnemonicParsing="false" onAction="#connectButtonTCPClicked" prefWidth="100.0" text="Connect TCP" />
+                                          <Button fx:id="conTcpBtn" mnemonicParsing="false" onAction="#connectButtonTCPClicked" prefWidth="100.0" text="Connect TCP" />
                                        </children>
                                     </HBox>
                                           </children>
@@ -170,6 +170,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="hueMax" max="179.0" onMouseClicked="#hueMaxDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="98.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#hueMaxAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#hueMaxSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" visible="false" />
@@ -182,6 +188,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="hueMin" max="179.0" minorTickCount="2" onMouseClicked="#hueMinDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="52.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#hueMinAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#hueMinSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" visible="false" />
@@ -192,6 +204,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="satMax" majorTickUnit="5.0" max="255.0" minorTickCount="1" onMouseClicked="#satMaxDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="204.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#satMaxAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#satMaxSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Label text="Saturation Min">
@@ -203,6 +221,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="satMin" majorTickUnit="5.0" max="255.0" minorTickCount="1" onMouseClicked="#satMinDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#satMinAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#satMinSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" visible="false" />
@@ -213,6 +237,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="valMax" majorTickUnit="5.0" max="255.0" minorTickCount="1" onMouseClicked="#valMaxDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="208.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#valMaxAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#valMaxSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" visible="false" />
@@ -224,6 +254,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="valMin" majorTickUnit="5.0" max="255.0" minorTickCount="1" onMouseClicked="#valMinDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="52.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#valMinAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#valMinSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefHeight="20.0" prefWidth="200.0" visible="false" />

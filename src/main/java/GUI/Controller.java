@@ -31,6 +31,7 @@ public class Controller extends Subscriber implements Initializable {
     private String mode;
     private TCPClient tcpClient;
     private UDPClient udpClient;
+    private SettingsController settingsController;
     private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
     private ImageUpdater imageUpdater;
     private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
@@ -51,12 +52,18 @@ public class Controller extends Subscriber implements Initializable {
     @FXML
     public Button helpBtn;
 
-    SettingsController settingsController;
-
+    /**
+     * The constructor of the Controller class.
+     */
     public Controller() {
         super(SharedResource.getInstance().getBroker());
     }
 
+    /**
+     * Initialize the UDP-client, TCP-client, SettingsController, KeyboardInput and ImageUpdater.
+     * @param location The location used to resolve relative paths for the root object, or null if the location is not known.
+     * @param resources The resources used to localize the root object, or null if the root object was not localized.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
