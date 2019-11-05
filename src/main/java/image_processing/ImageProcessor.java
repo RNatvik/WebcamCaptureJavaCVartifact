@@ -125,7 +125,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
 
                 //this.morph(this.binIm, kernel, 5, 3);
                 cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 5, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
-
+                //TODO: Blur binary image and threshold greyscale values to remove noise.
                 long morphTime = System.currentTimeMillis();
 
                 int[] location = this.getCoordinates(this.binIm);
