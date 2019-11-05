@@ -29,9 +29,10 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     public Controller(Broker broker) {
         super(broker);
 
-        this.pidForward = new PID(new PidParameter(10,0,0,200,-200, 100));
+        this.pidForward = new PID(new PidParameter(0,0,0,200,-200, 100));
         this.pidTurn = new PID(new PidParameter(0,0,0,200,-200, 100));
-        this.regParam = new RegulatorParameter(-20, -100, 20, 100,-200,200);
+        this.pidTurn.setDirection(false);
+        this.regParam = new RegulatorParameter(-20, -120, 20, 120,-200,200);
         this.location = new int[]{0,0,0,0};
         this.newLocation = false;
         this.manualControlInput = new ControlInput(true,0,0);
@@ -55,6 +56,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
             this.pidForward.reset();
             this.pidTurn.reset();
             this.newManualCommand = false;
+
         }
 
         if( this.newLocation && !this.manualMode )
@@ -72,9 +74,11 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         int x = this.location[0];
         int y = this.location[1];
         int radius = this.location[2];
+        System.out.println("The radius is: " + radius);
         int area = this.location[3];
 
         double pidOut1 = this.pidForward.getOutput(radius);
+        System.out.println("PID FW output: " + pidOut1);
         double pidOut2 = this.pidTurn.getOutput(x);
 
         double[] pidOutputs = {pidOut1,pidOut2};
@@ -86,11 +90,14 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      */
     private void calculateMotorSpeed(double forward,double turn) {
         double[] motorOutput = this.sumMotorVal(forward, turn);
+        System.out.println("Motoroutput after sum: "+motorOutput[0]+ " : " + motorOutput[1]);
         motorOutput[0] = clamp(motorOutput[0], this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
         motorOutput[1] = clamp(motorOutput[1],this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
+        System.out.println("After clamp: " +motorOutput[0]+ " : " + motorOutput[1]);
         double[] mappedValues = this.mapMotorValue(motorOutput);
-
+        System.out.println("After map: " + mappedValues[0] + " : " + mappedValues[1]);
         Data outputData = new RegulatorOutput(mappedValues[0], mappedValues[1]);
+        System.out.println("Outputdata to string: " + outputData.toString());
         Message outputMessage = new Message(Topic.REGULATOR_OUTPUT, outputData);
         this.publish(this.getBroker(), outputMessage);
     }
@@ -169,10 +176,12 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      * @return
      */
     private double[] sumMotorVal(double inputFW, double inputTurn) {
+        System.out.println("InputFW: " + inputFW);
+        System.out.println("Input turn: " + inputTurn);
         double leftMotor = 0, rightMotor = 0;
         if (inputTurn < 0) {
-            leftMotor = inputFW - inputTurn;
-            rightMotor = inputFW + inputTurn;
+            leftMotor = inputFW + inputTurn;
+            rightMotor = inputFW - inputTurn;
         } else if (inputTurn > 0) {
             leftMotor = inputFW + inputTurn;
             rightMotor = inputFW - inputTurn;
@@ -246,6 +255,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                     if (ci != null) {
                         this.manualControlInput = ci;
                         this.manualMode = this.manualControlInput.isManualControl(); // Simpler
+                        this.newManualCommand = true;
                     }
 
                 default:
