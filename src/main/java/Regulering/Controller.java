@@ -71,17 +71,16 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      */
     private double[] calculatePID() {
         int x = this.location[0];
-        int y = this.location[1];
+        //int y = this.location[1];
         int radius = this.location[2];
         //System.out.println("The radius is: " + radius);
-        int area = this.location[3];
+        //int area = this.location[3];
 
         double pidOut1 = this.pidForward.getOutput(radius);
         //System.out.println("PID FW output: " + pidOut1);
         double pidOut2 = this.pidTurn.getOutput(x);
 
-        double[] pidOutputs = {pidOut1,pidOut2};
-        return pidOutputs;
+        return new double[]{pidOut1,pidOut2};
     }
 
     /**
@@ -158,7 +157,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      * @return mappedValue
      */
     private double transformation(double a, double b, double c, double d, double input) {
-        double mappedValue = 0; // Value to return
+        double mappedValue; // Value to return
         double value = (input - a) * ((d - c) / (b - a)) + c; //function
         mappedValue = (int) Math.round(value);
         return mappedValue;
@@ -172,12 +171,12 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      *
      * @param inputFW   speed forward
      * @param inputTurn speed turning
-     * @return
+     * @return the summed motor values
      */
     private double[] sumMotorVal(double inputFW, double inputTurn) {
         //System.out.println("InputFW: " + inputFW);
         //System.out.println("Input turn: " + inputTurn);
-        double leftMotor = 0, rightMotor = 0;
+        double leftMotor, rightMotor;
         if (inputTurn < 0) {
             leftMotor = inputFW + inputTurn;
             rightMotor = inputFW - inputTurn;
@@ -188,8 +187,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
             leftMotor = inputFW;
             rightMotor = inputFW;
         }
-        double[] motorValues = {leftMotor, rightMotor};
-        return motorValues;
+        return new double[]{leftMotor, rightMotor};
     }
 
     /**
