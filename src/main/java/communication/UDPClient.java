@@ -85,7 +85,7 @@ public class UDPClient implements Runnable {
         }
         while (!this.shutdown) {
             try {
-                byte[] buffer = new byte[32768];
+                byte[] buffer = new byte[65536];
                 DatagramPacket response = new DatagramPacket(buffer, buffer.length);
                 this.socket.receive(response);
                 this.hostAddress = response.getAddress();

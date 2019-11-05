@@ -370,7 +370,7 @@ public class SettingsController extends Subscriber implements Initializable {
      */
     private double parseToDouble(String str) {
         double num = 0;
-        if (isNumeric(str) && (str.isEmpty())) {
+        if (isNumeric(str)) {
             num = Double.parseDouble(str);
         }
         return num;
