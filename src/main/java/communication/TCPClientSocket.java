@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
@@ -51,6 +52,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
     public void run() {
         while (!(this.shutdown || this.serverShutdown.get())) {
             try {
+                this.socket.setSoTimeout(20);
                 this.readMessages();
                 String line = this.bufferedReader.readLine();
                 System.out.println(this + " received line: " + line);
@@ -78,6 +80,8 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                 } else {
                     this.stop();
                 }
+            } catch (SocketTimeoutException e) {
+                // Do nothing
             } catch (IOException e) {
                 e.printStackTrace();
                 this.stop();
