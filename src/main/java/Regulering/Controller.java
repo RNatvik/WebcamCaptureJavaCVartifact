@@ -73,10 +73,11 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         double x = this.location[0];
         double y = this.location[1];
         double radius = this.location[2];
+        double distance = 1979.877*Math.pow(radius,-1.0315375);
         //System.out.println("The radius is: " + radius);
         double area = this.location[3];
 
-        double pidOut1 = this.pidForward.getOutput(radius);
+        double pidOut1 = this.pidForward.getOutput(distance);
         //System.out.println("PID FW output: " + pidOut1);
         double pidOut2 = this.pidTurn.getOutput(x);
 
