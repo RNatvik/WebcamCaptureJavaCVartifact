@@ -79,7 +79,7 @@ public class TestMain {
                     15, 51
             );
             RegulatorParameter regulatorParameter = new RegulatorParameter(
-                    1, 2, 3, 4, 5, 6
+                    1, 2, 3, 4, 5, 6,1
             );
             Message messageControlInput = new Message(Topic.CONTROLER_INPUT, controlInput);
             Message messageImProcParam = new Message(Topic.IMPROC_PARAM, imageProcessorParameter);
