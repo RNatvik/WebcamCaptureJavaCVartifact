@@ -12,5 +12,7 @@ public abstract class Topic {
     public static final String REGULATOR_PARAM = "REG_PARAM";
     public static final String REGULATOR_OUTPUT = "REG_OUTPUT";
     public static final String CONTROLER_INPUT = "CONTROLER_INPUT";
+    public static final String CONSOLE_OUTPUT = "CONSOLE_OUTPUT";
+    public static final String DEBUG_OUTPUT = "DEBUG_OUTPUT";
 
 }
