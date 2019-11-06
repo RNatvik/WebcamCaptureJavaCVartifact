@@ -197,6 +197,16 @@ public class TCPClient implements Runnable, Publisher {
                     message = new Message(topic, controlInput);
                     break;
 
+                case Topic.CONSOLE_OUTPUT:
+                    ConsoleOutput consoleOutput = new ConsoleOutput(jsonDataObject.getString("string"));
+                    message = new Message(topic, consoleOutput);
+                    break;
+
+                case Topic.DEBUG_OUTPUT:
+                    ConsoleOutput debugOutput = new ConsoleOutput(jsonDataObject.getString("string"));
+                    message = new Message(topic, debugOutput);
+                    break;
+
                 default:
                     break;
             }
