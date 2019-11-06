@@ -16,6 +16,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class TCPClient implements Runnable, Publisher {
 
@@ -23,7 +25,7 @@ public class TCPClient implements Runnable, Publisher {
     private InetAddress hostAddress;
     private int hostPort;
     private int timeout;
-    private String outputMessage;
+    private Queue<String> outputMessageQueue;
     private Socket socket;
     private Broker broker;
     private boolean initialized;
@@ -36,7 +38,7 @@ public class TCPClient implements Runnable, Publisher {
         this.hostAddress = null;
         this.hostPort = 0;
         this.timeout = 0;
-        this.outputMessage = null;
+        this.outputMessageQueue = new LinkedList<>();
         this.socket = null;
         this.broker = broker;
         this.initialized = false;
@@ -46,15 +48,15 @@ public class TCPClient implements Runnable, Publisher {
     }
 
     public void initialize(String hostAddress, int hostPort, int timeout) throws UnknownHostException {
-       if (!this.connected) {
-           this.hostAddress = InetAddress.getByName(hostAddress);
-           this.hostPort = hostPort;
-           this.timeout = timeout;
-           this.thread = new Thread(this);
-           this.shutdown = false;
-           this.terminated = false;
-           this.initialized = true;
-       }
+        if (!this.connected) {
+            this.hostAddress = InetAddress.getByName(hostAddress);
+            this.hostPort = hostPort;
+            this.timeout = timeout;
+            this.thread = new Thread(this);
+            this.shutdown = false;
+            this.terminated = false;
+            this.initialized = true;
+        }
     }
 
     public boolean connect() {
@@ -73,13 +75,8 @@ public class TCPClient implements Runnable, Publisher {
         return success;
     }
 
-    public synchronized boolean setOutputMessage(String command, String body) {
-        boolean success = false;
-        if (this.outputMessage == null) {
-            this.outputMessage = String.format(command + "::%s", body);
-            success = true;
-        }
-        return success;
+    public synchronized void setOutputMessage(String command, String body) {
+        this.outputMessageQueue.add(String.format(command + "::%s", body));
     }
 
     public void stopConnection() {
@@ -223,10 +220,12 @@ public class TCPClient implements Runnable, Publisher {
 
         while (!this.shutdown) {
             try {
-                if (this.outputMessage != null) {
-                    printWriter.println(this.outputMessage);
-                    printWriter.flush();
-                    this.outputMessage = null;
+                synchronized (this) {
+                    while (!this.outputMessageQueue.isEmpty()) {
+                        String outputMessage = this.outputMessageQueue.remove();
+                        printWriter.println(outputMessage);
+                        printWriter.flush();
+                    }
                 }
                 String body = bufferedReader.readLine();
                 if (body != null) {
