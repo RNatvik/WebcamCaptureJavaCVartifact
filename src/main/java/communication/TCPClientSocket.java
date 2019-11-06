@@ -148,7 +148,8 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                         dataJson.getDouble("mcMinimumForward"),
                         dataJson.getDouble("mcMaximumForward"),
                         dataJson.getDouble("controllerMinOutput"),
-                        dataJson.getDouble("controllerMaxOutput")
+                        dataJson.getDouble("controllerMaxOutput"),
+                        dataJson.getDouble("ratio")
                 );
                 message = new Message(topic, regParam);
                 break;
