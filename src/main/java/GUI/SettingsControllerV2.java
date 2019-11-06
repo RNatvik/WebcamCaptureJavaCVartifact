@@ -85,11 +85,12 @@ public class SettingsControllerV2 extends Subscriber implements Initializable {
         double mcMaximumForward = 100;
         double controllerMinOutput = -200;
         double controllerMaxOutput = 200;
+        double ratio = 1;
         ///////////////////////////////////////////
 
         RegulatorParameter param = new RegulatorParameter(
                 mcMinimumReverse, mcMaximumReverse, mcMinimumForward,
-                mcMaximumForward, controllerMinOutput, controllerMaxOutput
+                mcMaximumForward, controllerMinOutput, controllerMaxOutput,1
         );
         Message message = new Message(Topic.REGULATOR_PARAM, param);
         this.tcpClient.setOutputMessage("SET", message.toJSON());
