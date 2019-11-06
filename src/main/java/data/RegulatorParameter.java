@@ -18,7 +18,6 @@ public class RegulatorParameter extends Data{
                               double controllerMaxOutput,
                               double ratio) {
 
-        super(Data.REG_PARAM);
         this.mcMinimumReverse = mcMinimumReverse;
         this.mcMaximumReverse = mcMaximumReverse;
         this.mcMinimumForward = mcMinimumForward;

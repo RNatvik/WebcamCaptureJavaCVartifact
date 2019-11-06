@@ -16,7 +16,6 @@ public class ImageProcessorData extends Data {
      * @param location detected object location
      */
     public ImageProcessorData(BufferedImage image, double[] location) {
-        super(Data.IMAGE);
         this.image = image;
         this.location = location;
     }

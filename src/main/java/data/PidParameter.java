@@ -16,7 +16,6 @@ public class PidParameter extends Data {
 
 
     public PidParameter(double kp, double ki, double kd, double maxOutput, double minOutput, double setpoint) {
-        super(Data.PID_PARAM);
         this.kp = kp;
         this.ki = ki;
         this.kd = kd;

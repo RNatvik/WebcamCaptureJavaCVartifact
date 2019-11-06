@@ -25,7 +25,6 @@ public class ImageProcessorParameter extends Data {
      * @param storeProcessedImage boolean for which image to publish to broker
      */
     public ImageProcessorParameter(int hueMin, int hueMax, int satMin, int satMax, int valMin, int valMax, boolean storeProcessedImage) {
-        super(Data.IMPROC_PARAM);
         this.hueMin = hueMin;
         this.hueMax = hueMax;
         this.satMin = satMin;
