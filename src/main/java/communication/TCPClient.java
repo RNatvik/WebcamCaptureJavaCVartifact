@@ -56,6 +56,9 @@ public class TCPClient implements Runnable, Publisher {
             this.shutdown = false;
             this.terminated = false;
             this.initialized = true;
+            this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                    this + " is initialized."
+            )));
         }
     }
 
@@ -66,6 +69,9 @@ public class TCPClient implements Runnable, Publisher {
                 this.socket = new Socket(this.hostAddress, this.hostPort);
                 this.socket.setSoTimeout(this.timeout);
                 this.connected = true;
+                this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                        this + " is connected"
+                )));
                 this.thread.start();
                 success = true;
             }
@@ -76,11 +82,16 @@ public class TCPClient implements Runnable, Publisher {
     }
 
     public synchronized void setOutputMessage(String command, String body) {
-        this.outputMessageQueue.add(String.format(command + "::%s", body));
+        if (this.connected) {
+            this.outputMessageQueue.add(String.format(command + "::%s", body));
+        }
     }
 
     public void stopConnection() {
         this.shutdown = true;
+        this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                this + " stop called"
+        )));
     }
 
     public boolean isInitialized() {
@@ -97,6 +108,9 @@ public class TCPClient implements Runnable, Publisher {
 
 
     private boolean shutdownProcedure() {
+        this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                this + " in shutdown procedure"
+        )));
         boolean success = true;
         try {
             this.socket.close();
@@ -104,8 +118,10 @@ public class TCPClient implements Runnable, Publisher {
             this.connected = false;
         } catch (IOException e) {
             success = false;
-            e.printStackTrace();
         }
+        this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                this + " shutdown procedure: " + success
+        )));
         return success;
     }
 

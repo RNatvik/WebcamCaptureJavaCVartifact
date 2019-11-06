@@ -9,6 +9,7 @@ import pub_sub_service.Subscriber;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,101 +17,85 @@ import java.util.concurrent.TimeUnit;
 public class TestMain {
 
     public static void main(String[] args) {
-        double[] signal = new double[]{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5};
-        double[] kernel = new double[]{0.2, 0.2, 0.2, 0.2, 0.2};
-        String id = "test";
-        FilterBank filterBank = new FilterBank();
-        filterBank.registerSignal(id, kernel);
-        for (double s : signal) {
-            double value = filterBank.passValue(id, s);
-            System.out.println(value);
+        ScheduledExecutorService ses = Executors.newScheduledThreadPool(4);
+        Broker serverBroker = new Broker();
+        Broker clientBroker = new Broker();
+        TCPServer tcpServer = new TCPServer(5678, true, 2, serverBroker);
+        TCPClient tcpClient = new TCPClient(clientBroker);
+        ServerPublisher serverPublisher = new ServerPublisher(serverBroker);
+        ClientSubber clientSubber = new ClientSubber(clientBroker);
+
+        ses.scheduleAtFixedRate(serverBroker, 1,5, TimeUnit.MILLISECONDS);
+        ses.scheduleAtFixedRate(clientBroker, 2, 5, TimeUnit.MILLISECONDS);
+        ses.scheduleAtFixedRate(serverPublisher, 3, 500, TimeUnit.MILLISECONDS);
+        ses.scheduleAtFixedRate(clientSubber, 4, 5, TimeUnit.MILLISECONDS);
+
+        tcpServer.startThread();
+        try {
+            tcpClient.initialize("127.0.0.1", 5678, 20);
+            tcpClient.connect();
+            tcpClient.setOutputMessage("SUB", Topic.CONSOLE_OUTPUT);
+            Scanner scanner = new Scanner(System.in);
+            scanner.nextLine();
+
+            tcpClient.stopConnection();
+
+            scanner.nextLine();
+            tcpServer.stop();
+            ses.shutdown();
+            ses.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
-    private static class Subber extends Subscriber implements Runnable {
+    private static class ClientSubber extends Subscriber implements Runnable {
 
-        public Subber(Broker broker) {
+        public ClientSubber(Broker broker) {
             super(broker);
-            this.getBroker().subscribeTo(Topic.REGULATOR_PARAM, this);
-            this.getBroker().subscribeTo(Topic.REGULATOR_OUTPUT, this);
-            this.getBroker().subscribeTo(Topic.PID_PARAM1, this);
-            this.getBroker().subscribeTo(Topic.PID_PARAM2, this);
-            this.getBroker().subscribeTo(Topic.IMAGE_DATA, this);
-            this.getBroker().subscribeTo(Topic.IMPROC_PARAM, this);
-            this.getBroker().subscribeTo(Topic.CONTROLER_INPUT, this);
+            this.getBroker().subscribeTo(Topic.CONSOLE_OUTPUT, this);
         }
 
         @Override
         protected void doReadMessages() {
-            synchronized (this) {
-                int length = this.getMessageQueue().size();
-                if (length > 0) {
-                    System.out.println("Subber:: " + this.getMessageQueue().size() + " in queue");
-                }
-                while (!this.getMessageQueue().isEmpty()) {
-                    Message message = this.getMessageQueue().remove();
+            while (!this.getMessageQueue().isEmpty()) {
+                Message message = this.getMessageQueue().remove();
+                ConsoleOutput consoleOutput = message.getData().safeCast(ConsoleOutput.class);
+                if (consoleOutput != null) {
+                    System.out.println(consoleOutput.getString());
                 }
             }
         }
 
         @Override
         public void run() {
-            readMessages();
+            this.readMessages();
         }
     }
 
-    private static class MultiPub implements Runnable, Publisher {
+    private static class ServerPublisher implements Publisher, Runnable {
 
         private Broker broker;
+        private int counter;
 
-        public MultiPub(Broker broker) {
+        public ServerPublisher(Broker broker) {
             this.broker = broker;
-        }
-
-        @Override
-        public void run() {
-            ControlInput controlInput = new ControlInput(
-                    true, 10, 20
-            );
-            ImageProcessorData imageProcessorData = new ImageProcessorData(
-                    null, new double[]{1, 2, 3, 4}
-            );
-            ImageProcessorParameter imageProcessorParameter = new ImageProcessorParameter(
-                    1, 2, 3, 4, 5, 6, true
-            );
-            PidParameter pidParameter1 = new PidParameter(
-                    1, 1, 1, 1, 1, 1
-            );
-            PidParameter pidParameter2 = new PidParameter(
-                    2, 2, 2, 2, 2, 2
-            );
-            RegulatorOutput regulatorOutput = new RegulatorOutput(
-                    15, 51
-            );
-            RegulatorParameter regulatorParameter = new RegulatorParameter(
-                    1, 2, 3, 4, 5, 6,1
-            );
-            Message messageControlInput = new Message(Topic.CONTROLER_INPUT, controlInput);
-            Message messageImProcParam = new Message(Topic.IMPROC_PARAM, imageProcessorParameter);
-            Message messageImProcData = new Message(Topic.IMAGE_DATA, imageProcessorData);
-            Message messagePid1 = new Message(Topic.PID_PARAM1, pidParameter1);
-            Message messagePid2 = new Message(Topic.PID_PARAM2, pidParameter2);
-            Message messageRegOut = new Message(Topic.REGULATOR_OUTPUT, regulatorOutput);
-            Message messageRegParam = new Message(Topic.REGULATOR_PARAM, regulatorParameter);
-            for (int i = 0; i < 3; i++) {
-                this.publish(broker, messageControlInput);
-                this.publish(broker, messageImProcParam);
-                this.publish(broker, messageImProcData);
-                this.publish(broker, messagePid1);
-                this.publish(broker, messagePid2);
-                this.publish(broker, messageRegOut);
-                this.publish(broker, messageRegParam);
-            }
+            this.counter = 0;
         }
 
         @Override
         public void publish(Broker broker, Message message) {
-            broker.addMessage(message);
+            this.broker.addMessage(message);
+        }
+
+        @Override
+        public void run() {
+            this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                    this + " counter: " + this.counter
+            )));
+            this.counter += 1;
         }
     }
 }
