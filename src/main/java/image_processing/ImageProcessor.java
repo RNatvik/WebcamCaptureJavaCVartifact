@@ -113,6 +113,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
      */
     @Override
     public void run() {
+        int counter = 0;
         while (!this.shutdown) {
             this.readMessages();
             if (this.flag.get()) {
@@ -127,8 +128,9 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 long thresholdTime = System.currentTimeMillis();
 
                 //this.morph(this.binIm, kernel, 5, 3);
-                cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 5, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
+                cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 11, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
                 //TODO: Blur binary image and threshold greyscale values to remove noise.
+                cvThreshold(this.binIm, this.binIm, 200, 255, CV_THRESH_BINARY);
                 long morphTime = System.currentTimeMillis();
 
                 double[] location = this.getCoordinates(this.binIm);
@@ -156,10 +158,16 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                  */
                 cvReleaseImage(image);
                 long endTime = System.currentTimeMillis();
-                //System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
-                 //       (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
-                long endEndTime = System.currentTimeMillis();
-                //System.out.println("PrintTime: " + (endEndTime-endTime));
+                counter += 1;
+                if (counter == 15) {
+                    System.out.println(String.format("x: %f    y: %f    r: %f    a: %f",
+                            location[0], location[1], location[2], location[3]));
+                    counter = 0;
+                }
+//                System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
+//                        (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
+//                long endEndTime = System.currentTimeMillis();
+//                System.out.println("PrintTime: " + (endEndTime-endTime));
             }
         }
         if (!this.isTerminated()) {
