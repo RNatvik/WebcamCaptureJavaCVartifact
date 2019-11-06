@@ -160,14 +160,14 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 long endTime = System.currentTimeMillis();
                 counter += 1;
                 if (counter == 15) {
-                    System.out.println(String.format("x: %f    y: %f    r: %f    a: %f",
-                            location[0], location[1], location[2], location[3]));
+                    //System.out.println(String.format("x: %f    y: %f    r: %f    a: %f",
+                     //       location[0], location[1], location[2], location[3]));
                     counter = 0;
                 }
-//                System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
+//                //System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
 //                        (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
 //                long endEndTime = System.currentTimeMillis();
-//                System.out.println("PrintTime: " + (endEndTime-endTime));
+//                //System.out.println("PrintTime: " + (endEndTime-endTime));
             }
         }
         if (!this.isTerminated()) {

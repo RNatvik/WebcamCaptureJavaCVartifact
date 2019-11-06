@@ -50,9 +50,9 @@ public class ServerMain {
 
         boolean finished = false;
         while (!finished) {
-            System.out.print("");
+            //System.out.print("");
             if (camera.isTerminated() && processor.isTerminated() && tcpServer.isTerminated() && udpServer.isTerminated()) {
-                System.out.println("process should terminate");
+                //System.out.println("process should terminate");
                 finished = true;
             }
         }

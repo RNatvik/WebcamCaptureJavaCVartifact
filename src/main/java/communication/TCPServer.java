@@ -36,21 +36,21 @@ public class TCPServer implements Runnable {
                 this.serverSocket = new ServerSocket(this.port, 3, InetAddress.getByName("192.168.0.50"));
             }
             this.serverSocket.setSoTimeout(5);
-            System.out.println(this + ":: created socket at: " + this.serverSocket.getInetAddress() + " (" + this.serverSocket.getLocalPort() + ")");
+            //System.out.println(this + ":: created socket at: " + this.serverSocket.getInetAddress() + " (" + this.serverSocket.getLocalPort() + ")");
             this.executorService = Executors.newFixedThreadPool(threadPoolSize);
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println(this + ":: Could not initialize TCP Server");
+            //System.out.println(this + ":: Could not initialize TCP Server");
         }
     }
 
     public void startThread() {
-        System.out.println(this + ":: starting thread");
+        //System.out.println(this + ":: starting thread");
         this.thread.start();
     }
 
     public void stop() {
-        System.out.println(this + ":: stop() called");
+        //System.out.println(this + ":: stop() called");
         this.shutdownFlag.set(true);
     }
 
@@ -65,7 +65,7 @@ public class TCPServer implements Runnable {
                 Socket socket = this.serverSocket.accept();
                 TCPClientSocket clientSocket = new TCPClientSocket(socket, this.shutdownFlag, this.broker);
                 this.executorService.submit(clientSocket);
-                System.out.println(this + ":: accepted connection. Submitted to: " + clientSocket);
+                //System.out.println(this + ":: accepted connection. Submitted to: " + clientSocket);
             } catch (SocketTimeoutException e) {
 
             } catch (IOException e) {
@@ -76,11 +76,11 @@ public class TCPServer implements Runnable {
             }
         }
         this.terminated = this.shutdownProcedure();
-        System.out.println(this + ":: terminated: " + this.terminated);
+        //System.out.println(this + ":: terminated: " + this.terminated);
     }
 
     private boolean shutdownProcedure() {
-        System.out.println("Server in shutdown procedure");
+        //System.out.println("Server in shutdown procedure");
         boolean success = false;
         try {
             this.executorService.awaitTermination(5, TimeUnit.SECONDS);

@@ -65,8 +65,8 @@ public class Camera implements Runnable {
             try {
                 this.grabber.start();
 
-                System.out.println(this.grabber.getFormat());
-                System.out.println(this.grabber.getImageMode());
+                //System.out.println(this.grabber.getFormat());
+                //System.out.println(this.grabber.getImageMode());
                 Frame capturedFrame = this.grabber.grabFrame();
                 this.srcIm = this.converter.convert(capturedFrame);
                 success = true;
@@ -134,7 +134,7 @@ public class Camera implements Runnable {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                System.out.println("sleep was interrupted");
+                //System.out.println("sleep was interrupted");
             }
             this.shutdownProcedure();
         }

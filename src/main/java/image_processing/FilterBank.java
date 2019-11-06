@@ -18,15 +18,15 @@ public class FilterBank {
         double[] signal = new double[kernel.length];
         this.signalMap.put(id, signal);
 
-        System.out.print("Registered \"" + id + "\" Kernel: [");
+        //System.out.print("Registered \"" + id + "\" Kernel: [");
         for (double value : kernel) {
-            System.out.print(" " + value + " ");
+            //System.out.print(" " + value + " ");
         }
-        System.out.print(" ] Signal: [");
+        //System.out.print(" ] Signal: [");
         for (double v : signal) {
-            System.out.print(" " + v + " ");
+            //System.out.print(" " + v + " ");
         }
-        System.out.println(" ]");
+        //System.out.println(" ]");
     }
 
     public double passValue(String id, double value) {

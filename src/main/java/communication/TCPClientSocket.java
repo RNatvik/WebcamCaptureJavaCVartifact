@@ -33,10 +33,10 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
             this.serverShutdown = serverShutdown;
             this.shutdown = false;
             this.terminated = false;
-            System.out.println(this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getPort() + ")");
+            //System.out.println(this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getPort() + ")");
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println(this + ":: Could not create TCP client socket");
+            //System.out.println(this + ":: Could not create TCP client socket");
         }
     }
 
@@ -55,7 +55,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                 this.socket.setSoTimeout(20);
                 this.readMessages();
                 String line = this.bufferedReader.readLine();
-                System.out.println(this + " received line: " + line);
+                //System.out.println(this + " received line: " + line);
                 if (line != null) {
                     String[] lineParts = line.split("::");
                     String command = lineParts[0];
@@ -87,11 +87,11 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                 this.stop();
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
-                System.out.println(this + ":: client wrote invalid syntax");
+                //System.out.println(this + ":: client wrote invalid syntax");
             }
         }
         this.terminated = this.shutdownProcedure();
-        System.out.println(this + " is terminated: " + this.terminated);
+        //System.out.println(this + " is terminated: " + this.terminated);
     }
 
     private void set(String json) {

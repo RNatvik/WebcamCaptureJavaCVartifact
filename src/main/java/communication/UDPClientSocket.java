@@ -32,7 +32,7 @@ public class UDPClientSocket extends Subscriber implements Runnable {
             this.shutdown = false;
             this.socket.setSoTimeout(5);
             this.socket.connect(this.clientAddress, this.clientPort);
-            System.out.println(this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getLocalPort() + ")");
+            //System.out.println(this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getLocalPort() + ")");
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -40,7 +40,7 @@ public class UDPClientSocket extends Subscriber implements Runnable {
 
     @Override
     public void run() {
-        System.out.println(this + ":: In run");
+        //System.out.println(this + ":: In run");
         this.getBroker().subscribeTo("IMAGE_DATA", this);
         while (!(this.serverShutdownFlag.get() || this.shutdown)) {
             try {
@@ -60,14 +60,14 @@ public class UDPClientSocket extends Subscriber implements Runnable {
             }
         }
         this.shutdownProcedure();
-        System.out.println(this + " is terminated");
+        //System.out.println(this + " is terminated");
     }
 
     private void shutdownProcedure() {
         try {
             String message = "END";
             byte[] buffer = message.getBytes();
-            System.out.println();
+            //System.out.println();
             DatagramPacket packet = new DatagramPacket(
                     buffer,
                     buffer.length,
@@ -106,14 +106,14 @@ public class UDPClientSocket extends Subscriber implements Runnable {
                         );
                         this.socket.send(packet);
                     } else {
-                        System.out.println(this + ":: image is null");
+                        //System.out.println(this + ":: image is null");
 
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
-                System.out.println(this + ":: Topic Error");
+                //System.out.println(this + ":: Topic Error");
             }
         }
     }
