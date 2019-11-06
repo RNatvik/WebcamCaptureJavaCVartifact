@@ -2,14 +2,22 @@ package data;
 
 public class RegulatorParameter extends Data{
 
-    private double mcMinimumReverse = -20;
-    private double mcMaximumReverse = -100;
-    private double mcMinimumForward = 20;
-    private double mcMaximumForward = 100;
-    private double controllerMinOutput = -200;
-    private double controllerMaxOutput = 200;
+    private double mcMinimumReverse;    //-20;
+    private double mcMaximumReverse;    //-120;
+    private double mcMinimumForward;    // 20;
+    private double mcMaximumForward;    // 120;
+    private double controllerMinOutput; // -200;
+    private double controllerMaxOutput; //200
+    private double ratio;               //1
 
-    public RegulatorParameter(double mcMinimumReverse, double mcMaximumReverse, double mcMinimumForward, double mcMaximumForward, double controllerMinOutput, double controllerMaxOutput) {
+    public RegulatorParameter(double mcMinimumReverse,
+                              double mcMaximumReverse,
+                              double mcMinimumForward,
+                              double mcMaximumForward,
+                              double controllerMinOutput,
+                              double controllerMaxOutput,
+                              double ratio) {
+
         super(Data.REG_PARAM);
         this.mcMinimumReverse = mcMinimumReverse;
         this.mcMaximumReverse = mcMaximumReverse;
@@ -17,6 +25,9 @@ public class RegulatorParameter extends Data{
         this.mcMaximumForward = mcMaximumForward;
         this.controllerMinOutput = controllerMinOutput;
         this.controllerMaxOutput = controllerMaxOutput;
+        this.ratio = Math.max(0, Math.min(1, ratio));
+
+
     }
 
     public double getMcMinimumReverse() {
@@ -41,5 +52,9 @@ public class RegulatorParameter extends Data{
 
     public double getControllerMaxOutput() {
         return controllerMaxOutput;
+    }
+
+    public double getRatio() {
+        return ratio;
     }
 }
