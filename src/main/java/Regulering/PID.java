@@ -36,10 +36,8 @@ public class PID {
     private PidParameter parameters;
 
     //**********************************
-    // Constructor functions
+    // Constructor function
     //**********************************
-
-
     public PID(PidParameter parameters){
         this.parameters = parameters;
     }
@@ -87,13 +85,13 @@ public class PID {
         double Poutput;
         double Ioutput;
         double Doutput;
-        double Foutput;
         double setpoint = this.parameters.getSetpoint();
         double P = this.parameters.getKp();
         double I = this.parameters.getKi();
         double D = this.parameters.getKd();
         double minOutput = this.parameters.getMinOutput();
         double maxOutput = this.parameters.getMaxOutput();
+        double deadBand = this.parameters.getDeadBand();
 
         // Ramp the setpoint used for calculations if user has opted to do so
         if(setpointRange!=0){
@@ -103,8 +101,11 @@ public class PID {
         // Do the simple parts of the calculations
         double error=setpoint-actual;
 
-        // Calculate F output. Notice, this depends only on the setpoint, and not the error.
-        Foutput=F*setpoint;
+        if (deadBand != 0){
+            if(Math.abs(error) < deadBand){
+                error = 0;
+            }
+        }
 
         // Calculate P term
         Poutput=P*error;
@@ -114,7 +115,7 @@ public class PID {
         // For last output, we can assume it's the current time-independent outputs.
         if(firstRun){
             lastActual=actual;
-            lastOutput=Poutput+Foutput;
+            lastOutput=Poutput;
             firstRun=false;
         }
 
@@ -134,7 +135,7 @@ public class PID {
         }
 
         // And, finally, we can just add the terms up
-        output=Foutput + Poutput + Ioutput + Doutput;
+        output= Poutput + Ioutput + Doutput;
 
         // Figure out what we're doing with the error.
         if(minOutput!=maxOutput && !bounded(output, minOutput,maxOutput) ){
