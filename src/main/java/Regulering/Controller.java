@@ -31,7 +31,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
 
         this.pidForward = new PID(new PidParameter(0,0,0,200,-200, 100));
         this.pidTurn = new PID(new PidParameter(0,0,0,200,-200, 100));
-        this.regParam = new RegulatorParameter(-20, -120, 20, 120,-200,200);
+        this.regParam = new RegulatorParameter(-20, -120, 20, 120,-200,200,1);
         this.location = new int[]{0,0,0,0};
         this.newLocation = false;
         this.manualControlInput = new ControlInput(true,0,0);
