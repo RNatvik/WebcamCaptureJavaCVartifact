@@ -80,6 +80,9 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         //System.out.println("PID FW output: " + pidOut1);
         double pidOut2 = this.pidTurn.getOutput(x);
 
+        pidOut1 = pidOut1*this.regParam.getRatio();
+        pidOut2 = (1-pidOut2*this.regParam.getRatio());
+
         return new double[]{pidOut1,pidOut2};
     }
 
