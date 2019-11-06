@@ -286,7 +286,76 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <AnchorPane layoutX="200.0" layoutY="74.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <AnchorPane layoutX="200.0" layoutY="74.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <VBox alignment="TOP_CENTER" layoutX="325.0" layoutY="153.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="10.0">
+                                 <children>
+                                    <Label text="Reulator Output">
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator prefHeight="40.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Minimum Reverse:" />
+                                          <TextField fx:id="minRev" prefWidth="130.0" text="-200" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Maximum Reverse:" />
+                                          <TextField fx:id="maxRev" prefWidth="130.0" text="200" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Minimum Forward:" />
+                                          <TextField fx:id="minFwd" prefWidth="130.0" text="-100" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Maximum Forward:" />
+                                          <TextField fx:id="maxFwd" prefWidth="130.0" text="100" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Controller Minimum Output:" />
+                                          <TextField fx:id="conMinOut" prefWidth="130.0" text="-200" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Controller Maximum Output:" />
+                                          <TextField fx:id="conMaxOut" prefWidth="130.0" text="200" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Ratio:" />
+                                          <TextField fx:id="ratio" prefWidth="130.0" text="1" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="40.0" prefWidth="200.0" visible="false" />
+                                    <Button mnemonicParsing="false" onAction="#RegulatorApplyPressed" prefWidth="120.0" text="Apply Regulator" />
+                                 </children>
+                              </VBox>
+                           </children></AnchorPane>
                      </children>
                   </AnchorPane>
               </content>
