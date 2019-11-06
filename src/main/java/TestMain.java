@@ -1,6 +1,7 @@
 import communication.TCPClient;
 import communication.TCPServer;
 import data.*;
+import image_processing.FilterBank;
 import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Publisher;
@@ -15,7 +16,15 @@ import java.util.concurrent.TimeUnit;
 public class TestMain {
 
     public static void main(String[] args) {
-
+        double[] signal = new double[]{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5};
+        double[] kernel = new double[]{0.2, 0.2, 0.2, 0.2, 0.2};
+        String id = "test";
+        FilterBank filterBank = new FilterBank();
+        filterBank.registerSignal(id, kernel);
+        for (double s : signal) {
+            double value = filterBank.passValue(id, s);
+            System.out.println(value);
+        }
     }
 
     private static class Subber extends Subscriber implements Runnable {
@@ -64,7 +73,7 @@ public class TestMain {
                     true, 10, 20
             );
             ImageProcessorData imageProcessorData = new ImageProcessorData(
-                    null, new int[]{1, 2, 3, 4}
+                    null, new double[]{1, 2, 3, 4}
             );
             ImageProcessorParameter imageProcessorParameter = new ImageProcessorParameter(
                     1, 2, 3, 4, 5, 6, true

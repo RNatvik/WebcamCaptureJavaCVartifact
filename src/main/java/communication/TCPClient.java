@@ -136,11 +136,11 @@ public class TCPClient implements Runnable, Publisher {
                     JSONArray location = jsonDataObject.getJSONArray("location");
                     ImageProcessorData imProcData = new ImageProcessorData(
                             null,
-                            new int[]{
-                                    location.getInt(0),
-                                    location.getInt(1),
-                                    location.getInt(2),
-                                    location.getInt(3)
+                            new double[]{
+                                    location.getDouble(0),
+                                    location.getDouble(1),
+                                    location.getDouble(2),
+                                    location.getDouble(3)
                             }
                     );
                     message = new Message(topic, imProcData);

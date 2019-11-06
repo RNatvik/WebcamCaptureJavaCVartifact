@@ -34,7 +34,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
     private IplImage binIm;
     private OpenCVFrameConverter.ToIplImage converter;
     private Java2DFrameConverter bufferedImageConverter;
-    private LowPassFilter filter;
+    private FilterBank filter;
     private Flag flag;
     private ImageProcessorParameter parameters;
     private boolean shutdown;
@@ -54,11 +54,14 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         this.binIm = cvCreateImage(new CvSize(640, 480), 8, 1);
         this.converter = new OpenCVFrameConverter.ToIplImage();
         this.bufferedImageConverter = new Java2DFrameConverter();
-        this.filter = new LowPassFilter(5);
+        this.filter = new FilterBank();
         this.flag = flag;
         this.parameters = new ImageProcessorParameter(
                 52, 98, 0, 204, 52, 208, false
         );
+        this.filter.registerSignal("momY", new double[]{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1});
+        this.filter.registerSignal("momX", new double[]{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1});
+        this.filter.registerSignal("area", new double[]{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1});
         this.shutdown = false;
         this.initialized = false;
         this.terminated = false;
@@ -128,11 +131,11 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
 
                 long morphTime = System.currentTimeMillis();
 
-                int[] location = this.getCoordinates(this.binIm);
+                double[] location = this.getCoordinates(this.binIm);
                 long locationTime = System.currentTimeMillis();
 
-                this.paintCircle(image, new int[]{location[0], location[1], 2});
-                this.paintCircle(image, location);
+                this.paintCircle(image, new int[]{(int) location[0], (int) location[1], 2});
+                this.paintCircle(image, new int[]{(int) location[0], (int) location[1], (int) location[2]});
                 long paintTime = System.currentTimeMillis();
 
                 BufferedImage buffIm;
@@ -248,20 +251,19 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
      * @param thresholdImage the image to calculate from
      * @return integer array
      */
-    private int[] getCoordinates(IplImage thresholdImage) {
+    private double[] getCoordinates(IplImage thresholdImage) {
 
         CvMoments moments = new CvMoments();
         cvMoments(thresholdImage, moments, 1);
         // cv Spatial moment : Mji=sumx,y(I(x,y)•xj•yi)
         // where I(x,y) is the intensity of the pixel (x, y).
-        double momX10 = cvGetSpatialMoment(moments, 1, 0); // (x,y)
-        double momY01 = cvGetSpatialMoment(moments, 0, 1);// (x,y)
-        double area = cvGetCentralMoment(moments, 0, 0);
-        int x = (int) (momX10 / area);
-        int y = (int) (momY01 / area);
-        int radius = (int) (Math.sqrt(area / Math.PI));
-        int r = this.filter.passValue(radius);
-        return new int[]{x, y, r, (int)area};
+        double momX10 = this.filter.passValue("momX", cvGetSpatialMoment(moments, 1, 0)); // (x,y)
+        double momY01 = this.filter.passValue("momY", cvGetSpatialMoment(moments, 0, 1));// (x,y)
+        double area = this.filter.passValue("area", cvGetCentralMoment(moments, 0, 0));
+        double x = momX10 / area;
+        double y = momY01 / area;
+        double r = (Math.sqrt(area / Math.PI));
+        return new double[]{x, y, r, area};
     }
 
     /**

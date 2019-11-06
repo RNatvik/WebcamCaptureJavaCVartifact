@@ -19,7 +19,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
 
     private RegulatorParameter regParam;
     private ControlInput manualControlInput;
-    private int[] location; //x, y, radius, area
+    private double[] location; //x, y, radius, area
 
     private boolean newLocation;
     private boolean manualMode;
@@ -33,7 +33,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         this.pidTurn = new PID(new PidParameter(0,0,0,200,-200, 100));
         this.pidTurn.setDirection(false);
         this.regParam = new RegulatorParameter(-20, -120, 20, 120,-200,200);
-        this.location = new int[]{0,0,0,0};
+        this.location = new double[]{0,0,0,0};
         this.newLocation = false;
         this.manualControlInput = new ControlInput(true,0,0);
         this.manualMode = this.manualControlInput.isManualControl();
@@ -71,11 +71,11 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      * Calculate the pid outputs
      */
     private double[] calculatePID() {
-        int x = this.location[0];
-        int y = this.location[1];
-        int radius = this.location[2];
+        double x = this.location[0];
+        double y = this.location[1];
+        double radius = this.location[2];
         System.out.println("The radius is: " + radius);
-        int area = this.location[3];
+        double area = this.location[3];
 
         double pidOut1 = this.pidForward.getOutput(radius);
         System.out.println("PID FW output: " + pidOut1);

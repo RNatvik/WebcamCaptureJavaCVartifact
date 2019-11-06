@@ -8,14 +8,14 @@ import java.awt.image.BufferedImage;
 public class ImageProcessorData extends Data {
 
     private BufferedImage image;
-    private int[] location;
+    private double[] location;
 
     /**
      * Constructs a new instance
      * @param image output image from processor
      * @param location detected object location
      */
-    public ImageProcessorData(BufferedImage image, int[] location) {
+    public ImageProcessorData(BufferedImage image, double[] location) {
         super(Data.IMAGE);
         this.image = image;
         this.location = location;
@@ -41,7 +41,7 @@ public class ImageProcessorData extends Data {
      * Returns the detected object location
      * @return the detected object location
      */
-    public synchronized int[] getLocation() {
+    public synchronized double[] getLocation() {
         return location;
     }
 
@@ -49,7 +49,7 @@ public class ImageProcessorData extends Data {
      * Set the detected object location
      * @param location new detected object location
      */
-    public synchronized void setLocation(int[] location) {
+    public synchronized void setLocation(double[] location) {
         this.location = location;
     }
 }
