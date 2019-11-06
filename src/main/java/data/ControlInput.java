@@ -7,7 +7,6 @@ public class ControlInput extends Data{
     private double turnSpeed;
 
     public ControlInput(boolean manualControl, double forwardSpeed, double turnSpeed) {
-        super(Data.CONTROLER_INPUT);
         this.manualControl = manualControl;
         this.forwardSpeed = forwardSpeed;
         this.turnSpeed = turnSpeed;

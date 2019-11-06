@@ -99,7 +99,6 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         JSONObject jsonObject = new JSONObject(json);
         JSONObject dataJson = jsonObject.getJSONObject("data");
         String topic = jsonObject.getString("topic");
-        String type = dataJson.getString("type");
         Message message = null;
 
         switch (topic) {
