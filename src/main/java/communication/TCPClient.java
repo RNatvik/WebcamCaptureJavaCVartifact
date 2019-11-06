@@ -185,7 +185,8 @@ public class TCPClient implements Runnable, Publisher {
                             jsonDataObject.getDouble("mcMinimumForward"),
                             jsonDataObject.getDouble("mcMaximumForward"),
                             jsonDataObject.getDouble("controllerMinOutput"),
-                            jsonDataObject.getDouble("controllerMaxOutput")
+                            jsonDataObject.getDouble("controllerMaxOutput"),
+                            jsonDataObject.getDouble("ratio")
                     );
                     message = new Message(topic, regParam);
                     break;
