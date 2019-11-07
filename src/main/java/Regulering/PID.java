@@ -265,11 +265,42 @@ public class PID {
         return (min<value) && (value<max);
     }
 
+    /**
+     * To operate correctly, all PID parameters require the same sign
+     * This should align with the {@literal}reversed value
+     */
+    private PidParameter checkSigns(PidParameter pp){
+        if (pp.isReversed()){
+            if(pp.getKp()>0){
+                pp.setKp(pp.getKp()*(-1));
+            }
+            if(pp.getKd()>0){
+                pp.setKd(pp.getKd()*(-1));
+            }
+            if(pp.getKi()>0){
+                pp.setKi(pp.getKi()*(-1));
+            }
+        }
+        else{
+            if(pp.getKp()<0){
+                pp.setKp(pp.getKp()*(-1));
+            }
+            if(pp.getKd()<0){
+                pp.setKd(pp.getKd()*(-1));
+            }
+            if(pp.getKi()<0){
+                pp.setKi(pp.getKi()*(-1));
+            }
+        }
+        return pp;
+    }
+
     public PidParameter getParameters() {
         return parameters;
     }
 
     public void setParameters(PidParameter parameters) {
+        parameters = checkSigns(parameters);
         this.parameters = parameters;
     }
 }

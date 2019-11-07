@@ -5,23 +5,37 @@ package data;
  */
 public class PidParameter extends Data {
 
+
     private double kp;
     private double ki;
     private double kd;
 
     private double maxOutput;
     private double minOutput;
-
+    private double deadBand;
+    private double maxIOutput;
+    private boolean reversed;
     private double setpoint;
 
 
-    public PidParameter(double kp, double ki, double kd, double maxOutput, double minOutput, double setpoint) {
+    public PidParameter(double kp,
+                        double ki,
+                        double kd,
+                        double maxOutput,
+                        double minOutput,
+                        double setpoint,
+                        double deadBand,
+                        double maxIOutput,
+                        boolean reversed) {
         this.kp = kp;
         this.ki = ki;
         this.kd = kd;
         this.maxOutput = maxOutput;
         this.minOutput = minOutput;
         this.setpoint = setpoint;
+        this.deadBand = deadBand;
+        this.maxIOutput = maxIOutput;
+        this.reversed = reversed;
     }
 
     /**
@@ -90,4 +104,15 @@ public class PidParameter extends Data {
         return setpoint;
     }
 
+    public double getDeadBand() {
+        return deadBand;
+    }
+
+    public double getMaxIOutput() {
+        return maxIOutput;
+    }
+
+    public boolean isReversed() {
+        return reversed;
+    }
 }
