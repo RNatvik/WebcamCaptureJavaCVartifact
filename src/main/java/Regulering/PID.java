@@ -123,12 +123,17 @@ public class PID {
             lastError= error;
             lastOutput=Poutput;
             firstRun=false;
+            dt = 0;
         }
 
         // Calculate D Term
-        // Note, this is negative. This actually "slows" the system if it's doing
-        // the correct thing, and small values helps prevent output spikes and overshoot
-        Doutput= D*(error-lastError)/dt;
+        double errorChange = (error-lastError);
+        if((errorChange != 0) && (dt != 0)){
+            Doutput= D*errorChange/dt;
+        }
+        else {
+            Doutput = 0;
+        }
         lastError = error;
 
         // The Iterm is more complex. There's several things to factor in to make it easier to deal with.
