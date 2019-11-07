@@ -21,8 +21,8 @@ public class PID {
     private double maxError=0;
     private double errorSum=0;
 
-    private double lastActual=0;
-
+    private double lastError = 0;
+    private long lastRun=0;
     private boolean firstRun=true;
     private boolean reversed=false;
 
@@ -81,6 +81,12 @@ public class PID {
      * @return calculated output value for driving the system
      */
     public double getOutput(double actual){
+        // Calculate how long time since we last calculated:
+        long now = System.currentTimeMillis();
+        long dt = now -lastRun;
+        lastRun = now;
+
+        // Define and extract variables used in calculation
         double output;
         double Poutput;
         double Ioutput;
@@ -114,7 +120,7 @@ public class PID {
         // For sensor, sanely assume it was exactly where it is now.
         // For last output, we can assume it's the current time-independent outputs.
         if(firstRun){
-            lastActual=actual;
+            lastError= error;
             lastOutput=Poutput;
             firstRun=false;
         }
@@ -122,14 +128,14 @@ public class PID {
         // Calculate D Term
         // Note, this is negative. This actually "slows" the system if it's doing
         // the correct thing, and small values helps prevent output spikes and overshoot
-        Doutput= -D*(actual-lastActual);
-        lastActual=actual;
+        Doutput= D*(error-lastError)/dt;
+        lastError = error;
 
         // The Iterm is more complex. There's several things to factor in to make it easier to deal with.
         // 1. maxIoutput restricts the amount of output contributed by the Iterm.
         // 2. prevent windup by not increasing errorSum if we're already running against our max Ioutput
         // 3. prevent windup by not increasing errorSum if output is output=maxOutput
-        Ioutput=I*errorSum;
+        Ioutput=I*errorSum*dt;
         if(maxIOutput!=0){
             Ioutput=constrain(Ioutput,-maxIOutput,maxIOutput);
         }
