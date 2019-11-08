@@ -200,6 +200,7 @@ public class PID {
     public void reset(){
         firstRun=true;
         errorSum=0;
+        lastRun = 0;
     }
 
     /**
