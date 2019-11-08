@@ -16,6 +16,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -76,7 +77,15 @@ public class TCPClient implements Runnable, Publisher {
                 success = true;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+
+            this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                String.format("%s %s %s", this, e,
+                        Arrays.toString(e.getStackTrace())
+                                .replace("[", "\n     ")
+                                .replace(",", "\n    ")
+                                .replace("]", "\n    ")
+                )
+            )));
         }
         return success;
     }

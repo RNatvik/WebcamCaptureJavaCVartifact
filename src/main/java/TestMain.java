@@ -1,13 +1,12 @@
 import communication.TCPClient;
 import communication.TCPServer;
-import data.*;
-import image_processing.FilterBank;
+import data.ConsoleOutput;
+import data.Topic;
 import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Publisher;
 import pub_sub_service.Subscriber;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
@@ -23,11 +22,13 @@ public class TestMain {
         TCPServer tcpServer = new TCPServer(5678, true, 2, serverBroker);
         TCPClient tcpClient = new TCPClient(clientBroker);
         ServerPublisher serverPublisher = new ServerPublisher(serverBroker);
-        ClientSubber clientSubber = new ClientSubber(clientBroker);
+        Subber serverSubber = new Subber(serverBroker);
+        Subber clientSubber = new Subber(clientBroker);
 
         ses.scheduleAtFixedRate(serverBroker, 1,5, TimeUnit.MILLISECONDS);
         ses.scheduleAtFixedRate(clientBroker, 2, 5, TimeUnit.MILLISECONDS);
         ses.scheduleAtFixedRate(serverPublisher, 3, 500, TimeUnit.MILLISECONDS);
+        //ses.scheduleAtFixedRate(serverSubber, 4, 5, TimeUnit.MILLISECONDS);
         ses.scheduleAtFixedRate(clientSubber, 4, 5, TimeUnit.MILLISECONDS);
 
         tcpServer.startThread();
@@ -41,6 +42,7 @@ public class TestMain {
             tcpClient.stopConnection();
 
             scanner.nextLine();
+
             tcpServer.stop();
             ses.shutdown();
             ses.awaitTermination(5, TimeUnit.SECONDS);
@@ -51,9 +53,9 @@ public class TestMain {
         }
     }
 
-    private static class ClientSubber extends Subscriber implements Runnable {
+    private static class Subber extends Subscriber implements Runnable {
 
-        public ClientSubber(Broker broker) {
+        public Subber(Broker broker) {
             super(broker);
             this.getBroker().subscribeTo(Topic.CONSOLE_OUTPUT, this);
         }
