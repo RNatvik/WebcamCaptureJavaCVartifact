@@ -547,7 +547,8 @@ public class SettingsController extends Subscriber implements Initializable {
 
     private boolean getReversed(int paramnum){
         boolean rev = false;
-        if(paramnum == 2){
+
+        if(paramnum == 1){
             rev = reversedOne.isSelected();
         }
         else if(paramnum == 2){
