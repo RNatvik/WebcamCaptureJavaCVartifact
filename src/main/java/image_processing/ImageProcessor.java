@@ -1,9 +1,6 @@
 package image_processing;
 
-import data.Flag;
-import data.ImageProcessorData;
-import data.ImageProcessorParameter;
-import data.Topic;
+import data.*;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -129,7 +126,6 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
 
                 //this.morph(this.binIm, kernel, 5, 3);
                 cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 11, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
-                //TODO: Blur binary image and threshold greyscale values to remove noise.
                 cvThreshold(this.binIm, this.binIm, 200, 255, CV_THRESH_BINARY);
                 long morphTime = System.currentTimeMillis();
 
@@ -146,7 +142,9 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 } else {
                     buffIm = this.bufferedImageConverter.convert(this.converter.convert(image));
                 }
-                Message message = new Message(Topic.IMAGE_DATA, new ImageProcessorData(buffIm, location));
+                Message message = new Message(Topic.OUTPUT_IMAGE, new OutputImage(buffIm));
+                this.publish(this.getBroker(), message);
+                message = new Message(Topic.IMPROC_DATA, new ImageProcessorData(location));
                 this.publish(this.getBroker(), message);
                 long publishTime = System.currentTimeMillis();
                 /*

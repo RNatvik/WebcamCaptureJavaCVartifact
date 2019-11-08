@@ -41,8 +41,8 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         this.getBroker().subscribeTo(Topic.PID_PARAM1, this);
         this.getBroker().subscribeTo(Topic.PID_PARAM2, this);
         this.getBroker().subscribeTo(Topic.REGULATOR_PARAM, this);
-        this.getBroker().subscribeTo(Topic.IMAGE_DATA, this);
-        this.getBroker().subscribeTo(Topic.CONTROLER_INPUT,this);
+        this.getBroker().subscribeTo(Topic.OUTPUT_IMAGE, this);
+        this.getBroker().subscribeTo(Topic.CONTROLLER_INPUT,this);
 
     }
 
@@ -242,7 +242,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                     }
                     break;
 
-                case Topic.IMAGE_DATA:
+                case Topic.OUTPUT_IMAGE:
                     ImageProcessorData imdata = data.safeCast(ImageProcessorData.class);
                     if (imdata != null) {
                         this.location = imdata.getLocation();
@@ -250,7 +250,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
                     }
                     break;
 
-                case Topic.CONTROLER_INPUT:
+                case Topic.CONTROLLER_INPUT:
                     ControlInput ci = data.safeCast(ControlInput.class);
                     if (ci != null) {
                         this.manualControlInput = ci;

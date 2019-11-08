@@ -154,10 +154,9 @@ public class TCPClient implements Runnable, Publisher {
                     message = new Message(topic, imProcParam);
                     break;
 
-                case Topic.IMAGE_DATA:
+                case Topic.IMPROC_DATA:
                     JSONArray location = jsonDataObject.getJSONArray("location");
                     ImageProcessorData imProcData = new ImageProcessorData(
-                            null,
                             new double[]{
                                     location.getDouble(0),
                                     location.getDouble(1),
@@ -213,7 +212,7 @@ public class TCPClient implements Runnable, Publisher {
                     message = new Message(topic, regParam);
                     break;
 
-                case Topic.CONTROLER_INPUT:
+                case Topic.CONTROLLER_INPUT:
                     ControlInput controlInput = new ControlInput(
                             jsonDataObject.getBoolean("manualControl"),
                             jsonDataObject.getDouble("forwardSpeed"),
