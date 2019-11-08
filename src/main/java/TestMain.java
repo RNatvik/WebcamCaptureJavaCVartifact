@@ -79,10 +79,10 @@ public class TestMain {
                     1, 2, 3, 4, 5, 6, true
             );
             PidParameter pidParameter1 = new PidParameter(
-                    1, 1, 1, 1, 1, 1
+                    1, 1, 1, 1, 1, 1,0,0,true
             );
             PidParameter pidParameter2 = new PidParameter(
-                    2, 2, 2, 2, 2, 2
+                    2, 2, 2, 2, 2, 2,0,0,true
             );
             RegulatorOutput regulatorOutput = new RegulatorOutput(
                     15, 51
