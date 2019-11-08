@@ -40,6 +40,7 @@ public class SettingsController extends Subscriber implements Initializable {
     private UDPClient udpClient;
     private TCPClient tcpClient;
 
+
     @FXML
     private Slider hueMax;
     @FXML
@@ -77,6 +78,10 @@ public class SettingsController extends Subscriber implements Initializable {
     @FXML
     private TextField contrSetPointOne;
     @FXML
+    private TextField IMaxOne;
+    @FXML
+    private TextField deadBandOne;
+    @FXML
     private TextField propGainTwo;
     @FXML
     private TextField intGainTwo;
@@ -88,6 +93,10 @@ public class SettingsController extends Subscriber implements Initializable {
     private TextField contrMinOutTwo;
     @FXML
     private TextField contrSetPointTwo;
+    @FXML
+    private TextField IMaxTwo;
+    @FXML
+    private TextField deadBandTwo;
     @FXML
     private TextField minRev;
     @FXML
@@ -110,6 +119,10 @@ public class SettingsController extends Subscriber implements Initializable {
     private Button conTcpBtn;
     @FXML
     private CheckBox imProVideo;
+    @FXML
+    private CheckBox reversedOne;
+    @FXML
+    private CheckBox reversedTwo;
 
 
     public SettingsController() {
@@ -253,8 +266,11 @@ public class SettingsController extends Subscriber implements Initializable {
             double maxOutput = parseToDouble(getControllerMaxOut(paramNum));
             double minOutput = parseToDouble(getControllerMinOut(paramNum));
             double setpoint = parseToDouble(getControllerSetPoint(paramNum));
+            double deadBand = parseToDouble(getDeadBand(paramNum));
+            double maxIOutput = parseToDouble(getIMax(paramNum));
+            boolean reversed = getReversed(paramNum);
 
-            PidParameter param = new PidParameter(kp, ki, kd, maxOutput, minOutput, setpoint);
+            PidParameter param = new PidParameter(kp, ki, kd, maxOutput, minOutput, setpoint, deadBand, maxIOutput, reversed);
             Message message = null;
             if (paramNum == 1) {
                 message = new Message(Topic.PID_PARAM1, param);
@@ -470,6 +486,7 @@ public class SettingsController extends Subscriber implements Initializable {
         return minOut;
     }
 
+
     /**
      * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
      * numerical.
@@ -488,6 +505,55 @@ public class SettingsController extends Subscriber implements Initializable {
             setPoint = "0";
         }
         return setPoint;
+    }
+    /**
+     * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
+     * numerical.
+     *
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The set point.
+     */
+    private String getIMax(int paramNum) {
+        String iMax = "0";
+        if (paramNum == 1) {
+            iMax = IMaxOne.getText();
+        } else if (paramNum == 2) {
+            iMax = IMaxTwo.getText();
+        }
+        if (iMax.isEmpty() && !isNumeric(iMax)) {
+            iMax = "0";
+        }
+        return iMax;
+    }
+    /**
+     * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
+     * numerical.
+     *
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The set point.
+     */
+    private String getDeadBand(int paramNum) {
+        String deadBand = "0";
+        if (paramNum == 1) {
+            deadBand = deadBandOne.getText();
+        } else if (paramNum == 2) {
+            deadBand = deadBandTwo.getText();
+        }
+        if (deadBand.isEmpty() && !isNumeric(deadBand)) {
+            deadBand = "0";
+        }
+        return deadBand;
+    }
+
+    private boolean getReversed(int paramnum){
+        boolean rev = false;
+        if(paramnum == 2){
+            rev = reversedOne.isSelected();
+        }
+        else if(paramnum == 2){
+            rev = reversedTwo.isSelected();
+        }
+        return rev;
     }
 
     /**
