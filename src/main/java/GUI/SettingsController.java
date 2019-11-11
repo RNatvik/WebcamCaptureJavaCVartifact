@@ -216,7 +216,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
     /**
-     * Not functional yeet.
+     * TODO error when not beeing able to connect.
      */
 
     public void connectButtonUDPClicked() {
@@ -224,16 +224,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
             if (!this.udpClient.isRunning()) {
                 this.udpClient.initialize(getIpAdr(), getUDPport());
                 boolean success = this.udpClient.start();
-                conUdpBtn.setText("Disconnect");
-
             } else {
                 this.udpClient.stop();
                 boolean terminated = false;
                 while (!terminated) {
                     terminated = this.udpClient.isTerminated();
-                }
-                if (terminated) {
-                    conUdpBtn.setText("Connect");
                 }
             }
             saveProperties();
