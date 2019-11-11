@@ -114,16 +114,16 @@ public class Camera implements Runnable {
     public void run() {
 
         if (!this.shutdown) {
-            long time = System.currentTimeMillis();
-            long dt = time - this.timeTest;
-            this.timeTest = time;
+            //long time = System.currentTimeMillis();
+            //long dt = time - this.timeTest;
+            //this.timeTest = time;
             //System.out.println("Camera:: Executor timer: " + dt);
             try {
 
-                long startTime = System.currentTimeMillis();
+                //long startTime = System.currentTimeMillis();
                 this.grabber.grab();
                 this.flag.set(true);
-                long endTime = System.currentTimeMillis();
+                //long endTime = System.currentTimeMillis();
                 //System.out.println("Camera:: Grab time: " + (endTime-startTime));
             } catch (FrameGrabber.Exception e) {
                 e.printStackTrace();
