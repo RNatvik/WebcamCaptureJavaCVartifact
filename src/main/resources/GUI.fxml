@@ -41,6 +41,18 @@
                            </font>
                         </Label>
                         <TextField fx:id="distance" editable="false" />
+                        <Label text="Right Motor:">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="rightMotor" editable="false" />
+                        <Label text="Left Motor:">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="leftMotor" editable="false" />
                      </children>
                   </VBox>
                   <Separator orientation="VERTICAL" prefHeight="200.0" prefWidth="20.0" visible="false" />
@@ -72,12 +84,12 @@
       </HBox>
         <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="800.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#openSettingsWindow" prefHeight="40.0" prefWidth="80.0" text="Settings">
+                <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#openSettingsWindow" prefHeight="40.0" prefWidth="120.0" text="Settings">
                     <font>
                         <Font size="15.0" />
                     </font>
                 </Button>
-                <Button fx:id="helpBtn" mnemonicParsing="false" onAction="#helpBtnPressed" prefHeight="40.0" prefWidth="80.0" text="Help">
+                <Button fx:id="helpBtn" mnemonicParsing="false" onAction="#helpBtnPressed" prefHeight="40.0" prefWidth="120.0" text="Help">
                     <font>
                         <Font size="15.0" />
                     </font>
@@ -86,6 +98,22 @@
         </HBox>
       <VBox layoutX="570.0" layoutY="577.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="500.0">
          <children>
+            <HBox alignment="CENTER_RIGHT" prefHeight="20.0">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#ClearConWindow" prefWidth="150.0" text="Clear Window">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </Button>
+                  <Separator orientation="VERTICAL" prefWidth="15.0" visible="false" />
+                  <CheckBox fx:id="debugCheckWindow" mnemonicParsing="false" text="Debug">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </CheckBox>
+                  <Separator orientation="VERTICAL" prefWidth="10.0" visible="false" />
+               </children>
+            </HBox>
             <TextArea fx:id="conMessage" editable="false" VBox.vgrow="ALWAYS" />
          </children>
       </VBox>

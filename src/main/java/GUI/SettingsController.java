@@ -24,6 +24,9 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The SettingsController class controls all the necessary objects in the SettingsWindow.fxml.
@@ -39,6 +42,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
     private Stage primaryStage1;
     private UDPClient udpClient;
     private TCPClient tcpClient;
+    private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
 
 
     @FXML
@@ -136,28 +140,27 @@ public class SettingsController extends Subscriber implements Initializable, Run
      * @param resources
      */
     public void initialize(URL location, ResourceBundle resources) {
-        if (SharedResource.isInitialized()) {
-            this.tcpClient = SharedResource.getInstance().getTcpClient();
-            this.udpClient = SharedResource.getInstance().getUdpClient();
-        }
-        try{
+        try {
+            if (SharedResource.isInitialized()) {
+                this.tcpClient = SharedResource.getInstance().getTcpClient();
+                this.udpClient = SharedResource.getInstance().getUdpClient();
+            }
             loadProperties();
-        }
-        catch (IOException e){
+            ses.scheduleAtFixedRate(this, 0, 50, TimeUnit.MILLISECONDS);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public void run(){
-        if(tcpClient.isConnected()){
+
+    public void run() {
+        if (tcpClient.isConnected()) {
             conTcpBtn.setText("Disconnect");
         }
-        if(udpClient.isTerminated()){
+        if (udpClient.isTerminated()) {
             conUdpBtn.setText("Connect");
-        }
-        else if(!tcpClient.isConnected()){
+        } else if (!tcpClient.isConnected()) {
             conTcpBtn.setText("Connect");
-        }
-        else if(!udpClient.isTerminated()){
+        } else if (!udpClient.isTerminated()) {
             conUdpBtn.setText("Disconnect");
         }
     }
@@ -192,16 +195,15 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
 
-
     /**
      * When Apply Forward is pressed, it calls a send-method for the Pid-Parameters with parameter
      * number one (Forward PID parameters).
      */
     public void controllerForwardApplyPressed() {
-            doSendPidParameter(1);
+        doSendPidParameter(1);
     }
 
-    public void RegulatorApplyPressed(){
+    public void RegulatorApplyPressed() {
         doSendRegulatorParameter();
     }
 
@@ -210,7 +212,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
      * number one (Turning PID parameters).
      */
     public void controllerTurningApplyPressed() {
-            doSendPidParameter(2);
+        doSendPidParameter(2);
     }
 
     /**
@@ -237,7 +239,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
             saveProperties();
         } catch (SocketException | UnknownHostException e) {
             e.printStackTrace();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -261,7 +263,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
             saveProperties();
         } catch (UnknownHostException e) {
             e.printStackTrace();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -294,8 +296,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
             System.out.println(message.toJSON());
             this.tcpClient.setOutputMessage("SET", message.toJSON());
             saveProperties();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -319,11 +320,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
             this.tcpClient.setOutputMessage("SET", message.toJSON());
             saveProperties();
             System.out.println(message.toJSON());
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     private void doSendRegulatorParameter() {
         double mcMinimumReverse = parseToDouble(getMinRev());
         double mcMaximumReverse = parseToDouble(getMaxRev());
@@ -339,60 +340,65 @@ public class SettingsController extends Subscriber implements Initializable, Run
         );
         Message message = new Message(Topic.REGULATOR_PARAM, param);
         this.tcpClient.setOutputMessage("SET", message.toJSON());
-        try{
+        try {
             saveProperties();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println(message.toJSON());
     }
 
-    private String getMinRev(){
+    private String getMinRev() {
         String mRev = minRev.getText();
-        if(!isNumeric(mRev)){
+        if (!isNumeric(mRev)) {
             mRev = "0";
         }
         return mRev;
     }
-    private String getMaxRev(){
+
+    private String getMaxRev() {
         String mRev = maxRev.getText();
-        if(!isNumeric(mRev)){
+        if (!isNumeric(mRev)) {
             mRev = "0";
         }
         return mRev;
     }
-    private String getMinFwd(){
+
+    private String getMinFwd() {
         String mFwd = minFwd.getText();
-        if(!isNumeric(mFwd)){
+        if (!isNumeric(mFwd)) {
             mFwd = "0";
         }
         return mFwd;
     }
-    private String getMaxFwd(){
+
+    private String getMaxFwd() {
         String mFwd = maxFwd.getText();
-        if(!isNumeric(mFwd)){
+        if (!isNumeric(mFwd)) {
             mFwd = "0";
         }
         return mFwd;
     }
-    private String getConMinOut(){
+
+    private String getConMinOut() {
         String cmo = conMinOut.getText();
-        if(!isNumeric(cmo)){
+        if (!isNumeric(cmo)) {
             cmo = "0";
         }
         return cmo;
     }
-    private String getConMaxOut(){
+
+    private String getConMaxOut() {
         String cmo = conMaxOut.getText();
-        if(!isNumeric(cmo)){
+        if (!isNumeric(cmo)) {
             cmo = "0";
         }
         return cmo;
     }
-    private String getRatio(){
+
+    private String getRatio() {
         String r = ratio.getText();
-        if(!isNumeric(r)){
+        if (!isNumeric(r)) {
             r = "0";
         }
         return r;
@@ -520,6 +526,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
         }
         return setPoint;
     }
+
     /**
      * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
      * numerical.
@@ -539,6 +546,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
         }
         return iMax;
     }
+
     /**
      * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
      * numerical.
@@ -559,24 +567,22 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return deadBand;
     }
 
-    private boolean getReversed(int paramnum){
+    private boolean getReversed(int paramnum) {
         boolean rev = false;
 
-        if(paramnum == 1){
+        if (paramnum == 1) {
             rev = reversedOne.isSelected();
-        }
-        else if(paramnum == 2){
+        } else if (paramnum == 2) {
             rev = reversedTwo.isSelected();
         }
         return rev;
     }
 
-    private String getStringReversed(int paramNum){
+    private String getStringReversed(int paramNum) {
         String rev = "false";
-        if(getReversed(paramNum)){
+        if (getReversed(paramNum)) {
             rev = "true";
-        }
-        else{
+        } else {
             rev = "false";
         }
         return rev;
@@ -617,8 +623,8 @@ public class SettingsController extends Subscriber implements Initializable, Run
         valMax.setValue(valMaxPar);
     }
 
-    public void saveProperties() throws IOException{
-        try(OutputStream output = new FileOutputStream(("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties"))) {
+    public void saveProperties() throws IOException {
+        try (OutputStream output = new FileOutputStream(("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties"))) {
             Properties configProps = new Properties();
 
             configProps.setProperty("UDPport", UDPport.getText());
@@ -663,14 +669,13 @@ public class SettingsController extends Subscriber implements Initializable, Run
 
 
             configProps.store(output, "Parameter configuration test");
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void loadProperties() throws IOException{
-        try(InputStream inputStream = new FileInputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
+    private void loadProperties() throws IOException {
+        try (InputStream inputStream = new FileInputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
             Properties configProps = new Properties();
             configProps.load(inputStream);
 
@@ -711,20 +716,17 @@ public class SettingsController extends Subscriber implements Initializable, Run
             IMaxTwo.setText(configProps.getProperty("iMaxTwo"));
             deadBandOne.setText(configProps.getProperty("deadBandOne"));
             deadBandTwo.setText(configProps.getProperty("deadBandTwo"));
-            if(configProps.getProperty("reversedOne").equals("true")) {
+            if (configProps.getProperty("reversedOne").equals("true")) {
                 reversedOne.setSelected(true);
-            }
-            else {
+            } else {
                 reversedOne.setSelected(false);
             }
-            if(configProps.getProperty("reversedTwo").matches("true")) {
+            if (configProps.getProperty("reversedTwo").matches("true")) {
                 reversedTwo.setSelected(true);
-            }
-            else {
+            } else {
                 reversedTwo.setSelected(false);
             }
-        }
-        catch (IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
 
@@ -831,7 +833,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return num;
     }
 
-    private String parseToString(double d){
+    private String parseToString(double d) {
         String s = Double.toString(d);
         return s;
     }
@@ -974,6 +976,10 @@ public class SettingsController extends Subscriber implements Initializable, Run
         double val = valMin.getValue();
         valMin.setValue(val - 1);
         doSendImageProcessorParameter();
+    }
+
+    private void updateButtons() {
+
     }
 
     @Override
