@@ -279,12 +279,12 @@ public class SettingsController extends Subscriber implements Initializable, Run
             double kd = parseToDouble(getDerGainFX(paramNum));
             double maxOutput = parseToDouble(getControllerMaxOut(paramNum));
             double minOutput = parseToDouble(getControllerMinOut(paramNum));
-            double setpoint = parseToDouble(getControllerSetPoint(paramNum));
+            double setPoint = parseToDouble(getControllerSetPoint(paramNum));
             double deadBand = parseToDouble(getDeadBand(paramNum));
             double maxIOutput = parseToDouble(getIMax(paramNum));
             boolean reversed = getReversed(paramNum);
 
-            PidParameter param = new PidParameter(kp, ki, kd, maxOutput, minOutput, setpoint, deadBand, maxIOutput, reversed);
+            PidParameter param = new PidParameter(kp, ki, kd, maxOutput, minOutput, setPoint, deadBand, maxIOutput, reversed);
             Message message = null;
             if (paramNum == 1) {
                 message = new Message(Topic.PID_PARAM1, param);
@@ -329,8 +329,8 @@ public class SettingsController extends Subscriber implements Initializable, Run
         double mcMaximumReverse = parseToDouble(getMaxRev());
         double mcMinimumForward = parseToDouble(getMinFwd());
         double mcMaximumForward = parseToDouble(getMaxFwd());
-        double controllerMinOutput = parseToDouble(getconMinOut());
-        double controllerMaxOutput = parseToDouble(getconMaxOut());
+        double controllerMinOutput = parseToDouble(getConMinOut());
+        double controllerMaxOutput = parseToDouble(getConMaxOut());
         double ratio = parseToDouble(getRatio());
 
         RegulatorParameter param = new RegulatorParameter(
@@ -376,14 +376,14 @@ public class SettingsController extends Subscriber implements Initializable, Run
         }
         return mFwd;
     }
-    private String getconMinOut(){
+    private String getConMinOut(){
         String cmo = conMinOut.getText();
         if(!isNumeric(cmo)){
             cmo = "0";
         }
         return cmo;
     }
-    private String getconMaxOut(){
+    private String getConMaxOut(){
         String cmo = conMaxOut.getText();
         if(!isNumeric(cmo)){
             cmo = "0";
@@ -571,6 +571,17 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return rev;
     }
 
+    private String getStringReversed(int paramNum){
+        String rev = "false";
+        if(getReversed(paramNum)){
+            rev = "true";
+        }
+        else{
+            rev = "false";
+        }
+        return rev;
+    }
+
     /**
      * Compare the values of the parameters. If hmax is smaller than hmin, then hman = hmin. If hmin is bigger than
      * hmax, then hmin = hmax. The method is used on the Sliders in GUI/settingsWindow tab-> Picture.
@@ -607,7 +618,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
     public void saveProperties() throws IOException{
-        try(OutputStream output = new FileOutputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
+        try(OutputStream output = new FileOutputStream(("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties"))) {
             Properties configProps = new Properties();
 
             configProps.setProperty("UDPport", UDPport.getText());
@@ -640,9 +651,16 @@ public class SettingsController extends Subscriber implements Initializable, Run
             configProps.setProperty("maxRev", getMaxRev());
             configProps.setProperty("minFwd", getMinFwd());
             configProps.setProperty("maxFwd", getMaxFwd());
-            configProps.setProperty("conMinOut", getconMinOut());
-            configProps.setProperty("conMaxOut", getconMaxOut());
+            configProps.setProperty("conMinOut", getConMinOut());
+            configProps.setProperty("conMaxOut", getConMaxOut());
             configProps.setProperty("ratio", getRatio());
+            configProps.setProperty("deadBandOne", getDeadBand(1));
+            configProps.setProperty("deadBandTwo", getDeadBand(2));
+            configProps.setProperty("iMaxOne", getIMax(1));
+            configProps.setProperty("iMaxTwo", getIMax(2));
+            configProps.setProperty("reversedOne", getStringReversed(1));
+            configProps.setProperty("reversedTwo", getStringReversed(2));
+
 
             configProps.store(output, "Parameter configuration test");
         }
@@ -689,6 +707,22 @@ public class SettingsController extends Subscriber implements Initializable, Run
             conMinOut.setText(configProps.getProperty("conMinOut"));
             conMaxOut.setText(configProps.getProperty("conMaxOut"));
             ratio.setText(configProps.getProperty("ratio"));
+            IMaxOne.setText(configProps.getProperty("iMaxOne"));
+            IMaxTwo.setText(configProps.getProperty("iMaxTwo"));
+            deadBandOne.setText(configProps.getProperty("deadBandOne"));
+            deadBandTwo.setText(configProps.getProperty("deadBandTwo"));
+            if(configProps.getProperty("reversedOne").equals("true")) {
+                reversedOne.setSelected(true);
+            }
+            else {
+                reversedOne.setSelected(false);
+            }
+            if(configProps.getProperty("reversedTwo").matches("true")) {
+                reversedTwo.setSelected(true);
+            }
+            else {
+                reversedTwo.setSelected(false);
+            }
         }
         catch (IOException ex){
             ex.printStackTrace();

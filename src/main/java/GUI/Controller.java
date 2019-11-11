@@ -3,6 +3,8 @@ package GUI;
 import communication.TCPClient;
 import communication.UDPClient;
 import data.ControlInput;
+import data.Data;
+import data.RegulatorOutput;
 import data.Topic;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -16,6 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
 import javafx.scene.control.TextArea;
@@ -38,7 +41,7 @@ public class Controller extends Subscriber implements Initializable {
     private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
     private ObjectProperty<TextField> textFieldObjectProperty = new SimpleObjectProperty<TextField>();
     private ImageUpdater imageUpdater;
-    private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService ses = Executors.newScheduledThreadPool(2);
     private KeyboardInput keyboardInput;
     private GuiUpdater guiUpdater;
 
@@ -78,8 +81,10 @@ public class Controller extends Subscriber implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            this.udpClient = SharedResource.getInstance().getUdpClient();
-            this.tcpClient = SharedResource.getInstance().getTcpClient();
+            if(SharedResource.isInitialized()) {
+                this.udpClient = SharedResource.getInstance().getUdpClient();
+                this.tcpClient = SharedResource.getInstance().getTcpClient();
+            }
             this.settingsController = new SettingsController();
             this.settingsController.startSettingsWindow();
             //File file = new File("/loadpic.png");
@@ -89,9 +94,10 @@ public class Controller extends Subscriber implements Initializable {
             this.modeText.setText(mode);
             this.keyboardInput = new KeyboardInput();
             this.imageUpdater = new ImageUpdater(this.imageProperty, this.imageView, this.udpClient);
-            this.guiUpdater = new GuiUpdater(this.textFieldObjectProperty, this.xPos, this.distance, this.tcpClient);
+            this.guiUpdater = new GuiUpdater(this.textFieldObjectProperty, this.xPos, this.distance, this.conMessage, this.tcpClient);
             this.ses.scheduleAtFixedRate(this.imageUpdater, 0, 50, TimeUnit.MILLISECONDS);
-            this.ses.scheduleAtFixedRate(this.guiUpdater, 0, 500, TimeUnit.MILLISECONDS);
+            this.ses.scheduleAtFixedRate(this.guiUpdater, 0, 100, TimeUnit.MILLISECONDS);
+
             conMessage.setText("Message Window:");
         } catch (Exception e) {
             e.printStackTrace();
@@ -131,7 +137,23 @@ public class Controller extends Subscriber implements Initializable {
 
     @Override
     protected void doReadMessages() {
+        while (!this.getMessageQueue().isEmpty()) {
+            Message message = this.getMessageQueue().remove();
+            String topic = message.getTopic();
+            Data data = message.getData();
 
+            switch (topic) {
+                case Topic.REGULATOR_OUTPUT:
+                    RegulatorOutput regulatorOutput = data.safeCast(RegulatorOutput.class);
+                    if (regulatorOutput != null) {
+                        regulatorOutput.getLeftMotor();
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
     public void updateFields(){
         // TODO: get variables to show.
@@ -159,5 +181,16 @@ public class Controller extends Subscriber implements Initializable {
 
             }
         }
+    }
+
+    public void test() {
+        System.out.println("In test");
+        this.ses.shutdown();
+        try {
+            this.ses.awaitTermination(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.ses.shutdownNow();
     }
 }
