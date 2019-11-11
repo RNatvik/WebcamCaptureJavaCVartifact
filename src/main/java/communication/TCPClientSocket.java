@@ -26,6 +26,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     public TCPClientSocket(Socket socket, Flag serverShutdown, Broker broker) {
         super(broker);
+        this.getBroker().subscribeTo(Topic.CONSOLE_OUTPUT, this);
         this.socket = socket;
         try {
             this.bufferedReader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
@@ -33,15 +34,21 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
             this.serverShutdown = serverShutdown;
             this.shutdown = false;
             this.terminated = false;
-            //System.out.println(this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getPort() + ")");
+            this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                    this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getPort() + ")"
+            )));
         } catch (IOException e) {
-            e.printStackTrace();
-            //System.out.println(this + ":: Could not create TCP client socket");
+            this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                    e.toString()
+            )));
         }
     }
 
     public void stop() {
         this.shutdown = true;
+        this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                this + " stop called"
+        )));
     }
 
     public boolean isTerminated() {
@@ -55,7 +62,9 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                 this.socket.setSoTimeout(20);
                 this.readMessages();
                 String line = this.bufferedReader.readLine();
-                //System.out.println(this + " received line: " + line);
+                this.publish(this.getBroker(), new Message(Topic.DEBUG_OUTPUT, new ConsoleOutput(
+                        this + " received line: " + line
+                )));
                 if (line != null) {
                     String[] lineParts = line.split("::");
                     String command = lineParts[0];
@@ -83,19 +92,20 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
             } catch (SocketTimeoutException e) {
                 // Do nothing
             } catch (IOException e) {
-                e.printStackTrace();
+                this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                        e.toString()
+                )));
                 this.stop();
             } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
-                //System.out.println(this + ":: client wrote invalid syntax");
+                this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                        this + " client wrote invalid syntax"
+                )));
             }
         }
         this.terminated = this.shutdownProcedure();
-        //System.out.println(this + " is terminated: " + this.terminated);
     }
 
     private void set(String json) {
-        // TODO: Implement case for all required data types
         JSONObject jsonObject = new JSONObject(json);
         JSONObject dataJson = jsonObject.getJSONObject("data");
         String topic = jsonObject.getString("topic");
@@ -187,9 +197,15 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
     private boolean shutdownProcedure() {
         boolean success = false;
         try {
+            this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                    this + " in shutdown procedure"
+            )));
+            Thread.sleep(100);
+            this.readMessages();
+
             this.socket.close();
             success = true;
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
         return success;

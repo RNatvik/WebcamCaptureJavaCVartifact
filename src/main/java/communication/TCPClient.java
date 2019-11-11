@@ -16,6 +16,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class TCPClient implements Runnable, Publisher {
 
@@ -23,7 +26,7 @@ public class TCPClient implements Runnable, Publisher {
     private InetAddress hostAddress;
     private int hostPort;
     private int timeout;
-    private String outputMessage;
+    private Queue<String> outputMessageQueue;
     private Socket socket;
     private Broker broker;
     private boolean initialized;
@@ -36,7 +39,7 @@ public class TCPClient implements Runnable, Publisher {
         this.hostAddress = null;
         this.hostPort = 0;
         this.timeout = 0;
-        this.outputMessage = null;
+        this.outputMessageQueue = new LinkedList<>();
         this.socket = null;
         this.broker = broker;
         this.initialized = false;
@@ -46,15 +49,18 @@ public class TCPClient implements Runnable, Publisher {
     }
 
     public void initialize(String hostAddress, int hostPort, int timeout) throws UnknownHostException {
-       if (!this.connected) {
-           this.hostAddress = InetAddress.getByName(hostAddress);
-           this.hostPort = hostPort;
-           this.timeout = timeout;
-           this.thread = new Thread(this);
-           this.shutdown = false;
-           this.terminated = false;
-           this.initialized = true;
-       }
+        if (!this.connected) {
+            this.hostAddress = InetAddress.getByName(hostAddress);
+            this.hostPort = hostPort;
+            this.timeout = timeout;
+            this.thread = new Thread(this);
+            this.shutdown = false;
+            this.terminated = false;
+            this.initialized = true;
+            this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                    this + " is initialized."
+            )));
+        }
     }
 
     public boolean connect() {
@@ -64,26 +70,37 @@ public class TCPClient implements Runnable, Publisher {
                 this.socket = new Socket(this.hostAddress, this.hostPort);
                 this.socket.setSoTimeout(this.timeout);
                 this.connected = true;
+                this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                        this + " is connected"
+                )));
                 this.thread.start();
                 success = true;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+
+            this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                String.format("%s %s %s", this, e,
+                        Arrays.toString(e.getStackTrace())
+                                .replace("[", "\n     ")
+                                .replace(",", "\n    ")
+                                .replace("]", "\n    ")
+                )
+            )));
         }
         return success;
     }
 
-    public synchronized boolean setOutputMessage(String command, String body) {
-        boolean success = false;
-        if (this.outputMessage == null) {
-            this.outputMessage = String.format(command + "::%s", body);
-            success = true;
+    public synchronized void setOutputMessage(String command, String body) {
+        if (this.connected) {
+            this.outputMessageQueue.add(String.format(command + "::%s", body));
         }
-        return success;
     }
 
     public void stopConnection() {
         this.shutdown = true;
+        this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                this + " stop called"
+        )));
     }
 
     public boolean isInitialized() {
@@ -100,6 +117,9 @@ public class TCPClient implements Runnable, Publisher {
 
 
     private boolean shutdownProcedure() {
+        this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                this + " in shutdown procedure"
+        )));
         boolean success = true;
         try {
             this.socket.close();
@@ -107,8 +127,10 @@ public class TCPClient implements Runnable, Publisher {
             this.connected = false;
         } catch (IOException e) {
             success = false;
-            e.printStackTrace();
         }
+        this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                this + " shutdown procedure: " + success
+        )));
         return success;
     }
 
@@ -206,6 +228,16 @@ public class TCPClient implements Runnable, Publisher {
                     message = new Message(topic, controlInput);
                     break;
 
+                case Topic.CONSOLE_OUTPUT:
+                    ConsoleOutput consoleOutput = new ConsoleOutput(jsonDataObject.getString("string"));
+                    message = new Message(topic, consoleOutput);
+                    break;
+
+                case Topic.DEBUG_OUTPUT:
+                    ConsoleOutput debugOutput = new ConsoleOutput(jsonDataObject.getString("string"));
+                    message = new Message(topic, debugOutput);
+                    break;
+
                 default:
                     break;
             }
@@ -229,10 +261,12 @@ public class TCPClient implements Runnable, Publisher {
 
         while (!this.shutdown) {
             try {
-                if (this.outputMessage != null) {
-                    printWriter.println(this.outputMessage);
-                    printWriter.flush();
-                    this.outputMessage = null;
+                synchronized (this) {
+                    while (!this.outputMessageQueue.isEmpty()) {
+                        String outputMessage = this.outputMessageQueue.remove();
+                        printWriter.println(outputMessage);
+                        printWriter.flush();
+                    }
                 }
                 String body = bufferedReader.readLine();
                 if (body != null) {
