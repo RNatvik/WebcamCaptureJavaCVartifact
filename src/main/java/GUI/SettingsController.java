@@ -34,7 +34,7 @@ import java.util.ResourceBundle;
  * @since 30.10.2019
  */
 
-public class SettingsController extends Subscriber implements Initializable {
+public class SettingsController extends Subscriber implements Initializable, Runnable {
 
     private Stage primaryStage1;
     private UDPClient udpClient;
@@ -145,6 +145,20 @@ public class SettingsController extends Subscriber implements Initializable {
         }
         catch (IOException e){
             e.printStackTrace();
+        }
+    }
+    public void run(){
+        if(tcpClient.isConnected()){
+            conTcpBtn.setText("Disconnect");
+        }
+        if(udpClient.isTerminated()){
+            conUdpBtn.setText("Connect");
+        }
+        else if(!tcpClient.isConnected()){
+            conTcpBtn.setText("Connect");
+        }
+        else if(!udpClient.isTerminated()){
+            conUdpBtn.setText("Disconnect");
         }
     }
 

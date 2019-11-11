@@ -12,38 +12,65 @@
 
 <AnchorPane onKeyPressed="#onKeyPressed" onKeyReleased="#onKeyReleased" prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.Controller">
     <children>
-        <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="700.0" AnchorPane.topAnchor="0.0">
-            <children>
-                <VBox>
-                    <children>
-                          <ImageView fx:id="imageView" fitHeight="430.0" fitWidth="540.0" pickOnBounds="true" preserveRatio="true" />
-                    </children>
-                </VBox>
-            </children>
-        </HBox>
-      <VBox alignment="CENTER" layoutX="600.0" layoutY="40.0" AnchorPane.rightAnchor="100.0">
+      <HBox layoutY="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
-                    <Label text="RC-Car Modes" />
-                    <Separator prefHeight="20.0" />
-                    <Button fx:id="trackingBtn" mnemonicParsing="false" onAction="#tracingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Tracking" />
-                    <Separator prefWidth="200.0" />
-                    <Button fx:id="catchingBtn" mnemonicParsing="false" onAction="#catchingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Catching" />
-                    <Separator prefWidth="200.0" />
-                    <Button fx:id="manualBtn" mnemonicParsing="false" onAction="#manualBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Manual" />
-                    <Separator prefWidth="200.0" />
-                    <Separator prefWidth="200.0" />
-                    <Pane>
-                        <children>
-                            <Label fx:id="modeText" alignment="CENTER" contentDisplay="TOP" prefHeight="50.0" prefWidth="200.0" text="Labelrl">
-                                <font>
-                                    <Font size="18.0" />
-                                </font>
-                            </Label>
-                        </children>
-                    </Pane>
+              <HBox AnchorPane.bottomAnchor="350.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="700.0" AnchorPane.topAnchor="30.0">
+                  <children>
+                      <VBox>
+                          <children>
+                                <ImageView fx:id="imageView" fitHeight="430.0" fitWidth="540.0" pickOnBounds="true" preserveRatio="true" />
+                          </children>
+                      </VBox>
+                  </children>
+              </HBox>
+            <Separator orientation="VERTICAL" visible="false" />
+            <HBox alignment="CENTER" HBox.hgrow="ALWAYS">
+               <children>
+                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <Label text="X-Pos:">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Label>
+                        <TextField editable="false" fx:id="xPos" />
+                        <Separator prefWidth="200.0" visible="false" />
+                        <Label text="Distance:">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="distance" editable="false" />
+                     </children>
+                  </VBox>
+                  <Separator orientation="VERTICAL" prefHeight="200.0" prefWidth="20.0" visible="false" />
+                  <VBox alignment="CENTER" layoutX="600.0" layoutY="40.0" AnchorPane.rightAnchor="100.0">
+                     <children>
+                                <Label text="RC-Car Modes" />
+                                <Separator prefHeight="20.0" />
+                                <Button fx:id="trackingBtn" mnemonicParsing="false" onAction="#tracingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Tracking" />
+                                <Separator prefWidth="200.0" />
+                                <Button fx:id="catchingBtn" mnemonicParsing="false" onAction="#catchingBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Catching" />
+                                <Separator prefWidth="200.0" />
+                                <Button fx:id="manualBtn" mnemonicParsing="false" onAction="#manualBtnPressed" prefHeight="50.0" prefWidth="200.0" text="Manual" />
+                                <Separator prefWidth="200.0" />
+                                <Separator prefWidth="200.0" />
+                                <Pane>
+                                    <children>
+                                        <Label fx:id="modeText" alignment="CENTER" contentDisplay="TOP" prefHeight="50.0" prefWidth="200.0" text="Labelrl">
+                                            <font>
+                                                <Font size="18.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </Pane>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
          </children>
-      </VBox>
-        <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="760.0" AnchorPane.leftAnchor="800.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      </HBox>
+        <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="800.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
                 <Button fx:id="settingsButton" mnemonicParsing="false" onAction="#openSettingsWindow" prefHeight="40.0" prefWidth="80.0" text="Settings">
                     <font>
@@ -57,5 +84,10 @@
                 </Button>
             </children>
         </HBox>
+      <VBox layoutX="570.0" layoutY="577.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="500.0">
+         <children>
+            <TextArea fx:id="conMessage" editable="false" VBox.vgrow="ALWAYS" />
+         </children>
+      </VBox>
     </children>
 </AnchorPane>

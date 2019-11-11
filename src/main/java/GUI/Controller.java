@@ -12,12 +12,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
-
+import javafx.scene.control.TextArea;
+//import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +36,11 @@ public class Controller extends Subscriber implements Initializable {
     private UDPClient udpClient;
     private SettingsController settingsController;
     private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
+    private ObjectProperty<TextField> textFieldObjectProperty = new SimpleObjectProperty<TextField>();
     private ImageUpdater imageUpdater;
     private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
     private KeyboardInput keyboardInput;
+    private GuiUpdater guiUpdater;
 
     @FXML
     private Button manuelBtn;
@@ -46,6 +50,12 @@ public class Controller extends Subscriber implements Initializable {
     private Button trackingBtn;
     @FXML
     public Label modeText;
+    @FXML
+    public TextField xPos;
+    @FXML
+    public TextField distance;
+    @FXML
+    public TextArea conMessage;
     @FXML
     public ImageView imageView;
     @FXML
@@ -71,15 +81,18 @@ public class Controller extends Subscriber implements Initializable {
             this.udpClient = SharedResource.getInstance().getUdpClient();
             this.tcpClient = SharedResource.getInstance().getTcpClient();
             this.settingsController = new SettingsController();
-            settingsController.startSettingsWindow();
-            File file = new File("/loadpic.png");
-            Image image = new Image(file.toURI().toString());
-            imageView.setImage(image);
-            mode = "Manual";
-            modeText.setText(mode);
-            keyboardInput = new KeyboardInput();
+            this.settingsController.startSettingsWindow();
+            //File file = new File("/loadpic.png");
+            //Image image = new Image(file.toURI().toString());
+            //imageView.setImage(image);
+            this.mode = "Manual";
+            this.modeText.setText(mode);
+            this.keyboardInput = new KeyboardInput();
             this.imageUpdater = new ImageUpdater(this.imageProperty, this.imageView, this.udpClient);
-            ses.scheduleAtFixedRate(this.imageUpdater, 0, 50, TimeUnit.MILLISECONDS);
+            this.guiUpdater = new GuiUpdater(this.textFieldObjectProperty, this.xPos, this.distance, this.tcpClient);
+            this.ses.scheduleAtFixedRate(this.imageUpdater, 0, 50, TimeUnit.MILLISECONDS);
+            this.ses.scheduleAtFixedRate(this.guiUpdater, 0, 500, TimeUnit.MILLISECONDS);
+            conMessage.setText("Message Window:");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -107,7 +120,9 @@ public class Controller extends Subscriber implements Initializable {
     }
 
     public void helpBtnPressed(){
-        System.out.println("asdfghjk");
+        String old = conMessage.getText() + "\n";
+        conMessage.setText(old + "Dette er en test");
+
     }
 
     public void openSettingsWindow() {
@@ -117,6 +132,9 @@ public class Controller extends Subscriber implements Initializable {
     @Override
     protected void doReadMessages() {
 
+    }
+    public void updateFields(){
+        // TODO: get variables to show.
     }
 
     public void onKeyPressed(KeyEvent keyEvent) {
