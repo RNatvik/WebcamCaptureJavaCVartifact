@@ -15,6 +15,7 @@ import javafx.scene.input.KeyEvent;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
 
+
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
@@ -108,7 +109,7 @@ public class Controller extends Subscriber implements Initializable {
      */
     public void tracingBtnPressed() {
         ControlInput ci = new ControlInput(false, 0, 0);
-        Message message = new Message(Topic.CONTROLER_INPUT, ci);
+        Message message = new Message(Topic.CONTROLLER_INPUT, ci);
         this.tcpClient.setOutputMessage("SET", message.toJSON());
         mode = "Tracking";
         modeText.setText(mode);
@@ -127,7 +128,7 @@ public class Controller extends Subscriber implements Initializable {
      */
     public void manualBtnPressed() {
         ControlInput ci = new ControlInput(true, 0, 0);
-        Message message = new Message(Topic.CONTROLER_INPUT, ci);
+        Message message = new Message(Topic.CONTROLLER_INPUT, ci);
         this.tcpClient.setOutputMessage("SET", message.toJSON());
         mode = "Manual";
         modeText.setText(mode);
@@ -165,7 +166,7 @@ public class Controller extends Subscriber implements Initializable {
             String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
             if (keysChanged != null) {
                 ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
-                Message message = new Message(Topic.CONTROLER_INPUT, ci);
+                Message message = new Message(Topic.CONTROLLER_INPUT, ci);
                 this.tcpClient.setOutputMessage("SET", message.toJSON());
 
             }
@@ -181,7 +182,7 @@ public class Controller extends Subscriber implements Initializable {
             String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
             if (keysChanged != null) {
                 ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
-                Message message = new Message(Topic.CONTROLER_INPUT, ci);
+                Message message = new Message(Topic.CONTROLLER_INPUT, ci);
                 this.tcpClient.setOutputMessage("SET", message.toJSON());
 
             }

@@ -169,7 +169,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                 message = new Message(topic, regParam);
                 break;
 
-            case Topic.CONTROLER_INPUT:
+            case Topic.CONTROLLER_INPUT:
                 ControlInput ci = new ControlInput(
                         dataJson.getBoolean("manualControl"),
                         dataJson.getDouble("forwardSpeed"),

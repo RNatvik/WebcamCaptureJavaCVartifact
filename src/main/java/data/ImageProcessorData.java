@@ -1,39 +1,19 @@
 package data;
 
-import java.awt.image.BufferedImage;
 
 /**
  * Class containing output information from the ImageProcessor.
  */
 public class ImageProcessorData extends Data {
 
-    private BufferedImage image;
     private double[] location;
 
     /**
      * Constructs a new instance
-     * @param image output image from processor
      * @param location detected object location
      */
-    public ImageProcessorData(BufferedImage image, double[] location) {
-        this.image = image;
+    public ImageProcessorData(double[] location) {
         this.location = location;
-    }
-
-    /**
-     * Returns the instance's output image
-     * @return the instance's output image
-     */
-    public synchronized BufferedImage getImage() {
-        return image;
-    }
-
-    /**
-     * Set the instance's output image
-     * @param image new output image
-     */
-    public synchronized void setImage(BufferedImage image) {
-        this.image = image;
     }
 
     /**

@@ -1,8 +1,6 @@
 package communication;
 
-import data.Data;
-import data.Flag;
-import data.ImageProcessorData;
+import data.*;
 import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
@@ -41,7 +39,7 @@ public class UDPClientSocket extends Subscriber implements Runnable {
     @Override
     public void run() {
         //System.out.println(this + ":: In run");
-        this.getBroker().subscribeTo("IMAGE_DATA", this);
+        this.getBroker().subscribeTo(Topic.OUTPUT_IMAGE, this);
         while (!(this.serverShutdownFlag.get() || this.shutdown)) {
             try {
                 this.readMessages();
@@ -90,8 +88,8 @@ public class UDPClientSocket extends Subscriber implements Runnable {
             Data data = message.getData();
             String topic = message.getTopic();
 
-            if (topic.equals("IMAGE_DATA")) {
-                ImageProcessorData image = data.safeCast(ImageProcessorData.class);
+            if (topic.equals(Topic.OUTPUT_IMAGE)) {
+                OutputImage image = data.safeCast(OutputImage.class);
                 try {
                     if (image != null) {
                         BufferedImage bufferedImage = image.getImage();

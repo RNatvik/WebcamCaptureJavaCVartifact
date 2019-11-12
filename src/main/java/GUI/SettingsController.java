@@ -246,9 +246,14 @@ public class SettingsController extends Subscriber implements Initializable {
             if (!this.tcpClient.isConnected()) {
                 this.tcpClient.initialize(getIpAdr(), getTCPport(), 20);
                 boolean success = this.tcpClient.connect();
+                System.out.println("Connect " + success);
                 if (success) {
                     this.tcpClient.setOutputMessage("SUB", Topic.REGULATOR_OUTPUT);
-                    this.tcpClient.setOutputMessage("SUB", Topic.IMAGE_DATA);
+                    this.tcpClient.setOutputMessage("SUB", Topic.IMPROC_DATA);
+                    this.doSendPidParameter(1);
+                    this.doSendPidParameter(2);
+                    this.doSendImageProcessorParameter();
+                    this.doSendRegulatorParameter();
                 }
 
             } else {
@@ -289,7 +294,6 @@ public class SettingsController extends Subscriber implements Initializable {
             } else if (paramNum == 2) {
                 message = new Message(Topic.PID_PARAM2, param);
             }
-            System.out.println(message.toJSON());
             this.tcpClient.setOutputMessage("SET", message.toJSON());
             saveProperties();
         } catch (IOException e) {
@@ -315,7 +319,6 @@ public class SettingsController extends Subscriber implements Initializable {
             Message message = new Message(Topic.IMPROC_PARAM, param);
             this.tcpClient.setOutputMessage("SET", message.toJSON());
             saveProperties();
-            System.out.println(message.toJSON());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -345,7 +348,6 @@ public class SettingsController extends Subscriber implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(message.toJSON());
     }
 
     /**
@@ -676,7 +678,7 @@ public class SettingsController extends Subscriber implements Initializable {
      * @throws IOException
      */
     public void saveProperties() throws IOException {
-        try (OutputStream output = new FileOutputStream(("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties"))) {
+        try (OutputStream output = new FileOutputStream(("C:\\Users\\r_bn-\\IntellijProjects\\WebcamCaptureJavaCVartifact\\src\\main\\resources\\ConfigParam.Properties"))) {
             Properties configProps = new Properties();
 
             configProps.setProperty("UDPport", UDPport.getText());
@@ -732,7 +734,7 @@ public class SettingsController extends Subscriber implements Initializable {
      * @throws IOException
      */
     private void loadProperties() throws IOException {
-        try (InputStream inputStream = new FileInputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
+        try (InputStream inputStream = new FileInputStream("C:\\Users\\r_bn-\\IntellijProjects\\WebcamCaptureJavaCVartifact\\src\\main\\resources\\ConfigParam.Properties")) {
             Properties configProps = new Properties();
             configProps.load(inputStream);
 

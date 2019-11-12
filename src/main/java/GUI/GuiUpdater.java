@@ -42,7 +42,7 @@ public class GuiUpdater extends Subscriber implements Runnable {
         this.rightMotor = rightMotor;
         this.getBroker().subscribeTo(Topic.REGULATOR_OUTPUT, this);
         this.getBroker().subscribeTo(Topic.CONSOLE_OUTPUT, this);
-        this.getBroker().subscribeTo(Topic.IMAGE_DATA, this);
+        this.getBroker().subscribeTo(Topic.IMPROC_DATA, this);
     }
 
     @Override
@@ -71,8 +71,6 @@ public class GuiUpdater extends Subscriber implements Runnable {
                     if (regulatorOutput != null) {
                         leftMotor.setText(parseToString(regulatorOutput.getLeftMotor()));
                         rightMotor.setText(parseToString(regulatorOutput.getRightMotor()));
-                        System.out.println(regulatorOutput.getLeftMotor());
-                        System.out.println(regulatorOutput.getRightMotor());
                     }
                     break;
 
@@ -87,8 +85,8 @@ public class GuiUpdater extends Subscriber implements Runnable {
                     if(debugMessage != null){
                         conMessage.appendText(debugMessage.getString());
                     }
-                case Topic.IMAGE_DATA:
-
+                case Topic.IMPROC_DATA:
+                    // TODO: handle improc data
                 default:
                     break;
             }
