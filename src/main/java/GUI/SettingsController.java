@@ -3,6 +3,7 @@ package GUI;
 import communication.TCPClient;
 import communication.UDPClient;
 import data.*;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -37,13 +38,12 @@ import java.util.concurrent.TimeUnit;
  * @since 30.10.2019
  */
 
-public class SettingsController extends Subscriber implements Initializable, Runnable {
+public class SettingsController extends Subscriber implements Initializable {
 
     private Stage primaryStage1;
     private UDPClient udpClient;
     private TCPClient tcpClient;
     private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-
 
     @FXML
     private Slider hueMax;
@@ -128,7 +128,9 @@ public class SettingsController extends Subscriber implements Initializable, Run
     @FXML
     private CheckBox reversedTwo;
 
-
+    /**
+     * Constructor of the class, constructs a Shared Recourse.
+     */
     public SettingsController() {
         super(SharedResource.getInstance().getBroker());
     }
@@ -146,23 +148,22 @@ public class SettingsController extends Subscriber implements Initializable, Run
                 this.udpClient = SharedResource.getInstance().getUdpClient();
             }
             loadProperties();
-            ses.scheduleAtFixedRate(this, 0, 50, TimeUnit.MILLISECONDS);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+        ses.scheduleAtFixedRate(() -> {
+            if (tcpClient.isConnected()) {
+                Platform.runLater(() -> conTcpBtn.setText("Disconnect"));
 
-    public void run() {
-        if (tcpClient.isConnected()) {
-            conTcpBtn.setText("Disconnect");
-        }
-        if (udpClient.isTerminated()) {
-            conUdpBtn.setText("Connect");
-        } else if (!tcpClient.isConnected()) {
-            conTcpBtn.setText("Connect");
-        } else if (!udpClient.isTerminated()) {
-            conUdpBtn.setText("Disconnect");
-        }
+            } else {
+                Platform.runLater(() -> conTcpBtn.setText("Connect"));
+            }
+            if (udpClient.isRunning()) {
+                Platform.runLater(() -> conUdpBtn.setText("Disconnect"));
+            } else {
+                Platform.runLater(() -> conUdpBtn.setText("Connect"));
+            }
+        }, 0, 200, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -227,9 +228,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
             } else {
                 this.udpClient.stop();
                 boolean terminated = false;
-                while (!terminated) {
-                    terminated = this.udpClient.isTerminated();
-                }
+
             }
             saveProperties();
         } catch (SocketException | UnknownHostException e) {
@@ -240,20 +239,26 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
     /**
-     * Not sure works yeet.
+     * TODO Testtt
      */
     public void connectButtonTCPClicked() {
         try {
             if (!this.tcpClient.isConnected()) {
                 this.tcpClient.initialize(getIpAdr(), getTCPport(), 20);
                 boolean success = this.tcpClient.connect();
-                conTcpBtn.setText("Disconnect");
+                if (success) {
+                    this.tcpClient.setOutputMessage("SUB", Topic.REGULATOR_OUTPUT);
+                    this.tcpClient.setOutputMessage("SUB", Topic.IMAGE_DATA);
+                    this.doSendPidParameter(1);
+                    this.doSendPidParameter(2);
+                    this.doSendImageProcessorParameter();
+                    this.doSendRegulatorParameter();
+                }
 
             } else {
                 this.tcpClient.stopConnection();
                 boolean terminated = this.tcpClient.isTerminated();
                 System.out.println("Tcp terminated: " + terminated);
-                conTcpBtn.setText("Connect");
             }
             saveProperties();
         } catch (UnknownHostException e) {
@@ -320,6 +325,10 @@ public class SettingsController extends Subscriber implements Initializable, Run
         }
     }
 
+    /**
+     * Creates all Regulator parameters and creates a Message. Then the message is given the correct Topic
+     * and command. Then its sends the modified message to the setOutputMessage in TcpClient.
+     */
     private void doSendRegulatorParameter() {
         double mcMinimumReverse = parseToDouble(getMinRev());
         double mcMaximumReverse = parseToDouble(getMaxRev());
@@ -343,6 +352,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
         System.out.println(message.toJSON());
     }
 
+    /**
+     * Reads Minimum reversed TextField and checks if its numeric.
+     *
+     * @return The Minimum reversed as a String.
+     */
     private String getMinRev() {
         String mRev = minRev.getText();
         if (!isNumeric(mRev)) {
@@ -351,6 +365,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return mRev;
     }
 
+    /**
+     * Reads Max reversed TextField and checks if its numeric.
+     *
+     * @return The Max reversed as a String.
+     */
     private String getMaxRev() {
         String mRev = maxRev.getText();
         if (!isNumeric(mRev)) {
@@ -359,6 +378,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return mRev;
     }
 
+    /**
+     * Reads Minimum forward TextField and checks if its numeric.
+     *
+     * @return The Minimum Forward as a String.
+     */
     private String getMinFwd() {
         String mFwd = minFwd.getText();
         if (!isNumeric(mFwd)) {
@@ -367,6 +391,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return mFwd;
     }
 
+    /**
+     * Reads Maximum forward TextField and checks if its numeric.
+     *
+     * @return The Maximum Forward as a String.
+     */
     private String getMaxFwd() {
         String mFwd = maxFwd.getText();
         if (!isNumeric(mFwd)) {
@@ -375,6 +404,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return mFwd;
     }
 
+    /**
+     * Reads Controller minimum out TextField and checks if its numeric.
+     *
+     * @return The Controller minimum out as a String.
+     */
     private String getConMinOut() {
         String cmo = conMinOut.getText();
         if (!isNumeric(cmo)) {
@@ -383,6 +417,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return cmo;
     }
 
+    /**
+     * Reads Controller maximum out TextField and checks if its numeric.
+     *
+     * @return The Controller maximum out as a String.
+     */
     private String getConMaxOut() {
         String cmo = conMaxOut.getText();
         if (!isNumeric(cmo)) {
@@ -391,6 +430,11 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return cmo;
     }
 
+    /**
+     * Reads ratio TextField and checks if its numeric.
+     *
+     * @return The ratio as a String.
+     */
     private String getRatio() {
         String r = ratio.getText();
         if (!isNumeric(r)) {
@@ -562,6 +606,12 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return deadBand;
     }
 
+    /**
+     * Reads The Reversed CheckBox and returns true or false.
+     *
+     * @param paramnum One is Forward Reverse, while Two is Turning Reversed.
+     * @return True if CheckBox is checked, else false.
+     */
     private boolean getReversed(int paramnum) {
         boolean rev = false;
 
@@ -573,6 +623,12 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return rev;
     }
 
+    /**
+     * Checks the reversed CheckBoxes and creating a string that can be saved in a config file.
+     *
+     * @param paramNum One is Forward, while Two is Turning.
+     * @return String "true" or "false".
+     */
     private String getStringReversed(int paramNum) {
         String rev = "false";
         if (getReversed(paramNum)) {
@@ -618,8 +674,13 @@ public class SettingsController extends Subscriber implements Initializable, Run
         valMax.setValue(valMaxPar);
     }
 
+    /**
+     * Takes a set of TextField and some CheckBoxes, then saves the chosen values to a config file.
+     *
+     * @throws IOException
+     */
     public void saveProperties() throws IOException {
-        try (OutputStream output = new FileOutputStream(("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties"))) {
+        try (OutputStream output = new FileOutputStream(("C:\\Users\\r_bn-\\IntellijProjects\\WebcamCaptureJavaCVartifact\\src\\main\\resources\\ConfigParam.Properties"))) {
             Properties configProps = new Properties();
 
             configProps.setProperty("UDPport", UDPport.getText());
@@ -669,8 +730,13 @@ public class SettingsController extends Subscriber implements Initializable, Run
         }
     }
 
+    /**
+     * Sets a set of TextFields and some Checkboxes to the previous value that is stored in the config file.
+     *
+     * @throws IOException
+     */
     private void loadProperties() throws IOException {
-        try (InputStream inputStream = new FileInputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
+        try (InputStream inputStream = new FileInputStream("C:\\Users\\r_bn-\\IntellijProjects\\WebcamCaptureJavaCVartifact\\src\\main\\resources\\ConfigParam.Properties")) {
             Properties configProps = new Properties();
             configProps.load(inputStream);
 
@@ -828,6 +894,12 @@ public class SettingsController extends Subscriber implements Initializable, Run
         return num;
     }
 
+    /**
+     * Converts a double variable to a String variable.
+     *
+     * @param d The double that needs to be converted.
+     * @return s the String.
+     */
     private String parseToString(double d) {
         String s = Double.toString(d);
         return s;
@@ -886,6 +958,9 @@ public class SettingsController extends Subscriber implements Initializable, Run
         doSendImageProcessorParameter();
     }
 
+    /**
+     * Adds a default value to the hueMin parameter when button is pressed.
+     */
     public void hueMinAdd() {
         double val = hueMin.getValue();
         hueMin.setValue(val + 1);
@@ -902,7 +977,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
     /**
-     * Adds a default value to the hueMax parameter when button is pressed.
+     * Adds a default value to the satMin parameter when button is pressed.
      */
     public void satMinAdd() {
         double val = satMin.getValue();
@@ -919,6 +994,9 @@ public class SettingsController extends Subscriber implements Initializable, Run
         doSendImageProcessorParameter();
     }
 
+    /**
+     * Adds a default value to the valMin parameter when button is pressed.
+     */
     public void valMinAdd() {
         double val = valMin.getValue();
         valMin.setValue(val + 1);
@@ -926,7 +1004,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
     /**
-     * Adds a default value to the hueMax parameter when button is pressed.
+     * Subtract a default value to the hueMax parameter when button is pressed.
      */
     public void hueMaxSub() {
         double val = hueMax.getValue();
@@ -934,6 +1012,9 @@ public class SettingsController extends Subscriber implements Initializable, Run
         doSendImageProcessorParameter();
     }
 
+    /**
+     * Subtract a default value to the hueMin parameter when button is pressed.
+     */
     public void hueMinSub() {
         double val = hueMin.getValue();
         hueMin.setValue(val - 1);
@@ -941,7 +1022,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
     /**
-     * Adds a default value to the satMax parameter when button is pressed.
+     * Subtract a default value to the satMax parameter when button is pressed.
      */
     public void satMaxSub() {
         double val = satMax.getValue();
@@ -950,7 +1031,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
     /**
-     * Adds a default value to the hueMax parameter when button is pressed.
+     * Subtract a default value to the satMin parameter when button is pressed.
      */
     public void satMinSub() {
         double val = satMin.getValue();
@@ -959,7 +1040,7 @@ public class SettingsController extends Subscriber implements Initializable, Run
     }
 
     /**
-     * Adds a default value to the valMax parameter when button is pressed.
+     * Subtract a default value to the valMax parameter when button is pressed.
      */
     public void valMaxSub() {
         double val = valMax.getValue();
@@ -967,34 +1048,36 @@ public class SettingsController extends Subscriber implements Initializable, Run
         doSendImageProcessorParameter();
     }
 
+    /**
+     * Subtract a default value to the valMin parameter when button is pressed.
+     */
     public void valMinSub() {
         double val = valMin.getValue();
         valMin.setValue(val - 1);
         doSendImageProcessorParameter();
     }
 
-    private void updateButtons() {
+    /**
+     * Try's to stop the Scheduled Exicuter, then awaits for the Exicuter to terminate, and then shuts its down.
+     */
+    public void safeStopSceduledExicuter() {
+        System.out.println("SettingsController ses.shutdown");
+        this.ses.shutdown();
+        try {
+            this.ses.awaitTermination(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.ses.shutdownNow();
+        System.out.println("test Settings Controller:" + this.ses.isShutdown());
 
     }
 
+    /**
+     * Dummy method.
+     */
     @Override
     protected void doReadMessages() {
-        while (!this.getMessageQueue().isEmpty()) {
-            Message message = this.getMessageQueue().remove();
-            String topic = message.getTopic();
-            Data data = message.getData();
 
-            switch (topic) {
-                case Topic.REGULATOR_OUTPUT:
-                    RegulatorOutput regulatorOutput = data.safeCast(RegulatorOutput.class);
-                    if (regulatorOutput != null) {
-                        regulatorOutput.getLeftMotor();
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
     }
 }

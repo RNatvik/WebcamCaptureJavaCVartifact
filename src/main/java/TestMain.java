@@ -1,7 +1,11 @@
 import communication.TCPClient;
 import communication.TCPServer;
+import communication.UDPServer;
 import data.ConsoleOutput;
+import data.Flag;
 import data.Topic;
+import image_processing.Camera;
+import image_processing.ImageProcessor;
 import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Publisher;
@@ -16,38 +20,28 @@ import java.util.concurrent.TimeUnit;
 public class TestMain {
 
     public static void main(String[] args) {
-        ScheduledExecutorService ses = Executors.newScheduledThreadPool(4);
+        ScheduledExecutorService ses = Executors.newScheduledThreadPool(5);
         Broker serverBroker = new Broker();
-        Broker clientBroker = new Broker();
         TCPServer tcpServer = new TCPServer(5678, true, 2, serverBroker);
-        TCPClient tcpClient = new TCPClient(clientBroker);
+        UDPServer udpServer = new UDPServer(2345, true, 3, serverBroker);
         ServerPublisher serverPublisher = new ServerPublisher(serverBroker);
-        Subber serverSubber = new Subber(serverBroker);
-        Subber clientSubber = new Subber(clientBroker);
-
-        ses.scheduleAtFixedRate(serverBroker, 1,5, TimeUnit.MILLISECONDS);
-        ses.scheduleAtFixedRate(clientBroker, 2, 5, TimeUnit.MILLISECONDS);
-        ses.scheduleAtFixedRate(serverPublisher, 3, 500, TimeUnit.MILLISECONDS);
-        //ses.scheduleAtFixedRate(serverSubber, 4, 5, TimeUnit.MILLISECONDS);
-        ses.scheduleAtFixedRate(clientSubber, 4, 5, TimeUnit.MILLISECONDS);
+        Flag flag = new Flag(false);
+        Camera camera = new Camera(0, flag);
+        ImageProcessor imageProcessor = new ImageProcessor(flag, serverBroker);
 
         tcpServer.startThread();
+        udpServer.startThread();
+
+        camera.start();
+        imageProcessor.start(camera.getSrcIm());
+
+        ses.scheduleAtFixedRate(camera, 0, 40, TimeUnit.MILLISECONDS);
+        ses.scheduleAtFixedRate(imageProcessor, 0, 5, TimeUnit.MILLISECONDS);
+        ses.scheduleAtFixedRate(serverPublisher, 0, 1000, TimeUnit.MILLISECONDS);
+        ses.scheduleAtFixedRate(serverBroker, 0, 5, TimeUnit.MILLISECONDS);
+
         try {
-            tcpClient.initialize("127.0.0.1", 5678, 20);
-            tcpClient.connect();
-            tcpClient.setOutputMessage("SUB", Topic.CONSOLE_OUTPUT);
-            Scanner scanner = new Scanner(System.in);
-            scanner.nextLine();
-
-            tcpClient.stopConnection();
-
-            scanner.nextLine();
-
-            tcpServer.stop();
-            ses.shutdown();
-            ses.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
+            Thread.sleep(300000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -15,6 +15,7 @@ import javafx.scene.image.ImageView;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public class GuiUpdater extends Subscriber implements Runnable {
     ObjectProperty<Image> imageProperty;
@@ -46,14 +47,14 @@ public class GuiUpdater extends Subscriber implements Runnable {
 
     @Override
     public void run() {
-        BufferedImage image = null;
-        while (image == null) {
-            image = this.udpClient.getImage();
-        }
-        Image im = SwingFXUtils.toFXImage(image, null);
-        this.imageProperty.set(im);
-        imageView.imageProperty().bind(this.imageProperty);
         readMessages();
+        BufferedImage image = this.udpClient.getImage();
+
+        if (image != null) {
+            Image im = SwingFXUtils.toFXImage(image, null);
+            this.imageProperty.set(im);
+            imageView.imageProperty().bind(this.imageProperty);
+        }
         isDebugged();
     }
 
@@ -93,13 +94,14 @@ public class GuiUpdater extends Subscriber implements Runnable {
     }
 
     public boolean isDebugged(){
-        boolean debug = false;
+        boolean debug;
         if(debugCheckWindow.isSelected()){
-            debug = true;
             this.getBroker().subscribeTo(Topic.DEBUG_OUTPUT, this);
+            debug = true;
         }
         else{
             this.getBroker().unsubscribeFrom(Topic.DEBUG_OUTPUT, this);
+            debug = false;
         }
         return debug;
     }

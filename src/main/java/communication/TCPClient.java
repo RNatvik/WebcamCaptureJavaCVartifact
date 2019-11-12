@@ -264,11 +264,13 @@ public class TCPClient implements Runnable, Publisher {
                     while (!this.outputMessageQueue.isEmpty()) {
                         String outputMessage = this.outputMessageQueue.remove();
                         printWriter.println(outputMessage);
+                        System.out.println(outputMessage);
                         printWriter.flush();
                     }
                 }
                 String body = bufferedReader.readLine();
                 if (body != null) {
+                    System.out.println("Received: " + body);
                     Message message = this.parseMessage(body);
                     this.publish(this.broker, message);
                 } else {
