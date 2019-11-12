@@ -265,6 +265,7 @@ public class TCPClient implements Runnable, Publisher {
                     while (!this.outputMessageQueue.isEmpty()) {
                         String outputMessage = this.outputMessageQueue.remove();
                         printWriter.println(outputMessage);
+                        System.out.println(outputMessage);
                         printWriter.flush();
                     }
                 }

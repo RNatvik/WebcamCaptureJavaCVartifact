@@ -2,18 +2,11 @@ package GUI;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Properties;
-
 
 public class App extends Application {
 
@@ -23,6 +16,7 @@ public class App extends Application {
         }
         launch(args);
         SharedResource.clear();
+        System.out.println(SharedResource.clear());
     }
 
     /**
@@ -36,11 +30,9 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException{
 
-        // Create the FXMLLoader
+        // Create path and the FXMLLoader
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/GUI.fxml"));
         System.out.println("AFter loader: " + loader);
-        // Path to the FXML File
-
         // Create the Pane and all Details
         Parent root = loader.load();
         // Create the Scene
@@ -52,13 +44,10 @@ public class App extends Application {
         // Close all windows when the main window gets closed
         Controller controller = loader.getController();
         primaryStage.onCloseRequestProperty().setValue(event -> {
-            controller.test();
+            controller.safeStopSceduledExicuter();
             Platform.exit();
+            System.exit(0);
         });
-        //
-
-
-
         // Display the Stage
         primaryStage.show();
     }
