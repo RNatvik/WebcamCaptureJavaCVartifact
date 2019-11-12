@@ -114,27 +114,27 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         while (!this.shutdown) {
             this.readMessages();
             if (this.flag.get()) {
-                long startTime = System.currentTimeMillis();
+                //long startTime = System.currentTimeMillis();
 
                 IplImage image = cvCloneImage(this.srcIm);
-                long cloneImTime = System.currentTimeMillis();
+                //long cloneImTime = System.currentTimeMillis();
 
                 IplConvKernel kernel = IplConvKernel.create(5, 5, 2, 2, CV_SHAPE_ELLIPSE, null);
                 this.flag.set(false);
                 this.threshold(image, this.binIm);
-                long thresholdTime = System.currentTimeMillis();
+                //long thresholdTime = System.currentTimeMillis();
 
                 //this.morph(this.binIm, kernel, 5, 3);
                 cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 11, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
                 cvThreshold(this.binIm, this.binIm, 200, 255, CV_THRESH_BINARY);
-                long morphTime = System.currentTimeMillis();
+                //long morphTime = System.currentTimeMillis();
 
                 double[] location = this.getCoordinates(this.binIm);
-                long locationTime = System.currentTimeMillis();
+                //long locationTime = System.currentTimeMillis();
 
                 this.paintCircle(image, new int[]{(int) location[0], (int) location[1], 2});
                 this.paintCircle(image, new int[]{(int) location[0], (int) location[1], (int) location[2]});
-                long paintTime = System.currentTimeMillis();
+                //long paintTime = System.currentTimeMillis();
 
                 BufferedImage buffIm;
                 if (this.parameters.isStoreProcessedImage()) {
@@ -146,7 +146,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 this.publish(this.getBroker(), message);
                 message = new Message(Topic.IMPROC_DATA, new ImageProcessorData(location));
                 this.publish(this.getBroker(), message);
-                long publishTime = System.currentTimeMillis();
+                //long publishTime = System.currentTimeMillis();
                 /*
                 if (!this.parameters.isStoreProcessedImage()) {
                     this.canvas.showImage(this.converter.convert(image));
@@ -155,7 +155,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 }
                  */
                 cvReleaseImage(image);
-                long endTime = System.currentTimeMillis();
+                //long endTime = System.currentTimeMillis();
                 counter += 1;
                 if (counter == 15) {
                     //System.out.println(String.format("x: %f    y: %f    r: %f    a: %f",
