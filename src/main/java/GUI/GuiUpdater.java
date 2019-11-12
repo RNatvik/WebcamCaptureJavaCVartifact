@@ -71,8 +71,6 @@ public class GuiUpdater extends Subscriber implements Runnable {
                     if (regulatorOutput != null) {
                         leftMotor.setText(parseToString(regulatorOutput.getLeftMotor()));
                         rightMotor.setText(parseToString(regulatorOutput.getRightMotor()));
-                        System.out.println(regulatorOutput.getLeftMotor());
-                        System.out.println(regulatorOutput.getRightMotor());
                     }
                     break;
 

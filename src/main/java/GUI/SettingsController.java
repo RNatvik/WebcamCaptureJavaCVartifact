@@ -249,6 +249,10 @@ public class SettingsController extends Subscriber implements Initializable {
                 if (success) {
                     this.tcpClient.setOutputMessage("SUB", Topic.REGULATOR_OUTPUT);
                     this.tcpClient.setOutputMessage("SUB", Topic.IMAGE_DATA);
+                    this.doSendPidParameter(1);
+                    this.doSendPidParameter(2);
+                    this.doSendImageProcessorParameter();
+                    this.doSendRegulatorParameter();
                 }
 
             } else {
@@ -676,7 +680,7 @@ public class SettingsController extends Subscriber implements Initializable {
      * @throws IOException
      */
     public void saveProperties() throws IOException {
-        try (OutputStream output = new FileOutputStream(("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties"))) {
+        try (OutputStream output = new FileOutputStream(("C:\\Users\\r_bn-\\IntellijProjects\\WebcamCaptureJavaCVartifact\\src\\main\\resources\\ConfigParam.Properties"))) {
             Properties configProps = new Properties();
 
             configProps.setProperty("UDPport", UDPport.getText());
@@ -732,7 +736,7 @@ public class SettingsController extends Subscriber implements Initializable {
      * @throws IOException
      */
     private void loadProperties() throws IOException {
-        try (InputStream inputStream = new FileInputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
+        try (InputStream inputStream = new FileInputStream("C:\\Users\\r_bn-\\IntellijProjects\\WebcamCaptureJavaCVartifact\\src\\main\\resources\\ConfigParam.Properties")) {
             Properties configProps = new Properties();
             configProps.load(inputStream);
 
