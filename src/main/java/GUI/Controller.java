@@ -3,16 +3,18 @@ package GUI;
 import communication.TCPClient;
 import communication.UDPClient;
 import data.ControlInput;
+import data.Data;
+import data.RegulatorOutput;
 import data.Topic;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
 
@@ -30,9 +32,10 @@ public class Controller extends Subscriber implements Initializable {
     private UDPClient udpClient;
     private SettingsController settingsController;
     private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
-    private ImageUpdater imageUpdater;
+    private ObjectProperty<TextField> textFieldObjectProperty = new SimpleObjectProperty<TextField>();
     private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
     private KeyboardInput keyboardInput;
+    private GuiUpdater guiUpdater;
 
     @FXML
     private Button manuelBtn;
@@ -41,7 +44,19 @@ public class Controller extends Subscriber implements Initializable {
     @FXML
     private Button trackingBtn;
     @FXML
+    private CheckBox debugCheckWindow;
+    @FXML
     public Label modeText;
+    @FXML
+    public TextField xPos;
+    @FXML
+    public TextField distance;
+    @FXML
+    public TextField leftMotor;
+    @FXML
+    public TextField rightMotor;
+    @FXML
+    public TextArea conMessage;
     @FXML
     public ImageView imageView;
     @FXML
@@ -64,18 +79,20 @@ public class Controller extends Subscriber implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            this.udpClient = SharedResource.getInstance().getUdpClient();
-            this.tcpClient = SharedResource.getInstance().getTcpClient();
+            if(SharedResource.isInitialized()) {
+                this.udpClient = SharedResource.getInstance().getUdpClient();
+                this.tcpClient = SharedResource.getInstance().getTcpClient();
+            }
             this.settingsController = new SettingsController();
-            settingsController.startSettingsWindow();
-            File file = new File("/loadpic.png");
-            Image image = new Image(file.toURI().toString());
-            imageView.setImage(image);
-            mode = "Manual";
-            modeText.setText(mode);
-            keyboardInput = new KeyboardInput();
-            this.imageUpdater = new ImageUpdater(this.imageProperty, this.imageView, this.udpClient);
-            ses.scheduleAtFixedRate(this.imageUpdater, 0, 50, TimeUnit.MILLISECONDS);
+            this.settingsController.startSettingsWindow();
+            this.mode = "Manual";
+            this.modeText.setText(mode);
+            this.keyboardInput = new KeyboardInput();
+            this.guiUpdater = new GuiUpdater(this.imageProperty, this.imageView, this.xPos, this.distance,
+                    this.leftMotor, this.rightMotor, this.conMessage, this.debugCheckWindow, this.udpClient);
+            this.ses.scheduleAtFixedRate(this.guiUpdater, 0, 50, TimeUnit.MILLISECONDS);
+
+            conMessage.setText("Message Window:");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -103,16 +120,17 @@ public class Controller extends Subscriber implements Initializable {
     }
 
     public void helpBtnPressed(){
-        System.out.println("asdfghjk");
+        String old = conMessage.getText() + "\n";
+        conMessage.setText(old + "Dette er en test");
+
     }
 
     public void openSettingsWindow() {
         settingsController.openSettingsWindow();
     }
 
-    @Override
-    protected void doReadMessages() {
-
+    public void ClearConWindow(){
+        conMessage.clear();
     }
 
     public void onKeyPressed(KeyEvent keyEvent) {
@@ -138,4 +156,18 @@ public class Controller extends Subscriber implements Initializable {
             }
         }
     }
+
+    public void test() {
+        System.out.println("In test");
+        this.ses.shutdown();
+        try {
+            this.ses.awaitTermination(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.ses.shutdownNow();
+    }
+
+    @Override
+    protected void doReadMessages() {    }
 }

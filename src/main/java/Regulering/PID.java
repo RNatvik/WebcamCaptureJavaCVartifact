@@ -21,8 +21,8 @@ public class PID {
     private double maxError=0;
     private double errorSum=0;
 
-    private double lastActual=0;
-
+    private double lastError = 0;
+    private long lastRun=0;
     private boolean firstRun=true;
     private boolean reversed=false;
 
@@ -36,10 +36,8 @@ public class PID {
     private PidParameter parameters;
 
     //**********************************
-    // Constructor functions
+    // Constructor function
     //**********************************
-
-
     public PID(PidParameter parameters){
         this.parameters = parameters;
     }
@@ -83,17 +81,23 @@ public class PID {
      * @return calculated output value for driving the system
      */
     public double getOutput(double actual){
+        // Calculate how long time since we last calculated:
+        long now = System.currentTimeMillis();
+        long dt = now -lastRun;
+        lastRun = now;
+
+        // Define and extract variables used in calculation
         double output;
         double Poutput;
         double Ioutput;
         double Doutput;
-        double Foutput;
         double setpoint = this.parameters.getSetpoint();
         double P = this.parameters.getKp();
         double I = this.parameters.getKi();
         double D = this.parameters.getKd();
         double minOutput = this.parameters.getMinOutput();
         double maxOutput = this.parameters.getMaxOutput();
+        double deadBand = this.parameters.getDeadBand();
 
         // Ramp the setpoint used for calculations if user has opted to do so
         if(setpointRange!=0){
@@ -103,8 +107,11 @@ public class PID {
         // Do the simple parts of the calculations
         double error=setpoint-actual;
 
-        // Calculate F output. Notice, this depends only on the setpoint, and not the error.
-        Foutput=F*setpoint;
+        if (deadBand != 0){
+            if(Math.abs(error) < deadBand){
+                error = 0;
+            }
+        }
 
         // Calculate P term
         Poutput=P*error;
@@ -113,28 +120,33 @@ public class PID {
         // For sensor, sanely assume it was exactly where it is now.
         // For last output, we can assume it's the current time-independent outputs.
         if(firstRun){
-            lastActual=actual;
-            lastOutput=Poutput+Foutput;
+            lastError= error;
+            lastOutput=Poutput;
             firstRun=false;
+            dt = 0;
         }
 
         // Calculate D Term
-        // Note, this is negative. This actually "slows" the system if it's doing
-        // the correct thing, and small values helps prevent output spikes and overshoot
-        Doutput= -D*(actual-lastActual);
-        lastActual=actual;
+        double errorChange = (error-lastError);
+        if((errorChange != 0) && (dt != 0)){
+            Doutput= D*errorChange/dt;
+        }
+        else {
+            Doutput = 0;
+        }
+        lastError = error;
 
         // The Iterm is more complex. There's several things to factor in to make it easier to deal with.
         // 1. maxIoutput restricts the amount of output contributed by the Iterm.
         // 2. prevent windup by not increasing errorSum if we're already running against our max Ioutput
         // 3. prevent windup by not increasing errorSum if output is output=maxOutput
-        Ioutput=I*errorSum;
+        Ioutput=I*errorSum*dt;
         if(maxIOutput!=0){
             Ioutput=constrain(Ioutput,-maxIOutput,maxIOutput);
         }
 
         // And, finally, we can just add the terms up
-        output=Foutput + Poutput + Ioutput + Doutput;
+        output= Poutput + Ioutput + Doutput;
 
         // Figure out what we're doing with the error.
         if(minOutput!=maxOutput && !bounded(output, minOutput,maxOutput) ){
@@ -188,6 +200,7 @@ public class PID {
     public void reset(){
         firstRun=true;
         errorSum=0;
+        lastRun = 0;
     }
 
     /**
@@ -264,11 +277,42 @@ public class PID {
         return (min<value) && (value<max);
     }
 
+    /**
+     * To operate correctly, all PID parameters require the same sign
+     * This should align with the {@literal}reversed value
+     */
+    private PidParameter checkSigns(PidParameter pp){
+        if (pp.isReversed()){
+            if(pp.getKp()>0){
+                pp.setKp(pp.getKp()*(-1));
+            }
+            if(pp.getKd()>0){
+                pp.setKd(pp.getKd()*(-1));
+            }
+            if(pp.getKi()>0){
+                pp.setKi(pp.getKi()*(-1));
+            }
+        }
+        else{
+            if(pp.getKp()<0){
+                pp.setKp(pp.getKp()*(-1));
+            }
+            if(pp.getKd()<0){
+                pp.setKd(pp.getKd()*(-1));
+            }
+            if(pp.getKi()<0){
+                pp.setKi(pp.getKi()*(-1));
+            }
+        }
+        return pp;
+    }
+
     public PidParameter getParameters() {
         return parameters;
     }
 
     public void setParameters(PidParameter parameters) {
+        parameters = checkSigns(parameters);
         this.parameters = parameters;
     }
 }

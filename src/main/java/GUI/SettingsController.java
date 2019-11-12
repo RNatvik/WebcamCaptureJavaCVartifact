@@ -24,6 +24,9 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The SettingsController class controls all the necessary objects in the SettingsWindow.fxml.
@@ -34,11 +37,13 @@ import java.util.ResourceBundle;
  * @since 30.10.2019
  */
 
-public class SettingsController extends Subscriber implements Initializable {
+public class SettingsController extends Subscriber implements Initializable, Runnable {
 
     private Stage primaryStage1;
     private UDPClient udpClient;
     private TCPClient tcpClient;
+    private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+
 
     @FXML
     private Slider hueMax;
@@ -77,6 +82,10 @@ public class SettingsController extends Subscriber implements Initializable {
     @FXML
     private TextField contrSetPointOne;
     @FXML
+    private TextField IMaxOne;
+    @FXML
+    private TextField deadBandOne;
+    @FXML
     private TextField propGainTwo;
     @FXML
     private TextField intGainTwo;
@@ -88,6 +97,10 @@ public class SettingsController extends Subscriber implements Initializable {
     private TextField contrMinOutTwo;
     @FXML
     private TextField contrSetPointTwo;
+    @FXML
+    private TextField IMaxTwo;
+    @FXML
+    private TextField deadBandTwo;
     @FXML
     private TextField minRev;
     @FXML
@@ -110,6 +123,10 @@ public class SettingsController extends Subscriber implements Initializable {
     private Button conTcpBtn;
     @FXML
     private CheckBox imProVideo;
+    @FXML
+    private CheckBox reversedOne;
+    @FXML
+    private CheckBox reversedTwo;
 
 
     public SettingsController() {
@@ -123,15 +140,28 @@ public class SettingsController extends Subscriber implements Initializable {
      * @param resources
      */
     public void initialize(URL location, ResourceBundle resources) {
-        if (SharedResource.isInitialized()) {
-            this.tcpClient = SharedResource.getInstance().getTcpClient();
-            this.udpClient = SharedResource.getInstance().getUdpClient();
-        }
-        try{
+        try {
+            if (SharedResource.isInitialized()) {
+                this.tcpClient = SharedResource.getInstance().getTcpClient();
+                this.udpClient = SharedResource.getInstance().getUdpClient();
+            }
             loadProperties();
-        }
-        catch (IOException e){
+            ses.scheduleAtFixedRate(this, 0, 50, TimeUnit.MILLISECONDS);
+        } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void run() {
+        if (tcpClient.isConnected()) {
+            conTcpBtn.setText("Disconnect");
+        }
+        if (udpClient.isTerminated()) {
+            conUdpBtn.setText("Connect");
+        } else if (!tcpClient.isConnected()) {
+            conTcpBtn.setText("Connect");
+        } else if (!udpClient.isTerminated()) {
+            conUdpBtn.setText("Disconnect");
         }
     }
 
@@ -165,16 +195,15 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
 
-
     /**
      * When Apply Forward is pressed, it calls a send-method for the Pid-Parameters with parameter
      * number one (Forward PID parameters).
      */
     public void controllerForwardApplyPressed() {
-            doSendPidParameter(1);
+        doSendPidParameter(1);
     }
 
-    public void RegulatorApplyPressed(){
+    public void RegulatorApplyPressed() {
         doSendRegulatorParameter();
     }
 
@@ -183,11 +212,11 @@ public class SettingsController extends Subscriber implements Initializable {
      * number one (Turning PID parameters).
      */
     public void controllerTurningApplyPressed() {
-            doSendPidParameter(2);
+        doSendPidParameter(2);
     }
 
     /**
-     * Not functional yeet.
+     * TODO error when not beeing able to connect.
      */
 
     public void connectButtonUDPClicked() {
@@ -195,22 +224,17 @@ public class SettingsController extends Subscriber implements Initializable {
             if (!this.udpClient.isRunning()) {
                 this.udpClient.initialize(getIpAdr(), getUDPport());
                 boolean success = this.udpClient.start();
-                conUdpBtn.setText("Disconnect");
-
             } else {
                 this.udpClient.stop();
                 boolean terminated = false;
                 while (!terminated) {
                     terminated = this.udpClient.isTerminated();
                 }
-                if (terminated) {
-                    conUdpBtn.setText("Connect");
-                }
             }
             saveProperties();
         } catch (SocketException | UnknownHostException e) {
             e.printStackTrace();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -234,7 +258,7 @@ public class SettingsController extends Subscriber implements Initializable {
             saveProperties();
         } catch (UnknownHostException e) {
             e.printStackTrace();
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -252,9 +276,12 @@ public class SettingsController extends Subscriber implements Initializable {
             double kd = parseToDouble(getDerGainFX(paramNum));
             double maxOutput = parseToDouble(getControllerMaxOut(paramNum));
             double minOutput = parseToDouble(getControllerMinOut(paramNum));
-            double setpoint = parseToDouble(getControllerSetPoint(paramNum));
+            double setPoint = parseToDouble(getControllerSetPoint(paramNum));
+            double deadBand = parseToDouble(getDeadBand(paramNum));
+            double maxIOutput = parseToDouble(getIMax(paramNum));
+            boolean reversed = getReversed(paramNum);
 
-            PidParameter param = new PidParameter(kp, ki, kd, maxOutput, minOutput, setpoint);
+            PidParameter param = new PidParameter(kp, ki, kd, maxOutput, minOutput, setPoint, deadBand, maxIOutput, reversed);
             Message message = null;
             if (paramNum == 1) {
                 message = new Message(Topic.PID_PARAM1, param);
@@ -264,8 +291,7 @@ public class SettingsController extends Subscriber implements Initializable {
             System.out.println(message.toJSON());
             this.tcpClient.setOutputMessage("SET", message.toJSON());
             saveProperties();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -289,18 +315,18 @@ public class SettingsController extends Subscriber implements Initializable {
             this.tcpClient.setOutputMessage("SET", message.toJSON());
             saveProperties();
             System.out.println(message.toJSON());
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     private void doSendRegulatorParameter() {
         double mcMinimumReverse = parseToDouble(getMinRev());
         double mcMaximumReverse = parseToDouble(getMaxRev());
         double mcMinimumForward = parseToDouble(getMinFwd());
         double mcMaximumForward = parseToDouble(getMaxFwd());
-        double controllerMinOutput = parseToDouble(getconMinOut());
-        double controllerMaxOutput = parseToDouble(getconMaxOut());
+        double controllerMinOutput = parseToDouble(getConMinOut());
+        double controllerMaxOutput = parseToDouble(getConMaxOut());
         double ratio = parseToDouble(getRatio());
 
         RegulatorParameter param = new RegulatorParameter(
@@ -309,60 +335,65 @@ public class SettingsController extends Subscriber implements Initializable {
         );
         Message message = new Message(Topic.REGULATOR_PARAM, param);
         this.tcpClient.setOutputMessage("SET", message.toJSON());
-        try{
+        try {
             saveProperties();
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println(message.toJSON());
     }
 
-    private String getMinRev(){
+    private String getMinRev() {
         String mRev = minRev.getText();
-        if(!isNumeric(mRev)){
+        if (!isNumeric(mRev)) {
             mRev = "0";
         }
         return mRev;
     }
-    private String getMaxRev(){
+
+    private String getMaxRev() {
         String mRev = maxRev.getText();
-        if(!isNumeric(mRev)){
+        if (!isNumeric(mRev)) {
             mRev = "0";
         }
         return mRev;
     }
-    private String getMinFwd(){
+
+    private String getMinFwd() {
         String mFwd = minFwd.getText();
-        if(!isNumeric(mFwd)){
+        if (!isNumeric(mFwd)) {
             mFwd = "0";
         }
         return mFwd;
     }
-    private String getMaxFwd(){
+
+    private String getMaxFwd() {
         String mFwd = maxFwd.getText();
-        if(!isNumeric(mFwd)){
+        if (!isNumeric(mFwd)) {
             mFwd = "0";
         }
         return mFwd;
     }
-    private String getconMinOut(){
+
+    private String getConMinOut() {
         String cmo = conMinOut.getText();
-        if(!isNumeric(cmo)){
+        if (!isNumeric(cmo)) {
             cmo = "0";
         }
         return cmo;
     }
-    private String getconMaxOut(){
+
+    private String getConMaxOut() {
         String cmo = conMaxOut.getText();
-        if(!isNumeric(cmo)){
+        if (!isNumeric(cmo)) {
             cmo = "0";
         }
         return cmo;
     }
-    private String getRatio(){
+
+    private String getRatio() {
         String r = ratio.getText();
-        if(!isNumeric(r)){
+        if (!isNumeric(r)) {
             r = "0";
         }
         return r;
@@ -470,6 +501,7 @@ public class SettingsController extends Subscriber implements Initializable {
         return minOut;
     }
 
+
     /**
      * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
      * numerical.
@@ -488,6 +520,67 @@ public class SettingsController extends Subscriber implements Initializable {
             setPoint = "0";
         }
         return setPoint;
+    }
+
+    /**
+     * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
+     * numerical.
+     *
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The set point.
+     */
+    private String getIMax(int paramNum) {
+        String iMax = "0";
+        if (paramNum == 1) {
+            iMax = IMaxOne.getText();
+        } else if (paramNum == 2) {
+            iMax = IMaxTwo.getText();
+        }
+        if (iMax.isEmpty() && !isNumeric(iMax)) {
+            iMax = "0";
+        }
+        return iMax;
+    }
+
+    /**
+     * Reads the text field from GUI/SettingsWindow tab->Controller parameters, and checks if they are
+     * numerical.
+     *
+     * @param paramNum where 1 is Forward parameter and 2 is Turning parameter.
+     * @return The set point.
+     */
+    private String getDeadBand(int paramNum) {
+        String deadBand = "0";
+        if (paramNum == 1) {
+            deadBand = deadBandOne.getText();
+        } else if (paramNum == 2) {
+            deadBand = deadBandTwo.getText();
+        }
+        if (deadBand.isEmpty() && !isNumeric(deadBand)) {
+            deadBand = "0";
+        }
+        return deadBand;
+    }
+
+    private boolean getReversed(int paramnum) {
+        boolean rev = false;
+
+        if (paramnum == 1) {
+            rev = reversedOne.isSelected();
+        } else if (paramnum == 2) {
+            rev = reversedTwo.isSelected();
+        }
+        return rev;
+    }
+
+    private String getStringReversed(int paramNum) {
+        String rev = "false";
+        if (getReversed(paramNum)) {
+            rev = "true";
+        } else {
+            rev = "false";
+        }
+        return rev;
     }
 
     /**
@@ -525,8 +618,8 @@ public class SettingsController extends Subscriber implements Initializable {
         valMax.setValue(valMaxPar);
     }
 
-    public void saveProperties() throws IOException{
-        try(OutputStream output = new FileOutputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
+    public void saveProperties() throws IOException {
+        try (OutputStream output = new FileOutputStream(("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties"))) {
             Properties configProps = new Properties();
 
             configProps.setProperty("UDPport", UDPport.getText());
@@ -559,19 +652,25 @@ public class SettingsController extends Subscriber implements Initializable {
             configProps.setProperty("maxRev", getMaxRev());
             configProps.setProperty("minFwd", getMinFwd());
             configProps.setProperty("maxFwd", getMaxFwd());
-            configProps.setProperty("conMinOut", getconMinOut());
-            configProps.setProperty("conMaxOut", getconMaxOut());
+            configProps.setProperty("conMinOut", getConMinOut());
+            configProps.setProperty("conMaxOut", getConMaxOut());
             configProps.setProperty("ratio", getRatio());
+            configProps.setProperty("deadBandOne", getDeadBand(1));
+            configProps.setProperty("deadBandTwo", getDeadBand(2));
+            configProps.setProperty("iMaxOne", getIMax(1));
+            configProps.setProperty("iMaxTwo", getIMax(2));
+            configProps.setProperty("reversedOne", getStringReversed(1));
+            configProps.setProperty("reversedTwo", getStringReversed(2));
+
 
             configProps.store(output, "Parameter configuration test");
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void loadProperties() throws IOException{
-        try(InputStream inputStream = new FileInputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
+    private void loadProperties() throws IOException {
+        try (InputStream inputStream = new FileInputStream("C:\\GITprosjekt\\RCcar\\src\\main\\resources\\ConfigParam.Properties")) {
             Properties configProps = new Properties();
             configProps.load(inputStream);
 
@@ -608,8 +707,21 @@ public class SettingsController extends Subscriber implements Initializable {
             conMinOut.setText(configProps.getProperty("conMinOut"));
             conMaxOut.setText(configProps.getProperty("conMaxOut"));
             ratio.setText(configProps.getProperty("ratio"));
-        }
-        catch (IOException ex){
+            IMaxOne.setText(configProps.getProperty("iMaxOne"));
+            IMaxTwo.setText(configProps.getProperty("iMaxTwo"));
+            deadBandOne.setText(configProps.getProperty("deadBandOne"));
+            deadBandTwo.setText(configProps.getProperty("deadBandTwo"));
+            if (configProps.getProperty("reversedOne").equals("true")) {
+                reversedOne.setSelected(true);
+            } else {
+                reversedOne.setSelected(false);
+            }
+            if (configProps.getProperty("reversedTwo").matches("true")) {
+                reversedTwo.setSelected(true);
+            } else {
+                reversedTwo.setSelected(false);
+            }
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
 
@@ -716,7 +828,7 @@ public class SettingsController extends Subscriber implements Initializable {
         return num;
     }
 
-    private String parseToString(double d){
+    private String parseToString(double d) {
         String s = Double.toString(d);
         return s;
     }
@@ -859,6 +971,10 @@ public class SettingsController extends Subscriber implements Initializable {
         double val = valMin.getValue();
         valMin.setValue(val - 1);
         doSendImageProcessorParameter();
+    }
+
+    private void updateButtons() {
+
     }
 
     @Override

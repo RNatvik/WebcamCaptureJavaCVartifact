@@ -174,7 +174,10 @@ public class TCPClient implements Runnable, Publisher {
                             jsonDataObject.getDouble("kd"),
                             jsonDataObject.getDouble("maxOutput"),
                             jsonDataObject.getDouble("minOutput"),
-                            jsonDataObject.getDouble("setpoint")
+                            jsonDataObject.getDouble("setpoint"),
+                            jsonDataObject.getDouble("deadBand"),
+                            jsonDataObject.getDouble("maxIOutput"),
+                            jsonDataObject.getBoolean("reversed")
                     );
                     message = new Message(topic, pidParameter1);
                     break;
@@ -186,7 +189,10 @@ public class TCPClient implements Runnable, Publisher {
                             jsonDataObject.getDouble("kd"),
                             jsonDataObject.getDouble("maxOutput"),
                             jsonDataObject.getDouble("minOutput"),
-                            jsonDataObject.getDouble("setpoint")
+                            jsonDataObject.getDouble("setpoint"),
+                            jsonDataObject.getDouble("deadBand"),
+                            jsonDataObject.getDouble("maxIOutput"),
+                            jsonDataObject.getBoolean("reversed")
                     );
                     message = new Message(topic, pidParameter2);
                     break;

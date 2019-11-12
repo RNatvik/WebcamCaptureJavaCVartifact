@@ -29,8 +29,8 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     public Controller(Broker broker) {
         super(broker);
 
-        this.pidForward = new PID(new PidParameter(0,0,0,200,-200, 100));
-        this.pidTurn = new PID(new PidParameter(0,0,0,200,-200, 100));
+        this.pidForward = new PID(new PidParameter(0,0,0,200,-200, 100,0,0,true));
+        this.pidTurn = new PID(new PidParameter(0,0,0,200,-200, 100,0,0,true));
         this.regParam = new RegulatorParameter(-20, -120, 20, 120,-200,200,1);
         this.location = new double[]{0,0,0,0};
         this.newLocation = false;
@@ -51,7 +51,10 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         this.readMessages();
 
         if (this.manualMode && this.newManualCommand) {
-            calculateMotorSpeed(this.manualControlInput.getForwardSpeed(),this.manualControlInput.getTurnSpeed());
+            double fw = this.manualControlInput.getForwardSpeed();
+            double tr = this.manualControlInput.getTurnSpeed();
+            double[] motorSpeeds = calculateMotorSpeed(fw,tr);
+            sendRegulatorOutput(motorSpeeds);
             this.pidForward.reset();
             this.pidTurn.reset();
             this.newManualCommand = false;
@@ -59,9 +62,15 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         }
 
         if( this.newLocation && !this.manualMode )
-        {
-            double[] pidOutputs = calculatePID();
-            calculateMotorSpeed(pidOutputs[0],pidOutputs[1]);
+        {   double x = this.location[0];
+            //double y = this.location[1];
+            double radius = this.location[2];
+            double distance = 1979.877*Math.pow(radius,-1.0315375); //Function to linearize the radius to distance in cm
+            //System.out.println("The radius is: " + radius);
+            //double area = this.location[3];
+            double[] pidOutputs = calculatePID(distance,x);
+            double[] motorSpeeds = calculateMotorSpeed(pidOutputs[0],pidOutputs[1]);
+            sendRegulatorOutput(motorSpeeds);
             this.newLocation = false;
         }
     }
@@ -69,27 +78,20 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     /**
      * Calculate the pid outputs
      */
-    private double[] calculatePID() {
-        double x = this.location[0];
-        double y = this.location[1];
-        double radius = this.location[2];
-        //System.out.println("The radius is: " + radius);
-        double area = this.location[3];
-
-        double pidOut1 = this.pidForward.getOutput(radius);
+    private double[] calculatePID(double distance, double x) {
+        double pidOut1 = this.pidForward.getOutput(distance);
         //System.out.println("PID FW output: " + pidOut1);
         double pidOut2 = this.pidTurn.getOutput(x);
-
         pidOut1 = pidOut1*this.regParam.getRatio();
-        pidOut2 = (1-pidOut2*this.regParam.getRatio());
-
+        pidOut2 = pidOut2*(1-this.regParam.getRatio());
         return new double[]{pidOut1,pidOut2};
     }
 
     /**
      * Calculate the motorspeeds based
+     *
      */
-    private void calculateMotorSpeed(double forward,double turn) {
+    private double[] calculateMotorSpeed(double forward,double turn) {
         double[] motorOutput = this.sumMotorVal(forward, turn);
         //System.out.println("Motoroutput after sum: "+motorOutput[0]+ " : " + motorOutput[1]);
         motorOutput[0] = clamp(motorOutput[0], this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
@@ -97,7 +99,14 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         //System.out.println("After clamp: " +motorOutput[0]+ " : " + motorOutput[1]);
         double[] mappedValues = this.mapMotorValue(motorOutput);
         //System.out.println("After map: " + mappedValues[0] + " : " + mappedValues[1]);
-        Data outputData = new RegulatorOutput(mappedValues[0], mappedValues[1]);
+        return mappedValues;
+    }
+
+    /**
+     *
+     */
+    private void sendRegulatorOutput(double [] motorsvalues){
+        Data outputData = new RegulatorOutput(motorsvalues[0], motorsvalues[1]);
         //System.out.println("Outputdata to string: " + outputData.toString());
         Message outputMessage = new Message(Topic.REGULATOR_OUTPUT, outputData);
         this.publish(this.getBroker(), outputMessage);
@@ -105,7 +114,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
 
 
     /**
-     * Maps the output from the pid to appropriate values to send to the motors
+     * Maps the output to appropriate values to send to the motors
      *
      * @param motors the motor values to map.
      * @return the motors values maped in desired range

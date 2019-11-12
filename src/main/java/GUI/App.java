@@ -2,10 +2,12 @@ package GUI;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.File;
 import java.io.FileReader;
@@ -48,7 +50,11 @@ public class App extends Application {
         // Set the Title to the Stage
         primaryStage.setTitle("RC-Car");
         // Close all windows when the main window gets closed
-        primaryStage.onCloseRequestProperty().setValue(e -> Platform.exit());
+        Controller controller = loader.getController();
+        primaryStage.onCloseRequestProperty().setValue(event -> {
+            controller.test();
+            Platform.exit();
+        });
         //
 
 

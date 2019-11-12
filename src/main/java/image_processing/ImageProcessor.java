@@ -263,9 +263,12 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         cvMoments(thresholdImage, moments, 1);
         // cv Spatial moment : Mji=sumx,y(I(x,y)•xj•yi)
         // where I(x,y) is the intensity of the pixel (x, y).
-        double momX10 = this.filter.passValue("momX", cvGetSpatialMoment(moments, 1, 0)); // (x,y)
-        double momY01 = this.filter.passValue("momY", cvGetSpatialMoment(moments, 0, 1));// (x,y)
-        double area = this.filter.passValue("area", cvGetCentralMoment(moments, 0, 0));
+        double momX10 = cvGetSpatialMoment(moments, 1, 0); // (x,y)
+        double momY01 = cvGetSpatialMoment(moments, 0, 1);// (x,y)
+        double area = cvGetCentralMoment(moments, 0, 0);
+//        momX10 = this.filter.passValue("momX", momX10); // (x,y)
+//        momY01 = this.filter.passValue("momY", momY01);// (x,y)
+//        area = this.filter.passValue("area", area);
         double x = momX10 / area;
         double y = momY01 / area;
         double r = (Math.sqrt(area / Math.PI));

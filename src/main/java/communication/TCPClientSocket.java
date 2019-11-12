@@ -133,7 +133,10 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                         dataJson.getDouble("kd"),
                         dataJson.getDouble("maxOutput"),
                         dataJson.getDouble("minOutput"),
-                        dataJson.getDouble("setpoint")
+                        dataJson.getDouble("setpoint"),
+                        dataJson.getDouble("deadBand"),
+                        dataJson.getDouble("maxIOutput"),
+                        dataJson.getBoolean("reversed")
                 );
                 message = new Message(topic, param1);
                 break;
@@ -145,7 +148,10 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                         dataJson.getDouble("kd"),
                         dataJson.getDouble("maxOutput"),
                         dataJson.getDouble("minOutput"),
-                        dataJson.getDouble("setpoint")
+                        dataJson.getDouble("setpoint"),
+                        dataJson.getDouble("deadBand"),
+                        dataJson.getDouble("maxIOutput"),
+                        dataJson.getBoolean("reversed")
                 );
                 message = new Message(topic, param2);
                 break;
