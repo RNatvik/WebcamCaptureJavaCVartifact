@@ -271,6 +271,10 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
 //        area = this.filter.passValue("area", area);
         double x = momX10 / area;
         double y = momY01 / area;
+        if (area == 0) {
+            x = 0;
+            y = 0;
+        }
         double r = (Math.sqrt(area / Math.PI));
         return new double[]{x, y, r, area};
     }
