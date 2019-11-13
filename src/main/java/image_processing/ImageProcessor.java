@@ -130,6 +130,14 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 //long morphTime = System.currentTimeMillis();
 
                 double[] location = this.getCoordinates(this.binIm);
+                double distance = 1979.877*Math.pow(location[2],-1.0315375);
+                double newX = location[0] / distance;
+                if (location[3] == 0) {
+                    distance = 0;
+                    newX = 0;
+                }
+                double[] newLocation = new double[]{newX, location[1], distance, location[3]};
+
                 //long locationTime = System.currentTimeMillis();
 
                 this.paintCircle(image, new int[]{(int) location[0], (int) location[1], 2});
@@ -144,7 +152,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 }
                 Message message = new Message(Topic.OUTPUT_IMAGE, new OutputImage(buffIm));
                 this.publish(this.getBroker(), message);
-                message = new Message(Topic.IMPROC_DATA, new ImageProcessorData(location));
+                message = new Message(Topic.IMPROC_DATA, new ImageProcessorData(newLocation));
                 this.publish(this.getBroker(), message);
                 //long publishTime = System.currentTimeMillis();
                 /*
@@ -270,14 +278,13 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
 //        momY01 = this.filter.passValue("momY", momY01);// (x,y)
 //        area = this.filter.passValue("area", area);
         double r = (Math.sqrt(area / Math.PI));
-        double distance = 1979.877*Math.pow(r,-1.0315375);
-        double x = momX10 / (area*distance);
+        double x = momX10 / area;
         double y = momY01 / area;
         if (area == 0) {
             x = 0;
             y = 0;
         }
-        return new double[]{x, y, distance, area};
+        return new double[]{x, y, r, area};
     }
 
     /**
