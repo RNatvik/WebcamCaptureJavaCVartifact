@@ -64,8 +64,8 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         if( this.newLocation && !this.manualMode )
         {   double x = this.location[0];
             //double y = this.location[1];
-            double radius = this.location[2];
-            double distance = 1979.877*Math.pow(radius,-1.0315375); //Function to linearize the radius to distance in cm
+            double distance = this.location[2];
+             //Function to linearize the radius to distance in cm
             //System.out.println("The radius is: " + radius);
             //double area = this.location[3];
             double[] pidOutputs = calculatePID(distance,x);
