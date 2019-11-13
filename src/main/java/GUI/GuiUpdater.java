@@ -1,10 +1,8 @@
 package GUI;
 
 import communication.UDPClient;
-import data.ConsoleOutput;
-import data.Data;
-import data.RegulatorOutput;
-import data.Topic;
+import data.*;
+import image_processing.ImageProcessor;
 import javafx.beans.property.ObjectProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.CheckBox;
@@ -86,7 +84,11 @@ public class GuiUpdater extends Subscriber implements Runnable {
                         conMessage.appendText(debugMessage.getString());
                     }
                 case Topic.IMPROC_DATA:
-                    // TODO: handle improc data
+                    ImageProcessorData imageProcessorData = data.safeCast(ImageProcessorData.class);
+                    if(imageProcessorData != null){
+                        distance.setText(parseToString(imageProcessorData.getLocation()[2]));
+                        xPos.setText(parseToString(imageProcessorData.getLocation()[0]));
+                    }
                 default:
                     break;
             }
