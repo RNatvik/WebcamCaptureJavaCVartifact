@@ -131,7 +131,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
 
                 double[] location = this.getCoordinates(this.binIm);
                 double distance = 1979.877*Math.pow(location[2],-1.0315375);
-                double newX = location[0] / distance;
+                double newX = (location[0]-320) / distance;
                 if (location[3] == 0) {
                     distance = 0;
                     newX = 0;
