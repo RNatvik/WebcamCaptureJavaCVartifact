@@ -75,19 +75,19 @@ public class GuiUpdater extends Subscriber implements Runnable {
                 case Topic.CONSOLE_OUTPUT:
                     ConsoleOutput consoleOutput = data.safeCast(ConsoleOutput.class);
                     if (consoleOutput != null) {
-                        conMessage.appendText(consoleOutput.getString());
+                        conMessage.appendText("\n" + consoleOutput.getString());
                     }
                     break;
                 case Topic.DEBUG_OUTPUT:
                     ConsoleOutput debugMessage = data.safeCast(ConsoleOutput.class);
                     if(debugMessage != null){
-                        conMessage.appendText(debugMessage.getString());
+                        conMessage.appendText("\n" + debugMessage.getString());
                     }
                 case Topic.IMPROC_DATA:
                     ImageProcessorData imageProcessorData = data.safeCast(ImageProcessorData.class);
                     if(imageProcessorData != null){
-                        distance.setText(parseToString(imageProcessorData.getLocation()[2]));
-                        xPos.setText(parseToString(imageProcessorData.getLocation()[0]));
+                        distance.setText(parseToString(Math.round(imageProcessorData.getLocation()[2])));
+                        xPos.setText(parseToString(Math.round(imageProcessorData.getLocation()[0])));
                     }
                 default:
                     break;
