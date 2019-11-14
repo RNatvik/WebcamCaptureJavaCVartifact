@@ -244,7 +244,7 @@ public class SettingsController extends Subscriber implements Initializable {
     public void connectButtonTCPClicked() {
         try {
             if (!this.tcpClient.isConnected()) {
-                this.tcpClient.initialize(getIpAdr(), getTCPport(), 20);
+                this.tcpClient.initialize(getIpAdr(), getTCPport(), 50);
                 boolean success = this.tcpClient.connect();
                 System.out.println("Connect " + success);
                 if (success) {

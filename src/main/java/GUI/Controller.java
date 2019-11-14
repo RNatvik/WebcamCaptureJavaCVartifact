@@ -5,6 +5,7 @@ import communication.UDPClient;
 import data.ControlInput;
 import data.GripperControl;
 import data.Topic;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
@@ -98,7 +99,8 @@ public class Controller extends Subscriber implements Initializable {
             this.keyboardInput = new KeyboardInput();
             this.guiUpdater = new GuiUpdater(this.imageProperty, this.imageView, this.xPos, this.distance,
                     this.leftMotor, this.rightMotor, this.conMessage, this.debugCheckWindow, this.udpClient);
-            this.ses.scheduleAtFixedRate(this.guiUpdater, 0, 40, TimeUnit.MILLISECONDS);
+            this.ses.scheduleAtFixedRate(() -> {
+                Platform.runLater(this.guiUpdater);}, 0, 40, TimeUnit.MILLISECONDS);
             conMessage.setText("Message Window:");
         } catch (Exception e) {
             e.printStackTrace();

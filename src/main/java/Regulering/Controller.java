@@ -29,12 +29,12 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     public Controller(Broker broker) {
         super(broker);
 
-        this.pidForward = new PID(new PidParameter(0,0,0,200,-200, 100,0,0,true));
-        this.pidTurn = new PID(new PidParameter(0,0,0,200,-200, 100,0,0,true));
-        this.regParam = new RegulatorParameter(-20, -120, 20, 120,-200,200,1);
-        this.location = new double[]{0,0,0,0};
+        this.pidForward = new PID(new PidParameter(0, 0, 0, 200, -200, 100, 0, 0, true));
+        this.pidTurn = new PID(new PidParameter(0, 0, 0, 200, -200, 100, 0, 0, true));
+        this.regParam = new RegulatorParameter(-20, -120, 20, 120, -200, 200, 1);
+        this.location = new double[]{0, 0, 0, 0};
         this.newLocation = false;
-        this.manualControlInput = new ControlInput(true,0,0);
+        this.manualControlInput = new ControlInput(true, 0, 0);
         this.manualMode = this.manualControlInput.isManualControl();
         this.newManualCommand = true;
 
@@ -42,7 +42,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         this.getBroker().subscribeTo(Topic.PID_PARAM2, this);
         this.getBroker().subscribeTo(Topic.REGULATOR_PARAM, this);
         this.getBroker().subscribeTo(Topic.IMPROC_DATA, this);
-        this.getBroker().subscribeTo(Topic.CONTROLLER_INPUT,this);
+        this.getBroker().subscribeTo(Topic.CONTROLLER_INPUT, this);
 
     }
 
@@ -53,27 +53,42 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         if (this.manualMode && this.newManualCommand) {
             double fw = this.manualControlInput.getForwardSpeed();
             double tr = this.manualControlInput.getTurnSpeed();
-            double[] motorSpeeds = calculateMotorSpeed(fw,tr);
-            sendRegulatorOutput(motorSpeeds);
+            // double[] motorSpeeds = calculateMotorSpeed(fw, tr);
+            double leftSpeed = fw + tr;
+            double rightSpeed = fw - tr;
+            leftSpeed = clamp(leftSpeed, this.regParam.getMcMaximumReverse(), this.regParam.getMcMaximumForward());
+            rightSpeed = clamp(rightSpeed, this.regParam.getMcMaximumReverse(), this.regParam.getMcMaximumForward());
+            sendRegulatorOutput(new double[]{leftSpeed, rightSpeed});
             this.pidForward.reset();
             this.pidTurn.reset();
             this.newManualCommand = false;
 
         }
 
-        if( this.newLocation && !this.manualMode )
-        {   double x = this.location[0];
-            //double y = this.location[1];
-            double radius = this.location[2];
-            double distance = 1979.877*Math.pow(radius,-1.0315375); //Function to linearize the radius to distance in cm
-            //System.out.println("The radius is: " + radius);
-            //double area = this.location[3];
-            double[] pidOutputs = calculatePID(distance,x);
-            double[] motorSpeeds = calculateMotorSpeed(pidOutputs[0],pidOutputs[1]);
-            sendRegulatorOutput(motorSpeeds);
+        if (this.newLocation && !this.manualMode) {
+            if (this.location[3] > 0) {
+                double x = this.location[0];
+                //double y = this.location[1];
+                double distance = this.location[2];
+                //Function to linearize the radius to distance in cm
+                //System.out.println("The radius is: " + radius);
+                //double area = this.location[3];
+                double[] pidOutputs = calculatePID(distance, x);
+                double[] motorSpeeds = calculateMotorSpeed(pidOutputs[0], pidOutputs[1]);
+                if (!(motorSpeeds[0] >= this.regParam.getMcMinimumForward() || motorSpeeds[0] <= this.regParam.getMcMinimumReverse())) {
+                    motorSpeeds[0] = 0;
+                }
+                if (!(motorSpeeds[1] >= this.regParam.getMcMinimumForward() || motorSpeeds[1] <= this.regParam.getMcMinimumReverse())) {
+                    motorSpeeds[1] = 0;
+                }
+                sendRegulatorOutput(motorSpeeds);
+            } else {
+                sendRegulatorOutput(new double[]{0, 0});
+            }
             this.newLocation = false;
         }
     }
+
 
     /**
      * Calculate the pid outputs
@@ -82,30 +97,29 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         double pidOut1 = this.pidForward.getOutput(distance);
         //System.out.println("PID FW output: " + pidOut1);
         double pidOut2 = this.pidTurn.getOutput(x);
-        pidOut1 = pidOut1*this.regParam.getRatio();
-        pidOut2 = pidOut2*(1-this.regParam.getRatio());
-        return new double[]{pidOut1,pidOut2};
+//        pidOut1 = pidOut1 * this.regParam.getRatio();
+//        pidOut2 = pidOut2 * (1 - this.regParam.getRatio());
+        return new double[]{pidOut1, pidOut2};
     }
 
     /**
      * Calculate the motorspeeds based
-     *
      */
-    private double[] calculateMotorSpeed(double forward,double turn) {
+    private double[] calculateMotorSpeed(double forward, double turn) {
         double[] motorOutput = this.sumMotorVal(forward, turn);
         //System.out.println("Motoroutput after sum: "+motorOutput[0]+ " : " + motorOutput[1]);
-        motorOutput[0] = clamp(motorOutput[0], this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
-        motorOutput[1] = clamp(motorOutput[1],this.regParam.getControllerMinOutput(),this.regParam.getControllerMaxOutput());
+        motorOutput[0] = (int) clamp(motorOutput[0], this.regParam.getMcMaximumReverse(), this.regParam.getMcMaximumForward());
+        motorOutput[1] = (int) clamp(motorOutput[1], this.regParam.getMcMaximumReverse(), this.regParam.getMcMaximumForward());
         //System.out.println("After clamp: " +motorOutput[0]+ " : " + motorOutput[1]);
-        double[] mappedValues = this.mapMotorValue(motorOutput);
+        // double[] mappedValues = this.mapMotorValue(motorOutput);
         //System.out.println("After map: " + mappedValues[0] + " : " + mappedValues[1]);
-        return mappedValues;
+        return motorOutput;
     }
 
     /**
      *
      */
-    private void sendRegulatorOutput(double [] motorsvalues){
+    private void sendRegulatorOutput(double[] motorsvalues) {
         Data outputData = new RegulatorOutput(motorsvalues[0], motorsvalues[1]);
         //System.out.println("Outputdata to string: " + outputData.toString());
         Message outputMessage = new Message(Topic.REGULATOR_OUTPUT, outputData);
@@ -121,15 +135,17 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      */
     private double[] mapMotorValue(double[] motors) {
         if (motors[0] < 0) {
-            motors[0] = transformation(this.pidForward.getParameters().getMinOutput(),
+            motors[0] = transformation(
+                    this.regParam.getControllerMinOutput(),
                     0,
                     this.regParam.getMcMaximumReverse(),
                     this.regParam.getMcMinimumReverse(),
                     motors[0]
             );
         } else if (motors[0] > 0) {
-            motors[0] = transformation(0,
-                    this.pidForward.getParameters().getMaxOutput(),
+            motors[0] = transformation(
+                    0,
+                    this.regParam.getControllerMaxOutput(),
                     this.regParam.getMcMinimumForward(),
                     this.regParam.getMcMaximumForward(),
                     motors[0]
@@ -191,9 +207,9 @@ public class Controller extends Subscriber implements Runnable, Publisher {
         double leftMotor, rightMotor;
         if (inputTurn < 0) {
             leftMotor = inputFW + inputTurn;
-            rightMotor = inputFW - inputTurn;
+            rightMotor = inputFW;
         } else if (inputTurn > 0) {
-            leftMotor = inputFW + inputTurn;
+            leftMotor = inputFW;
             rightMotor = inputFW - inputTurn;
         } else {
             leftMotor = inputFW;

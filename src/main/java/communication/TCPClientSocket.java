@@ -26,7 +26,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     public TCPClientSocket(Socket socket, Flag serverShutdown, Broker broker) {
         super(broker);
-        this.getBroker().subscribeTo(Topic.CONSOLE_OUTPUT, this);
+        //this.getBroker().subscribeTo(Topic.CONSOLE_OUTPUT, this);
         this.socket = socket;
         try {
             this.bufferedReader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
