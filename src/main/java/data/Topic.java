@@ -15,5 +15,6 @@ public abstract class Topic {
     public static final String CONTROLLER_INPUT = "CONTROLLER_INPUT";
     public static final String CONSOLE_OUTPUT = "CONSOLE_OUTPUT";
     public static final String DEBUG_OUTPUT = "DEBUG_OUTPUT";
+    public static final String GRIPPER = "GRIPPER_COMMANDS";
 
 }

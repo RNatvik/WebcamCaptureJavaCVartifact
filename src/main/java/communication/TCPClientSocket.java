@@ -176,6 +176,14 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
                         dataJson.getDouble("turnSpeed")
                 );
                 message = new Message(topic, ci);
+                break;
+
+            case Topic.GRIPPER:
+                GripperControl gc = new GripperControl(
+                        dataJson.getBoolean("command")
+                );
+                message = new Message(topic, gc);
+                break;
 
 
             default:

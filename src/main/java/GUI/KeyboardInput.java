@@ -1,5 +1,6 @@
 package GUI;
 import data.ControlInput;
+import data.GripperControl;
 import javafx.scene.input.KeyEvent;
 
 /**
@@ -36,8 +37,7 @@ public class KeyboardInput {
         String keyName = event.getCode().toString().toUpperCase();
 
         if (keyEventType.equals("KEY_PRESSED") && !this.activeKeys.contains(keyName) && this.allowedKeys.contains(keyName) ){
-            this.activeKeys = this.activeKeys+keyName;
-            System.out.println(this.activeKeys);
+            this.activeKeys = this.activeKeys+"::"+keyName;
             keys = this.activeKeys;
         }
         else if (keyEventType.equals("KEY_RELEASED") && this.activeKeys.contains(keyName) && this.allowedKeys.contains(keyName)){
@@ -54,7 +54,9 @@ public class KeyboardInput {
         double forwardSpeed = 0;
         double turnSpeed = 0;
 
-        while (!keys.isEmpty()){
+        //while (!keys.isEmpty()){
+
+        while (keys.contains("W") || keys.contains("A")|| keys.contains("S")||keys.contains("D")){
             if (keys.contains("W")){
                 forwardSpeed = forwardSpeed + 100;
                 keys = removeKey(keys,"W");
@@ -71,14 +73,6 @@ public class KeyboardInput {
                 turnSpeed = turnSpeed + 100;
                 keys = removeKey(keys,"D");
             }
-            if (keys.contains("Q")){
-                // Nothing yet, wait for gripper imp
-                keys = removeKey(keys,"Q");
-            }
-            if (keys.contains("E")){
-                // Nothing yet, wait for gripper imp
-                keys = removeKey(keys,"E");
-            }
         }
 
         return new ControlInput(true,forwardSpeed,turnSpeed);
@@ -91,5 +85,22 @@ public class KeyboardInput {
 
     private String removeKey(String keys,String keyToRemove) {
         return keys.replace(keyToRemove,"");
+    }
+
+
+    public GripperControl getGripperCommand(String keys) {
+        boolean gripper = false;
+        while (!keys.isEmpty()) {
+
+            if (keys.contains("Q")) {
+                gripper = true;
+                keys = removeKey(keys, "Q");
+            }
+            if (keys.contains("E")) {
+                gripper = false;
+                keys = removeKey(keys, "E");
+            }
+        }
+        return new GripperControl(gripper);
     }
 }

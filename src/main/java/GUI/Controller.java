@@ -3,6 +3,7 @@ package GUI;
 import communication.TCPClient;
 import communication.UDPClient;
 import data.ControlInput;
+import data.GripperControl;
 import data.Topic;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -162,32 +163,31 @@ public class Controller extends Subscriber implements Initializable {
      * @param keyEvent The allowed keys that is pressed.
      */
     public void onKeyPressed(KeyEvent keyEvent) {
-        if (mode.equals("Manual")) {
             String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
             if (keysChanged != null) {
-                ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
-                Message message = new Message(Topic.CONTROLLER_INPUT, ci);
-                this.tcpClient.setOutputMessage("SET", message.toJSON());
+                    ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
+                    GripperControl gc = this.keyboardInput.getGripperCommand(keysChanged);
+
+                    Message message1 = new Message(Topic.CONTROLLER_INPUT, ci);
+                    this.tcpClient.setOutputMessage("SET", message1.toJSON());
+
+                    Message message2 = new Message(Topic.GRIPPER, gc);
+                    this.tcpClient.setOutputMessage("SET", message2.toJSON());
 
             }
-        }
     }
 
-    /**
-     *  TODO lars
-     * @param keyEvent The Allowed keys that is released.
-     */
     public void onKeyReleased(KeyEvent keyEvent) {
-        if (mode.equals("Manual")) {
-            String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
-            if (keysChanged != null) {
-                ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
-                Message message = new Message(Topic.CONTROLLER_INPUT, ci);
-                this.tcpClient.setOutputMessage("SET", message.toJSON());
-
-            }
+        String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
+        if (keysChanged != null){
+            ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
+            this.keyboardInput.getGripperCommand(keysChanged); // Remove the released key, but we dont need to send new commands
+            Message message = new Message(Topic.CONTROLLER_INPUT, ci);
+            this.tcpClient.setOutputMessage("SET", message.toJSON());
         }
+
     }
+
 
     /**
      * Try's to stop the Scheduled Exicuter, then awaits for the Exicuter to terminate, and then shuts its down.
