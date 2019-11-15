@@ -92,7 +92,6 @@ public class KeyboardInput {
                 keys = removeKey(keys, "E");
             }
         }
-        System.out.println("Returning gripper");
         return new GripperControl(gripper);
     }
 }
