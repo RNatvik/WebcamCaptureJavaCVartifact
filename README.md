@@ -18,7 +18,7 @@ Project description - Coming soon
 
 ## Link to python script
 
-*[PythonCode](https://github.com/LarsBerge1/SanntidPython)
+* [PythonCode](https://github.com/LarsBerge1/SanntidPython)
 
 
 ## Authors
