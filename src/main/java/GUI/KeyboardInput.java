@@ -37,11 +37,11 @@ public class KeyboardInput {
         String keyName = event.getCode().toString().toUpperCase();
 
         if (keyEventType.equals("KEY_PRESSED") && !this.activeKeys.contains(keyName) && this.allowedKeys.contains(keyName) ){
-            this.activeKeys = this.activeKeys+"::"+keyName;
+            this.activeKeys = this.activeKeys+keyName; //"::"+
             keys = this.activeKeys;
         }
         else if (keyEventType.equals("KEY_RELEASED") && this.activeKeys.contains(keyName) && this.allowedKeys.contains(keyName)){
-            this.activeKeys = removeKey(keyName); //this.activeKeys.replace(keyName,"");
+            this.activeKeys = removeKey(this.activeKeys,keyName);
             keys = this.activeKeys;
 
         }
@@ -54,9 +54,7 @@ public class KeyboardInput {
         double forwardSpeed = 0;
         double turnSpeed = 0;
 
-        //while (!keys.isEmpty()){
-
-        while (keys.contains("W") || keys.contains("A")|| keys.contains("S")||keys.contains("D")){
+        while (keys.contains("W") || keys.contains("A")|| keys.contains("S")|| keys.contains("D")){
             if (keys.contains("W")){
                 forwardSpeed = forwardSpeed + 100;
                 keys = removeKey(keys,"W");
@@ -74,13 +72,7 @@ public class KeyboardInput {
                 keys = removeKey(keys,"D");
             }
         }
-
         return new ControlInput(true,forwardSpeed,turnSpeed);
-    }
-
-
-    private String removeKey(String keys) {
-        return this.activeKeys.replace(keys,"");
     }
 
     private String removeKey(String keys,String keyToRemove) {
@@ -90,8 +82,7 @@ public class KeyboardInput {
 
     public GripperControl getGripperCommand(String keys) {
         boolean gripper = false;
-        while (!keys.isEmpty()) {
-
+        while (keys.contains("Q") || keys.contains("E")) {
             if (keys.contains("Q")) {
                 gripper = true;
                 keys = removeKey(keys, "Q");
@@ -101,6 +92,7 @@ public class KeyboardInput {
                 keys = removeKey(keys, "E");
             }
         }
+        System.out.println("Returning gripper");
         return new GripperControl(gripper);
     }
 }

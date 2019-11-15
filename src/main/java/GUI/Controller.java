@@ -167,14 +167,13 @@ public class Controller extends Subscriber implements Initializable {
     public void onKeyPressed(KeyEvent keyEvent) {
             String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
             if (keysChanged != null) {
-                    ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
-                    GripperControl gc = this.keyboardInput.getGripperCommand(keysChanged);
+                ControlInput ci = this.keyboardInput.getControlInput(keysChanged);
+                Message message1 = new Message(Topic.CONTROLLER_INPUT, ci);
+                this.tcpClient.setOutputMessage("SET", message1.toJSON());
 
-                    Message message1 = new Message(Topic.CONTROLLER_INPUT, ci);
-                    this.tcpClient.setOutputMessage("SET", message1.toJSON());
-
-                    Message message2 = new Message(Topic.GRIPPER, gc);
-                    this.tcpClient.setOutputMessage("SET", message2.toJSON());
+                GripperControl gc = this.keyboardInput.getGripperCommand(keysChanged);
+                Message message2 = new Message(Topic.GRIPPER, gc);
+                this.tcpClient.setOutputMessage("SET", message2.toJSON());
 
             }
     }
