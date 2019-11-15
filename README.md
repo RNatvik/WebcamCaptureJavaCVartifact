@@ -23,7 +23,7 @@ Project description - Coming soon
 
 ## Authors
 
-* **Ruben Natvik** - [magnusoy](https://github.com/RNatvik)
+* **Ruben Natvik** - [RNatvik](https://github.com/RNatvik)
 
 * **Lars Berge** - [LarsBerge1](https://github.com/LarsBerge1)
 
