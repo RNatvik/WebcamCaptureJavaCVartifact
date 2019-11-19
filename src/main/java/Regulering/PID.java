@@ -3,6 +3,8 @@ package Regulering;
 import data.PidParameter;
 
 /**
+ *
+
  * Taken from https://github.com/tekdemo/MiniPID-Java/blob/master/src/com/stormbots/MiniPID.java
  * and http://brettbeauregard.com/blog/2011/04/improving-the-beginners-pid-direction/improving-the-beginners-pid-introduction
  * <p>
@@ -11,11 +13,6 @@ import data.PidParameter;
 
 public class PID {
 
-    //**********************************
-    // Class private variables
-    //**********************************
-
-    private double F = 0;
 
     private double maxIOutput = 0;
     private double maxError = 0;
@@ -24,54 +21,15 @@ public class PID {
     private double lastError = 0;
     private long lastRun = 0;
     private boolean firstRun = true;
-    private boolean reversed = false;
-
-    private double outputRampRate = 0;
     private double lastOutput = 0;
-
-    private double outputFilter = 0;
-
-    private double setpointRange = 0;
-
     private PidParameter parameters;
 
-    //**********************************
-    // Constructor function
-    //**********************************
+
     public PID(PidParameter parameters) {
         this.parameters = parameters;
     }
 
 
-    /**
-     * Set the maximum output value contributed by the I component of the system
-     * This can be used to prevent large windup issues and make tuning simpler
-     *
-     * @param maximum Units are the same as the expected output value
-     */
-    public void setMaxIOutput(double maximum) {
-        // Internally maxError and Izone are similar, but scaled for different purposes.
-        // The maxError is generated for simplifying math, since calculations against
-        // the max error are far more common than changing the I term or Izone.
-        maxIOutput = maximum;
-        if (this.parameters.getKi() != 0) {
-            maxError = maxIOutput / this.parameters.getKi();
-        }
-    }
-
-
-    /**
-     * Set the operating direction of the PID controller
-     *
-     * @param reversed Set true to reverse PID output
-     */
-    public void setDirection(boolean reversed) {
-        this.reversed = reversed;
-    }
-
-    //**********************************
-    // Primary operating functions
-    //**********************************
 
 
     /**
@@ -99,7 +57,7 @@ public class PID {
         double maxOutput = this.parameters.getMaxOutput();
         double deadBand = this.parameters.getDeadBand();
 
-        // Do the simple parts of the calculations
+        // Calculate the error
         double error = setpoint - actual;
 
         if (deadBand != 0) {
@@ -112,8 +70,6 @@ public class PID {
         Poutput = P * error;
 
         // If this is our first time running this, we don't actually _have_ a previous input or output.
-        // For sensor, sanely assume it was exactly where it is now.
-        // For last output, we can assume it's the current time-independent outputs.
         if (firstRun) {
             lastError = error;
             lastOutput = Poutput;
@@ -130,7 +86,6 @@ public class PID {
         }
         lastError = error;
 
-        // The Iterm is more complex. There's several things to factor in to make it easier to deal with.
         // 1. maxIoutput restricts the amount of output contributed by the Iterm.
         // 2. prevent windup by not increasing errorSum if we're already running against our max Ioutput
         // 3. prevent windup by not increasing errorSum if output is output=maxOutput
@@ -138,9 +93,8 @@ public class PID {
         if (maxIOutput != 0) {
             Ioutput = constrain(Ioutput, -maxIOutput, maxIOutput);
         }
-        // And, finally, we can just add the terms up
+        //Add up the terms up
         output = Poutput + Ioutput + Doutput;
-        // Figure out what we're doing with the error.
 
 
         if (maxIOutput != 0) {
@@ -157,8 +111,8 @@ public class PID {
 
         // Get a test printline with lots of details about the internal
         // calculations. This can be useful for debugging.
-//        System.out.printf("Final output %5.2f [ %5.2f, %5.2f , %5.2f  ], eSum %.2f\n", output, Poutput, Ioutput, Doutput, errorSum);
-//        System.out.printf("%5.2f\t%5.2f\t%5.2f\t%5.2f\n", output, Poutput, Ioutput, Doutput);
+        // System.out.printf("Final output %5.2f [ %5.2f, %5.2f , %5.2f  ], eSum %.2f\n", output, Poutput, Ioutput, Doutput, errorSum);
+        // System.out.printf("%5.2f\t%5.2f\t%5.2f\t%5.2f\n", output, Poutput, Ioutput, Doutput);
 
         lastOutput = output;
         return output;
@@ -178,49 +132,6 @@ public class PID {
         lastRun = 0;
     }
 
-    /**
-     * Set the maximum rate the output can increase per cycle.<br>
-     * This can prevent sharp jumps in output when changing setpoints or
-     * enabling a PID system, which might cause stress on physical or electrical
-     * systems.  <br>
-     * Can be very useful for fast-reacting control loops, such as ones
-     * with large P or D values and feed-forward systems.
-     *
-     * @param rate, with units being the same as the output
-     */
-    public void setOutputRampRate(double rate) {
-        outputRampRate = rate;
-    }
-
-    /**
-     * Set a limit on how far the setpoint can be from the current position
-     * <br>Can simplify tuning by helping tuning over a small range applies to a much larger range.
-     * <br>This limits the reactivity of P term, and restricts impact of large D term
-     * during large setpoint adjustments. Increases lag and I term if range is too small.
-     *
-     * @param range, with units being the same as the expected sensor range.
-     */
-    public void setSetpointRange(double range) {
-        setpointRange = range;
-    }
-
-    /**
-     * Set a filter on the output to reduce sharp oscillations. <br>
-     * 0.1 is likely a sane starting value. Larger values use historical data
-     * more heavily, with low values weigh newer data. 0 will disable, filtering, and use
-     * only the most recent value. <br>
-     * Increasing the filter strength will P and D oscillations, but force larger I
-     * values and increase I term overshoot.<br>
-     * Uses an exponential wieghted rolling sum filter, according to a simple <br>
-     * <pre>output*(1-strength)*sum(0..n){output*strength^n}</pre> algorithm.
-     *
-     * @param strength valid between [0..1), meaning [current output only.. historical output only)
-     */
-    public void setOutputFilter(double strength) {
-        if (strength == 0 || bounded(strength, 0, 1)) {
-            outputFilter = strength;
-        }
-    }
 
     //**************************************
     // Helper functions
@@ -242,22 +153,6 @@ public class PID {
             return min;
         }
         return value;
-    }
-
-    /**
-     * Test if the value is within the min and max, inclusive
-     *
-     * @param value to test
-     * @param min   Minimum value of range
-     * @param max   Maximum value of range
-     * @return true if value is within range, false otherwise
-     */
-    private boolean bounded(double value, double min, double max) {
-        // Note, this is an inclusive range. This is so tests like
-        // `bounded(constrain(0,0,1),0,1)` will return false.
-        // This is more helpful for determining edge-case behaviour
-        // than <= is.
-        return (min < value) && (value < max);
     }
 
     /**
@@ -289,9 +184,6 @@ public class PID {
         return pp;
     }
 
-    public PidParameter getParameters() {
-        return parameters;
-    }
 
     public void setParameters(PidParameter parameters) {
         parameters = checkSigns(parameters);
