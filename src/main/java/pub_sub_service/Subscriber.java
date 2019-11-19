@@ -45,6 +45,10 @@ public abstract class Subscriber {
         return broker;
     }
 
+    /**
+     * Synchronized wrapper method for doReadMessages.
+     * Call this method to make doReadMessages synchronized
+     */
     protected synchronized void readMessages() {
         doReadMessages();
     }
