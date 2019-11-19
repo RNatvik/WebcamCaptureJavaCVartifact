@@ -6,6 +6,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.*;
 
+/**
+ * This class is a UDPClient, responsible for handling incoming images from the server
+ */
 public class UDPClient implements Runnable {
 
     private Thread thread;
@@ -18,7 +21,9 @@ public class UDPClient implements Runnable {
     private boolean running;
     private BufferedImage bufferedImage;
 
-
+    /**
+     * Constructor
+     */
     public UDPClient() {
         this.thread = null;
         this.hostAddress = null;
@@ -30,6 +35,11 @@ public class UDPClient implements Runnable {
         this.bufferedImage = null;
     }
 
+    /**
+     * Starts the UDP connection if initialized
+     *
+     * @return true if new thread started
+     */
     public boolean start() {
         boolean success = false;
         if (!this.running && this.initialized) {
@@ -40,6 +50,16 @@ public class UDPClient implements Runnable {
         return success;
     }
 
+    /**
+     * Initialize the UDP connection. This will not connect the client to the host.
+     * Use "start" method after initialize to establish connection
+     *
+     * @param host the host address to connect to
+     * @param port the host port to connect to
+     * @return true if successful initialization
+     * @throws UnknownHostException if host not found on the network
+     * @throws SocketException      if socket could not be established
+     */
     public boolean initialize(String host, int port) throws UnknownHostException, SocketException {
         boolean success = false;
         if (!this.running) {
@@ -55,23 +75,44 @@ public class UDPClient implements Runnable {
         return success;
     }
 
+    /**
+     * Stop the connection
+     */
     public void stop() {
         System.out.println(this + ":: stop() called");
         this.shutdown = true;
     }
 
+    /**
+     * Check if instance is terminated
+     *
+     * @return ture if terminated
+     */
     public boolean isTerminated() {
         return terminated;
     }
 
+    /**
+     * Check if instance is initialized
+     *
+     * @return true if initialized
+     */
     public boolean isInitialized() {
         return initialized;
     }
 
+    /**
+     * Check if client is running
+     *
+     * @return true if running
+     */
     public boolean isRunning() {
         return running;
     }
 
+    /**
+     * UDPClient main loop
+     */
     @Override
     public void run() {
         System.out.println(this + ":: in run");
@@ -108,11 +149,18 @@ public class UDPClient implements Runnable {
         System.out.println(this + ":: terminated: " + this.terminated);
     }
 
+    /**
+     * Access the most recent image received
+     *
+     * @return the most recent image received
+     */
     public synchronized BufferedImage getImage() {
         return this.bufferedImage;
     }
 
-
+    /**
+     * The UDPClient's shutdown procedure.
+     */
     private void shutdownProcedure() {
         try {
             String message = "END";
