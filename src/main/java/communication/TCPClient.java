@@ -40,6 +40,7 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Constructor
+     *
      * @param broker the broker to which the TCPClient publishes incoming data
      */
     public TCPClient(Broker broker) {
@@ -59,9 +60,10 @@ public class TCPClient implements Runnable, Publisher {
     /**
      * Initialize the client. This will not connect the client to a host, but will initialize the host address and port
      * as well as the socket receive timeout
+     *
      * @param hostAddress the host to connect to
-     * @param hostPort the port to connect to
-     * @param timeout the read incoming message timeout
+     * @param hostPort    the port to connect to
+     * @param timeout     the read incoming message timeout
      * @throws UnknownHostException if the host name could not be found on the network
      */
     public void initialize(String hostAddress, int hostPort, int timeout) throws UnknownHostException {
@@ -81,6 +83,7 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Connect to the initialized host. Will not do anything if already connected or not initialized
+     *
      * @return true if successful connection.
      */
     public boolean connect() {
@@ -99,12 +102,12 @@ public class TCPClient implements Runnable, Publisher {
         } catch (IOException e) {
 
             this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
-                String.format("%s %s %s", this, e,
-                        Arrays.toString(e.getStackTrace())
-                                .replace("[", "\n     ")
-                                .replace(",", "\n    ")
-                                .replace("]", "\n    ")
-                )
+                    String.format("%s %s %s", this, e,
+                            Arrays.toString(e.getStackTrace())
+                                    .replace("[", "\n     ")
+                                    .replace(",", "\n    ")
+                                    .replace("]", "\n    ")
+                    )
             )));
         }
         return success;
@@ -112,8 +115,9 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Add a message to be sent to the server
+     *
      * @param command the command to send (SUB, UNSUB, SET)
-     * @param body the message body
+     * @param body    the message body
      */
     public synchronized void setOutputMessage(String command, String body) {
         if (this.connected) {
@@ -133,6 +137,7 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Check if instance is initialized
+     *
      * @return true if initialized
      */
     public boolean isInitialized() {
@@ -141,6 +146,7 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Check if instance is connected to host
+     *
      * @return true if connected to host
      */
     public boolean isConnected() {
@@ -149,6 +155,7 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Check if instance is terminated
+     *
      * @return true if terminated
      */
     public boolean isTerminated() {
@@ -157,6 +164,7 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Disconnect and reset the instance
+     *
      * @return true if successful shutdown
      */
     private boolean shutdownProcedure() {
@@ -179,6 +187,7 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Convert a JSON string to its corresponding Data object
+     *
      * @param body the JSON string
      * @return Message object containing the Data object and its Topic
      */
@@ -344,7 +353,8 @@ public class TCPClient implements Runnable, Publisher {
 
     /**
      * Publish message to broker
-     * @param broker the message broker to publish to
+     *
+     * @param broker  the message broker to publish to
      * @param message the message to publish
      */
     @Override

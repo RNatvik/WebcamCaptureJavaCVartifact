@@ -13,6 +13,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Welcome socket for TCP communication
+ * It handles requests to connect to the server and allocates a new TCPClient socket to handle
+ * each client.
+ */
 public class TCPServer implements Runnable {
 
     private Thread thread;
@@ -23,6 +28,14 @@ public class TCPServer implements Runnable {
     private ExecutorService executorService;
     private boolean terminated;
 
+    /**
+     * Constructor
+     *
+     * @param port           the port to bind the server to
+     * @param loopback       whether or not to use the local loopback address
+     * @param threadPoolSize how many threads / clients can be connected at once
+     * @param broker         the broker to connect the clients to
+     */
     public TCPServer(int port, boolean loopback, int threadPoolSize, Broker broker) {
         try {
             this.thread = new Thread(this);
@@ -44,20 +57,34 @@ public class TCPServer implements Runnable {
         }
     }
 
+    /**
+     * Starts the server thread
+     */
     public void startThread() {
         //System.out.println(this + ":: starting thread");
         this.thread.start();
     }
 
+    /**
+     * Stop the server
+     */
     public void stop() {
         //System.out.println(this + ":: stop() called");
         this.shutdownFlag.set(true);
     }
 
+    /**
+     * Check if instance is terminated
+     *
+     * @return true if terminated
+     */
     public boolean isTerminated() {
         return this.terminated;
     }
 
+    /**
+     * Server main loop.
+     */
     @Override
     public void run() {
         while (!this.shutdownFlag.get()) {
@@ -79,6 +106,11 @@ public class TCPServer implements Runnable {
         //System.out.println(this + ":: terminated: " + this.terminated);
     }
 
+    /**
+     * The server's shutdown procedure
+     *
+     * @return true if successful procedure
+     */
     private boolean shutdownProcedure() {
         //System.out.println("Server in shutdown procedure");
         boolean success = false;

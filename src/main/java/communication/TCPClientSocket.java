@@ -28,9 +28,10 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     /**
      * Constructor
-     * @param socket the client's socket
+     *
+     * @param socket         the client's socket
      * @param serverShutdown flag for whether the server is shutting down
-     * @param broker the broker to connect to the socket
+     * @param broker         the broker to connect to the socket
      */
     public TCPClientSocket(Socket socket, Flag serverShutdown, Broker broker) {
         super(broker);
@@ -64,6 +65,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     /**
      * Check if the instance is terminated
+     *
      * @return true if terminated
      */
     public boolean isTerminated() {
@@ -125,6 +127,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     /**
      * Handler for incoming command "SET"
+     *
      * @param json the JSON string following SET command
      */
     private void set(String json) {
@@ -218,6 +221,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     /**
      * Handler for incoming command "SUB"
+     *
      * @param topic the topic to subscribe to
      */
     private void sub(String topic) {
@@ -226,6 +230,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     /**
      * Handler for incoming command "UNSUB"
+     *
      * @param topic the topic to unsubscribe from
      */
     private void unsub(String topic) {
@@ -234,6 +239,7 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     /**
      * Shutdown procedure for the client socket
+     *
      * @return true if successful procedure
      */
     private boolean shutdownProcedure() {
@@ -255,7 +261,8 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     /**
      * Publish a message to the broker
-     * @param broker the message broker to publish to
+     *
+     * @param broker  the message broker to publish to
      * @param message the message to publish
      */
     @Override
