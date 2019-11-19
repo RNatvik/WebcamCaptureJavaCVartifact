@@ -10,6 +10,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Welcome socket for UDP communication
+ * It handles requests to connect to the server and allocates a new UDPClientSocket to handle
+ * each client.
+ */
 public class UDPServer implements Runnable {
 
     private Thread thread;
@@ -20,6 +25,14 @@ public class UDPServer implements Runnable {
     private Flag shutdown;
     private boolean terminated;
 
+    /**
+     * Constructor
+     *
+     * @param port           the port to bind the server to
+     * @param loopback       whether or not to use local loopback address
+     * @param threadPoolSize number of clients allowed to connect at once
+     * @param broker         the broker to receive data from
+     */
     public UDPServer(int port, boolean loopback, int threadPoolSize, Broker broker) {
         try {
             this.thread = new Thread(this);
@@ -42,19 +55,33 @@ public class UDPServer implements Runnable {
         }
     }
 
+    /**
+     * Start the server
+     */
     public void startThread() {
         this.thread.start();
     }
 
+    /**
+     * Stop the server
+     */
     public void stop() {
         //System.out.println("Server in stop");
         this.shutdown.set(true);
     }
 
+    /**
+     * Check if server is terminated
+     *
+     * @return true if terminated
+     */
     public boolean isTerminated() {
         return this.terminated;
     }
 
+    /**
+     * Server's main loop
+     */
     @Override
     public void run() {
 
@@ -81,8 +108,11 @@ public class UDPServer implements Runnable {
         //System.out.println(this + ":: terminated: " + this.terminated);
     }
 
-
-
+    /**
+     * Server's shutdown procedure
+     *
+     * @return true if successful procedure
+     */
     private boolean shutdownProcedure() {
         //System.out.println(this + ":: in shutdown procedure");
         boolean success = false;

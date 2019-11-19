@@ -11,7 +11,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.*;
 
-
+/**
+ * Class for handling communication with a single UDPClient
+ */
 public class UDPClientSocket extends Subscriber implements Runnable {
 
     private DatagramSocket socket;
@@ -20,6 +22,14 @@ public class UDPClientSocket extends Subscriber implements Runnable {
     private Flag serverShutdownFlag;
     private boolean shutdown;
 
+    /**
+     * Constructor
+     *
+     * @param address            the client's address
+     * @param port               the client's port
+     * @param broker             the broker to receive images from
+     * @param serverShutdownFlag flag for whether the server is shutting down
+     */
     public UDPClientSocket(InetAddress address, int port, Broker broker, Flag serverShutdownFlag) {
         super(broker);
         try {
@@ -36,6 +46,9 @@ public class UDPClientSocket extends Subscriber implements Runnable {
         }
     }
 
+    /**
+     * UDPClientSocket main loop
+     */
     @Override
     public void run() {
         //System.out.println(this + ":: In run");
@@ -61,6 +74,9 @@ public class UDPClientSocket extends Subscriber implements Runnable {
         //System.out.println(this + " is terminated");
     }
 
+    /**
+     * The UDPClient shutdown procedure.
+     */
     private void shutdownProcedure() {
         try {
             String message = "END";
@@ -81,6 +97,9 @@ public class UDPClientSocket extends Subscriber implements Runnable {
     }
 
 
+    /**
+     * Handler for reading incoming messages.
+     */
     @Override
     protected synchronized void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {

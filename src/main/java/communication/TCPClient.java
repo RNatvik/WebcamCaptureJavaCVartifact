@@ -20,6 +20,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * This class is a TCPClient, responsible for handling incoming and outgoing messages for the client application.
+ * It utilizes the pub_sub_service package.
+ */
 public class TCPClient implements Runnable, Publisher {
 
     private Thread thread;
@@ -34,6 +38,11 @@ public class TCPClient implements Runnable, Publisher {
     private boolean shutdown;
     private boolean terminated;
 
+    /**
+     * Constructor
+     *
+     * @param broker the broker to which the TCPClient publishes incoming data
+     */
     public TCPClient(Broker broker) {
         this.thread = null;
         this.hostAddress = null;
@@ -48,6 +57,15 @@ public class TCPClient implements Runnable, Publisher {
         this.terminated = false;
     }
 
+    /**
+     * Initialize the client. This will not connect the client to a host, but will initialize the host address and port
+     * as well as the socket receive timeout
+     *
+     * @param hostAddress the host to connect to
+     * @param hostPort    the port to connect to
+     * @param timeout     the read incoming message timeout
+     * @throws UnknownHostException if the host name could not be found on the network
+     */
     public void initialize(String hostAddress, int hostPort, int timeout) throws UnknownHostException {
         if (!this.connected) {
             this.hostAddress = InetAddress.getByName(hostAddress);
@@ -63,6 +81,11 @@ public class TCPClient implements Runnable, Publisher {
         }
     }
 
+    /**
+     * Connect to the initialized host. Will not do anything if already connected or not initialized
+     *
+     * @return true if successful connection.
+     */
     public boolean connect() {
         boolean success = false;
         try {
@@ -79,23 +102,32 @@ public class TCPClient implements Runnable, Publisher {
         } catch (IOException e) {
 
             this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
-                String.format("%s %s %s", this, e,
-                        Arrays.toString(e.getStackTrace())
-                                .replace("[", "\n     ")
-                                .replace(",", "\n    ")
-                                .replace("]", "\n    ")
-                )
+                    String.format("%s %s %s", this, e,
+                            Arrays.toString(e.getStackTrace())
+                                    .replace("[", "\n     ")
+                                    .replace(",", "\n    ")
+                                    .replace("]", "\n    ")
+                    )
             )));
         }
         return success;
     }
 
+    /**
+     * Add a message to be sent to the server
+     *
+     * @param command the command to send (SUB, UNSUB, SET)
+     * @param body    the message body
+     */
     public synchronized void setOutputMessage(String command, String body) {
         if (this.connected) {
             this.outputMessageQueue.add(String.format(command + "::%s", body));
         }
     }
 
+    /**
+     * Disconnect from the server.
+     */
     public void stopConnection() {
         this.shutdown = true;
         this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
@@ -103,19 +135,38 @@ public class TCPClient implements Runnable, Publisher {
         )));
     }
 
+    /**
+     * Check if instance is initialized
+     *
+     * @return true if initialized
+     */
     public boolean isInitialized() {
         return initialized;
     }
 
+    /**
+     * Check if instance is connected to host
+     *
+     * @return true if connected to host
+     */
     public boolean isConnected() {
         return connected;
     }
 
+    /**
+     * Check if instance is terminated
+     *
+     * @return true if terminated
+     */
     public boolean isTerminated() {
         return terminated;
     }
 
-
+    /**
+     * Disconnect and reset the instance
+     *
+     * @return true if successful shutdown
+     */
     private boolean shutdownProcedure() {
         this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
                 this + " in shutdown procedure"
@@ -134,6 +185,12 @@ public class TCPClient implements Runnable, Publisher {
         return success;
     }
 
+    /**
+     * Convert a JSON string to its corresponding Data object
+     *
+     * @param body the JSON string
+     * @return Message object containing the Data object and its Topic
+     */
     private Message parseMessage(String body) {
         Message message = null;
         try {
@@ -246,6 +303,9 @@ public class TCPClient implements Runnable, Publisher {
         return message;
     }
 
+    /**
+     * TCPClient main loop
+     */
     @Override
     public void run() {
         BufferedReader bufferedReader = null;
@@ -291,6 +351,12 @@ public class TCPClient implements Runnable, Publisher {
         }
     }
 
+    /**
+     * Publish message to broker
+     *
+     * @param broker  the message broker to publish to
+     * @param message the message to publish
+     */
     @Override
     public void publish(Broker broker, Message message) {
         if (message != null) {

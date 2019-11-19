@@ -14,6 +14,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
+/**
+ * Class for handling communication with a single TCP client
+ */
 public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
 
     private Socket socket;
@@ -23,7 +26,13 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
     private boolean shutdown;
     private boolean terminated;
 
-
+    /**
+     * Constructor
+     *
+     * @param socket         the client's socket
+     * @param serverShutdown flag for whether the server is shutting down
+     * @param broker         the broker to connect to the socket
+     */
     public TCPClientSocket(Socket socket, Flag serverShutdown, Broker broker) {
         super(broker);
         //this.getBroker().subscribeTo(Topic.CONSOLE_OUTPUT, this);
@@ -44,6 +53,9 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         }
     }
 
+    /**
+     * Stop the socket connection
+     */
     public void stop() {
         this.shutdown = true;
         this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
@@ -51,10 +63,18 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         )));
     }
 
+    /**
+     * Check if the instance is terminated
+     *
+     * @return true if terminated
+     */
     public boolean isTerminated() {
         return terminated;
     }
 
+    /**
+     * TCPClientSocket main loop
+     */
     @Override
     public void run() {
         while (!(this.shutdown || this.serverShutdown.get())) {
@@ -105,6 +125,11 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         this.terminated = this.shutdownProcedure();
     }
 
+    /**
+     * Handler for incoming command "SET"
+     *
+     * @param json the JSON string following SET command
+     */
     private void set(String json) {
         JSONObject jsonObject = new JSONObject(json);
         JSONObject dataJson = jsonObject.getJSONObject("data");
@@ -194,14 +219,29 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         }
     }
 
+    /**
+     * Handler for incoming command "SUB"
+     *
+     * @param topic the topic to subscribe to
+     */
     private void sub(String topic) {
         this.getBroker().subscribeTo(topic, this);
     }
 
+    /**
+     * Handler for incoming command "UNSUB"
+     *
+     * @param topic the topic to unsubscribe from
+     */
     private void unsub(String topic) {
         this.getBroker().unsubscribeFrom(topic, this);
     }
 
+    /**
+     * Shutdown procedure for the client socket
+     *
+     * @return true if successful procedure
+     */
     private boolean shutdownProcedure() {
         boolean success = false;
         try {
@@ -219,11 +259,20 @@ public class TCPClientSocket extends Subscriber implements Runnable, Publisher {
         return success;
     }
 
+    /**
+     * Publish a message to the broker
+     *
+     * @param broker  the message broker to publish to
+     * @param message the message to publish
+     */
     @Override
     public void publish(Broker broker, Message message) {
         broker.addMessage(message);
     }
 
+    /**
+     * Handler for reading messages in message queue
+     */
     @Override
     protected void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {
