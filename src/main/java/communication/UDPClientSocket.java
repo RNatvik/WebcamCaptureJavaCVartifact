@@ -24,9 +24,10 @@ public class UDPClientSocket extends Subscriber implements Runnable {
 
     /**
      * Constructor
-     * @param address the client's address
-     * @param port the client's port
-     * @param broker the broker to receive images from
+     *
+     * @param address            the client's address
+     * @param port               the client's port
+     * @param broker             the broker to receive images from
      * @param serverShutdownFlag flag for whether the server is shutting down
      */
     public UDPClientSocket(InetAddress address, int port, Broker broker, Flag serverShutdownFlag) {
