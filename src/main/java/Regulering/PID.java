@@ -3,12 +3,12 @@ package Regulering;
 import data.PidParameter;
 
 /**
+ * Class that implements a simple PID algorithm in parallel form
  *
-
- * Taken from https://github.com/tekdemo/MiniPID-Java/blob/master/src/com/stormbots/MiniPID.java
- * and http://brettbeauregard.com/blog/2011/04/improving-the-beginners-pid-direction/improving-the-beginners-pid-introduction
  * <p>
- * changed by LB.
+ *  * @author Lars Berge
+ *  * @version 1.0
+ *  * @since 39.11.2019
  */
 
 public class PID {
@@ -25,17 +25,18 @@ public class PID {
     private PidParameter parameters;
 
 
+    /**
+     * Constructor
+     * @param parameters the initial pid parameters for the PID algorithm
+     */
     public PID(PidParameter parameters) {
         this.parameters = parameters;
     }
 
-
-
-
     /**
      * Calculate the output value for the current PID cycle.<br>
      *
-     * @param actual The monitored value, typically as a sensor input.
+     * @param actual The monitored value, the actual value
      * @return calculated output value for driving the system
      */
     public double getOutput(double actual) {
@@ -186,7 +187,6 @@ public class PID {
 
 
     public void setParameters(PidParameter parameters) {
-        parameters = checkSigns(parameters);
-        this.parameters = parameters;
+        this.parameters = checkSigns(parameters);
     }
 }
