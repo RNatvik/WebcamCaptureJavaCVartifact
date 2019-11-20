@@ -1,7 +1,7 @@
 package data;
 
 /**
- * Constant list for topics.
+ * Constant list for message topics used in the pub sub service.
  */
 public abstract class Topic {
 

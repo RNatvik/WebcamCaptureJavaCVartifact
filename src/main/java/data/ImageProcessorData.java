@@ -10,6 +10,7 @@ public class ImageProcessorData extends Data {
 
     /**
      * Constructs a new instance
+     *
      * @param location detected object location
      */
     public ImageProcessorData(double[] location) {
@@ -18,6 +19,7 @@ public class ImageProcessorData extends Data {
 
     /**
      * Returns the detected object location
+     *
      * @return the detected object location
      */
     public synchronized double[] getLocation() {
@@ -26,6 +28,7 @@ public class ImageProcessorData extends Data {
 
     /**
      * Set the detected object location
+     *
      * @param location new detected object location
      */
     public synchronized void setLocation(double[] location) {
