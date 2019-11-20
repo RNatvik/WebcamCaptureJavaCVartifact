@@ -10,6 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This is the startup script for the robot.
+ */
 public class ServerMain {
 
     public static void main(String[] args) {
