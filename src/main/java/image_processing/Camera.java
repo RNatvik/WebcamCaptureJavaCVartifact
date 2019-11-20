@@ -1,9 +1,14 @@
 package image_processing;
 
+import data.ConsoleOutput;
 import data.Flag;
+import data.Topic;
 import org.bytedeco.javacv.*;
 import org.bytedeco.opencv.opencv_core.CvSize;
 import org.bytedeco.opencv.opencv_core.IplImage;
+import pub_sub_service.Broker;
+import pub_sub_service.Message;
+import pub_sub_service.Publisher;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,7 +27,7 @@ import static org.bytedeco.opencv.global.opencv_core.cvCreateImage;
  * returned IplImage to the class which wants to connect to the video stream. The reason you only need to call this method once
  * is that the IplImage returned by the getSrcIm() method contains its own storage for the image data (like a producer consumer storage box).
  */
-public class Camera implements Runnable {
+public class Camera implements Runnable, Publisher {
 
     private OpenCVFrameGrabber grabber; //VideoInput
 
@@ -34,14 +39,15 @@ public class Camera implements Runnable {
     private boolean terminated;
 
     // For testing
-    private long timeTest;
+    private long testTime;
+    private Broker broker;
 
     /**
      * Constructor for the class
      * @param deviceNumber the webcam device number
      * @param flag a flag for cross thread notifications that a new image has been produced
      */
-    public Camera(int deviceNumber, Flag flag) {
+    public Camera(int deviceNumber, Flag flag, Broker broker) {
         this.grabber = new OpenCVFrameGrabber(deviceNumber);
         this.srcIm = cvCreateImage(new CvSize(640, 480), 8, 3);
         this.converter = new OpenCVFrameConverter.ToIplImage();
@@ -50,7 +56,8 @@ public class Camera implements Runnable {
         this.initialized = false;
         this.terminated = false;
 
-        this.timeTest = 0;
+        this.testTime = 0;
+        this.broker = broker;
     }
 
     /**
@@ -71,6 +78,7 @@ public class Camera implements Runnable {
                 this.srcIm = this.converter.convert(capturedFrame);
                 success = true;
                 this.initialized = true;
+
             } catch (FrameGrabber.Exception e) {
                 e.printStackTrace();
             }
@@ -112,8 +120,8 @@ public class Camera implements Runnable {
      */
     @Override
     public void run() {
-
         if (!this.shutdown) {
+            long startTime = System.currentTimeMillis();
             //long time = System.currentTimeMillis();
             //long dt = time - this.timeTest;
             //this.timeTest = time;
@@ -129,6 +137,13 @@ public class Camera implements Runnable {
                 e.printStackTrace();
                 this.shutdown = true;
             }
+            long endTime = System.currentTimeMillis();
+            this.publish(this.broker, new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                    String.format("%s run time: %s\n%s dt: %s",
+                            this, (endTime-startTime), this, (startTime-testTime)
+                    )
+            )));
+            this.testTime = startTime;
         } else if (!this.terminated) {
             try {
                 Thread.sleep(1000);
@@ -174,5 +189,10 @@ public class Camera implements Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void publish(Broker broker, Message message) {
+        broker.addMessage(message);
     }
 }

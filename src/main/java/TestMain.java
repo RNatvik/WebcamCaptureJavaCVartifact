@@ -26,7 +26,7 @@ public class TestMain {
         UDPServer udpServer = new UDPServer(2345, true, 3, serverBroker);
         ServerPublisher serverPublisher = new ServerPublisher(serverBroker);
         Flag flag = new Flag(false);
-        Camera camera = new Camera(0, flag);
+        Camera camera = new Camera(0, flag, serverBroker);
         ImageProcessor imageProcessor = new ImageProcessor(flag, serverBroker);
 
         tcpServer.startThread();

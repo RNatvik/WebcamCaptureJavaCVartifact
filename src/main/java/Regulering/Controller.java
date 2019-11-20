@@ -34,6 +34,8 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     private boolean manualMode;
     private boolean newManualCommand;
 
+    private long testTime;
+
 
     /**
      * Constructor for the controller class
@@ -41,7 +43,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
      */
     public Controller(Broker broker) {
         super(broker);
-
+        this.testTime = 0;
         this.pidForward = new PID(new PidParameter(0, 0, 0, 200, -200, 100, 0, 0, true));
         this.pidTurn = new PID(new PidParameter(0, 0, 0, 200, -200, 100, 0, 0, true));
         this.regParam = new RegulatorParameter(-20, -120, 20, 120, -200, 200, 1);
@@ -66,7 +68,7 @@ public class Controller extends Subscriber implements Runnable, Publisher {
     @Override
     public void run() {
         this.readMessages(); //Check if new messages available
-
+        long startTime = System.currentTimeMillis();
         if (this.manualMode && this.newManualCommand) {
             double fw = this.manualControlInput.getForwardSpeed();
             double tr = this.manualControlInput.getTurnSpeed();
@@ -101,6 +103,13 @@ public class Controller extends Subscriber implements Runnable, Publisher {
             }
             this.newLocation = false;
         }
+        long endTime = System.currentTimeMillis();
+        this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                String.format("%s run time: %s\n%s dt: %s",
+                        this, (endTime-startTime), this, (startTime-testTime)
+                )
+        )));
+        this.testTime = startTime;
     }
 
 

@@ -38,6 +38,8 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
     private boolean initialized;
     private boolean terminated;
 
+    private long testTime;
+
     //private CanvasFrame canvas;
 
     /**
@@ -47,6 +49,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
      */
     public ImageProcessor(Flag flag, Broker broker) {
         super(broker);
+        this.testTime = 0;
         this.srcIm = cvCreateImage(new CvSize(640, 480), 8, 3);
         this.binIm = cvCreateImage(new CvSize(640, 480), 8, 1);
         this.converter = new OpenCVFrameConverter.ToIplImage();
@@ -110,24 +113,19 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
      */
     @Override
     public void run() {
-        int counter = 0;
         while (!this.shutdown) {
             this.readMessages();
             if (this.flag.get()) {
-                //long startTime = System.currentTimeMillis();
+                long startTime = System.currentTimeMillis();
 
                 IplImage image = cvCloneImage(this.srcIm);
-                //long cloneImTime = System.currentTimeMillis();
 
                 IplConvKernel kernel = IplConvKernel.create(5, 5, 2, 2, CV_SHAPE_ELLIPSE, null);
                 this.flag.set(false);
                 this.threshold(image, this.binIm);
-                //long thresholdTime = System.currentTimeMillis();
 
-                //this.morph(this.binIm, kernel, 5, 3);
                 cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 11, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
                 cvThreshold(this.binIm, this.binIm, 200, 255, CV_THRESH_BINARY);
-                //long morphTime = System.currentTimeMillis();
 
                 double[] location = this.getCoordinates(this.binIm);
                 double distance = 1979.877*Math.pow(location[2],-1.0315375);
@@ -138,11 +136,8 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 }
                 double[] newLocation = new double[]{newX, location[1], distance, location[3]};
 
-                //long locationTime = System.currentTimeMillis();
-
                 this.paintCircle(image, new int[]{(int) location[0], (int) location[1], 2});
                 this.paintCircle(image, new int[]{(int) location[0], (int) location[1], (int) location[2]});
-                //long paintTime = System.currentTimeMillis();
 
                 BufferedImage buffIm;
                 if (this.parameters.isStoreProcessedImage()) {
@@ -154,26 +149,15 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 this.publish(this.getBroker(), message);
                 message = new Message(Topic.IMPROC_DATA, new ImageProcessorData(newLocation));
                 this.publish(this.getBroker(), message);
-                //long publishTime = System.currentTimeMillis();
-                /*
-                if (!this.parameters.isStoreProcessedImage()) {
-                    this.canvas.showImage(this.converter.convert(image));
-                } else {
-                    this.canvas.showImage(this.converter.convert(this.binIm));
-                }
-                 */
+
                 cvReleaseImage(image);
-                //long endTime = System.currentTimeMillis();
-                counter += 1;
-                if (counter == 15) {
-                    //System.out.println(String.format("x: %f    y: %f    r: %f    a: %f",
-                     //       location[0], location[1], location[2], location[3]));
-                    counter = 0;
-                }
-//                //System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
-//                        (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
-//                long endEndTime = System.currentTimeMillis();
-//                //System.out.println("PrintTime: " + (endEndTime-endTime));
+                long endTime = System.currentTimeMillis();
+                this.publish(this.getBroker(), new Message(Topic.CONSOLE_OUTPUT, new ConsoleOutput(
+                        String.format("%s run time: %s\n%s dt: %s",
+                                this, (endTime-startTime), this, (startTime-testTime)
+                        )
+                )));
+                this.testTime = startTime;
             }
         }
         if (!this.isTerminated()) {

@@ -53,7 +53,7 @@ public class GuiUpdater extends Subscriber implements Runnable {
             this.imageProperty.set(im);
             imageView.imageProperty().bind(this.imageProperty);
         }
-        isDebugged();
+        //isDebugged();
     }
 
     @Override

@@ -17,7 +17,7 @@ public class ServerMain {
         Broker broker = new Broker();
 
         Flag imFlag = new Flag(false);
-        Camera camera = new Camera(0, imFlag);
+        Camera camera = new Camera(0, imFlag, broker);
         ImageProcessor processor = new ImageProcessor(imFlag, broker);
         TCPServer tcpServer = new TCPServer(9876, false, 3, broker);
         UDPServer udpServer = new UDPServer(2345, false, 3, broker);

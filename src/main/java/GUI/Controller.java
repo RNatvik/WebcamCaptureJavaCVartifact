@@ -126,6 +126,20 @@ public class Controller extends Subscriber implements Initializable {
         modeText.setText(mode);
     }
 
+    public void debugCheckBoxClicked() {
+        System.out.println("debug checkbox clicked");
+        System.out.println(debugCheckWindow.isSelected());
+
+        if(debugCheckWindow.isSelected()){
+            this.getBroker().subscribeTo(Topic.DEBUG_OUTPUT, this);
+            this.tcpClient.setOutputMessage("SUB", Topic.DEBUG_OUTPUT);
+        }
+        else{
+            this.getBroker().unsubscribeFrom(Topic.DEBUG_OUTPUT, this);
+            this.tcpClient.setOutputMessage("UNSUB", Topic.DEBUG_OUTPUT);
+        }
+    }
+
     /**
      * When Manual Mode button is pressed, this method gets called. The method able keyboard input in the KeyBoardInput.
      */

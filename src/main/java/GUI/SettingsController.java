@@ -248,6 +248,8 @@ public class SettingsController extends Subscriber implements Initializable {
                 boolean success = this.tcpClient.connect();
                 System.out.println("Connect " + success);
                 if (success) {
+                    this.tcpClient.setOutputMessage("SUB", Topic.CONSOLE_OUTPUT);
+                    this.tcpClient.setOutputMessage("SUB", Topic.DEBUG_OUTPUT);
                     this.tcpClient.setOutputMessage("SUB", Topic.REGULATOR_OUTPUT);
                     this.tcpClient.setOutputMessage("SUB", Topic.IMPROC_DATA);
                     this.doSendPidParameter(1);
