@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * The Controller class controls all the necessary objects in the GUI.fxml.
  * This class also do necessarily checks, comparisons, updates and conversions.
  *
- * @author Lars Berge, Jarl Eirik Heide, Ruben Natvik and Einar Samset.
+ * @author Jarl Eirik Heide.
  * @version 1.0
  * @since 30.10.2019
  */
@@ -40,7 +40,6 @@ public class Controller extends Subscriber implements Initializable {
     private UDPClient udpClient;
     private SettingsController settingsController;
     private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
-    private ObjectProperty<TextField> textFieldObjectProperty = new SimpleObjectProperty<TextField>();
     private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
     private KeyboardInput keyboardInput;
     private GuiUpdater guiUpdater;
@@ -73,7 +72,7 @@ public class Controller extends Subscriber implements Initializable {
     public Button helpBtn;
 
     /**
-     * The constructor of the Controller class.
+     * The constructor of the Controller class, constructs a Shared Recourse of a broker.
      */
     public Controller() {
         super(SharedResource.getInstance().getBroker());
@@ -140,11 +139,7 @@ public class Controller extends Subscriber implements Initializable {
     /**
      * TODO: Write some help stuff things...
      */
-    public void helpBtnPressed() {
-        String old = conMessage.getText() + "\n";
-        conMessage.setText(old + "Dette er en test");
-
-    }
+    public void helpBtnPressed() { }
 
     /**
      * Sets the settingswindow primary stage to visible.
@@ -161,8 +156,10 @@ public class Controller extends Subscriber implements Initializable {
     }
 
     /**
+     * Handles the KeyEvent's that are fired when the GUI window is active
+     * and a button is pressed
      *
-     * @param keyEvent The allowed keys that is pressed.
+     * @param keyEvent the KeyEvent to handle
      */
     public void onKeyPressed(KeyEvent keyEvent) {
             String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
@@ -182,6 +179,12 @@ public class Controller extends Subscriber implements Initializable {
             }
     }
 
+    /**
+     * Handles the KeyEvent's that are fired when the GUI window is active
+     * and a button is released
+     *
+     * @param keyEvent the KeyEvent to handle
+     */
     public void onKeyReleased(KeyEvent keyEvent) {
         String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
         if (keysChanged != null){
@@ -197,7 +200,7 @@ public class Controller extends Subscriber implements Initializable {
     /**
      * Try's to stop the Scheduled Exicuter, then awaits for the Exicuter to terminate, and then shuts its down.
      */
-    public void safeStopSceduledExicuter() {
+    void safeStopSceduledExicuter() {
         System.out.println("In test");
         settingsController.safeStopSceduledExicuter();
         this.ses.shutdown();
@@ -207,7 +210,6 @@ public class Controller extends Subscriber implements Initializable {
             e.printStackTrace();
         }
         this.ses.shutdownNow();
-        System.out.println("test controller:" + this.ses.isShutdown());
     }
 
     /**
