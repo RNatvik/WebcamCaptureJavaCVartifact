@@ -2,7 +2,6 @@ package GUI;
 
 import communication.UDPClient;
 import data.*;
-import image_processing.ImageProcessor;
 import javafx.beans.property.ObjectProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.CheckBox;
@@ -13,20 +12,40 @@ import javafx.scene.image.ImageView;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 
+/**
+ * This class represents all field in gui that is spouse to be updated based on the incoming data.
+ * The class is executed by a periodic task via scheduledAtFixedRate, and the scheduler is created from a
+ * ScheduledThreadPoolExecutor. Data is read at this fixed rate, and fields are updated. Streaming a series of pictures
+ * sent form the udp-client to gui is also done in this class.
+ *
+ * @version 1.0
+ * @since 20.11.2019
+ */
 public class GuiUpdater extends Subscriber implements Runnable {
-    ObjectProperty<Image> imageProperty;
-    ImageView imageView;
-    TextField xPos;
-    TextField distance;
-    TextArea conMessage;
-    UDPClient udpClient;
-    TextField leftMotor;
-    TextField rightMotor;
-    CheckBox debugCheckWindow;
+    private ObjectProperty<Image> imageProperty;
+    private ImageView imageView;
+    private TextField xPos;
+    private TextField distance;
+    private TextArea conMessage;
+    private UDPClient udpClient;
+    private TextField leftMotor;
+    private TextField rightMotor;
+    private CheckBox debugCheckWindow;
 
-    public GuiUpdater(ObjectProperty<Image> imageProperty, ImageView imageView, TextField xPos, TextField distance,
+    /**
+     * The constructor of the class, it takes necessary parameters from GUI class.
+     * @param imageProperty The property of the imageviewer.
+     * @param imageView Imageviewer from gui controller.
+     * @param xPos xPos from gui controller.
+     * @param distance Distance from gui controller.
+     * @param leftMotor leftMotor  from gui controller.
+     * @param rightMotor rightMotor  from gui controller.
+     * @param conMessage console message from gui controller.
+     * @param debugCheckWindow debug check box  from gui controller.
+     * @param udpClient udp client from gui controller.
+     */
+    GuiUpdater(ObjectProperty<Image> imageProperty, ImageView imageView, TextField xPos, TextField distance,
                       TextField leftMotor, TextField rightMotor, TextArea conMessage, CheckBox debugCheckWindow, UDPClient udpClient) {
         super(SharedResource.getInstance().getBroker());
         this.imageProperty = imageProperty;
@@ -43,6 +62,11 @@ public class GuiUpdater extends Subscriber implements Runnable {
         this.getBroker().subscribeTo(Topic.IMPROC_DATA, this);
     }
 
+    /**
+     * This method gets called an a fixed rate from a scheduled exciter. Its read the incoming messages and grabs a
+     * Buffered image from udp-client. Buffered image is converted to an Image and is bind to an imageview. When debug
+     * check box is true, its subscribes on debugdata, and opposite.
+     */
     @Override
     public void run() {
         readMessages();
@@ -56,6 +80,11 @@ public class GuiUpdater extends Subscriber implements Runnable {
         isDebugged();
     }
 
+    /**
+     * Method for handling incoming messages.
+     * While there are messages is the message que, it takes it out and makes it its own message. The message contains
+     * a topic and some data. The method checks topics and sets the correct data to the gui.
+     */
     @Override
     public void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {
@@ -95,21 +124,36 @@ public class GuiUpdater extends Subscriber implements Runnable {
         }
     }
 
-    public boolean isDebugged(){
-        boolean debug;
+    /**
+     * Checks if the debug checkbox is true or false.
+     * When the checkbox is true, we choose to subscribe to DEBUG_OUTPUT; when false, unsubscribe.
+     * @return true if checkbox is checked, false otherwise.
+     */
+    public void isDebugged(){
         if(debugCheckWindow.isSelected()){
             this.getBroker().subscribeTo(Topic.DEBUG_OUTPUT, this);
-            debug = true;
         }
         else{
             this.getBroker().unsubscribeFrom(Topic.DEBUG_OUTPUT, this);
-            debug = false;
         }
-        return debug;
     }
 
+    /**
+     * Takes a variable of doubble, and parses it to a string. No need for checks in this method.
+     * @param d The double variable you want to parse.
+     * @return A string of the parameter.
+     */
     private String parseToString(double d) {
         String s = Double.toString(d);
         return s;
     }
+//    /**
+//     * Checks if the console window contains more than hundred lines, and if it does, the l
+//     */
+//    private void constrainConWindow(){
+//        if(conMessage.getText().split("\n", -1).length >= 100){
+//            int fle = conMessage.getText().indexOf("\n");
+//            conMessage.replaceText(0, fle+1, "");
+//        }
+//    }
 }

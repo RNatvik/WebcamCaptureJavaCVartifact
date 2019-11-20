@@ -33,9 +33,8 @@ import java.util.concurrent.TimeUnit;
  * The SettingsController class controls all the necessary objects in the SettingsWindow.fxml.
  * This class also do necessarily checks, comparisons and conversions.
  *
- * @author Lars Berge, Jarl Eirik Heide, Ruben Natvik and Einar Samset.
  * @version 1.0
- * @since 30.10.2019
+ * @since 20.11.2019
  */
 
 public class SettingsController extends Subscriber implements Initializable {
@@ -116,8 +115,6 @@ public class SettingsController extends Subscriber implements Initializable {
     @FXML
     private TextField ratio;
     @FXML
-    private Button controllerApply;
-    @FXML
     private Button conUdpBtn;
     @FXML
     private Button conTcpBtn;
@@ -129,7 +126,7 @@ public class SettingsController extends Subscriber implements Initializable {
     private CheckBox reversedTwo;
 
     /**
-     * Constructor of the class, constructs a Shared Recourse.
+     * Constructor of the class, constructs a Shared Recourse of a broker.
      */
     public SettingsController() {
         super(SharedResource.getInstance().getBroker());
@@ -138,8 +135,8 @@ public class SettingsController extends Subscriber implements Initializable {
     /**
      * Initialize the tcp and udp shared resource.
      *
-     * @param location
-     * @param resources
+     * @param location The location used to resolve relative paths for the root object, or null if the location is not known.
+     * @param resources The resources used to localize the root object, or null if the root object was not localized.
      */
     public void initialize(URL location, ResourceBundle resources) {
         try {
@@ -151,6 +148,10 @@ public class SettingsController extends Subscriber implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        /**
+         * Updates the connect-buttons to connect/disconnect at a fixed rate, if the tcp-client is connected then
+         * the text should be disconnect and vise versa.
+         */
         ses.scheduleAtFixedRate(() -> {
             if (tcpClient.isConnected()) {
                 Platform.runLater(() -> conTcpBtn.setText("Disconnect"));
@@ -177,7 +178,7 @@ public class SettingsController extends Subscriber implements Initializable {
             this.primaryStage1 = new Stage();
             this.primaryStage1.setScene(scene);
             this.primaryStage1.setTitle("camcoa");
-            // Set On Close Request so that the application does not shot down when closing the extra window
+            // Set On Close Request so that the application does not shot down when closing/hiding the extra window
             this.primaryStage1.setOnCloseRequest(event -> this.primaryStage1.close());
 
         } catch (Exception e) {
@@ -192,7 +193,6 @@ public class SettingsController extends Subscriber implements Initializable {
     public void openSettingsWindow() {
         this.primaryStage1.show();
         this.primaryStage1.toFront();
-
     }
 
 
@@ -217,7 +217,9 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     /**
-     * TODO error when not beeing able to connect.
+     * Listen on a button. When clicked and udp-client not connected, it initialize the udo-client with the ip-
+     * address and udp-port from settingswindow and starts it. When the udp-client is already
+     * connected, it stops the connection.
      */
 
     public void connectButtonUDPClicked() {
@@ -239,7 +241,9 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     /**
-     * TODO Testtt
+     * Listens on a button. When clicked and tcp-client is not connected, it initialize the tcp-client with the ip-
+     * address and tcp-port from settingswindow and starts it. When the tcp-client is already
+     * connected, it stops the connection.
      */
     public void connectButtonTCPClicked() {
         try {
@@ -628,7 +632,7 @@ public class SettingsController extends Subscriber implements Initializable {
      * @return String "true" or "false".
      */
     private String getStringReversed(int paramNum) {
-        String rev = "false";
+        String rev;
         if (getReversed(paramNum)) {
             rev = "true";
         } else {
@@ -641,8 +645,8 @@ public class SettingsController extends Subscriber implements Initializable {
      * Compare the values of the parameters. If hmax is smaller than hmin, then hman = hmin. If hmin is bigger than
      * hmax, then hmin = hmax. The method is used on the Sliders in GUI/settingsWindow tab-> Picture.
      *
-     * @param hMin The value that is suppose to be smallest.
-     * @param hMax The value that is suppose to be biggest.
+     * @param hMin The value that is suppose to be smallest.(Name of param is not important)
+     * @param hMax The value that is suppose to be biggest.(Name of param is not important)
      * @return
      */
     private int[] compareMinMax(double hMin, double hMax) {
@@ -652,9 +656,8 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     /**
-     * Updates the slider in GUI/SettingsWindow -> Picture, if one of the Slider is set on a illegal value and is
-     * being set to a legal one automatically.
-     *
+     * Updates the slider in GUI/SettingsWindow -> Picture.
+     * This method is called when new values has been set, but not from dragging on the sliders.
      * @param hueMinPar The actual hueMin value.
      * @param hueMaxPar The actual hueMax value.
      * @param satMinPar The actual satMin value.
@@ -674,7 +677,7 @@ public class SettingsController extends Subscriber implements Initializable {
 
     /**
      * Takes a set of TextField and some CheckBoxes, then saves the chosen values to a config file.
-     *
+     * This method is called each time a value has been applied.
      * @throws IOException
      */
     public void saveProperties() throws IOException {
@@ -687,7 +690,7 @@ public class SettingsController extends Subscriber implements Initializable {
             configProps.setProperty("adrTwo", adrTwo.getText());
             configProps.setProperty("adrThree", adrThree.getText());
             configProps.setProperty("adrFour", adrFour.getText());
-            configProps.setProperty("propGainOne", getPropGainFX(1));
+            configProps.setProperty("propGainOne", propGainOne.getText());
             configProps.setProperty("intGainOne", intGainOne.getText());
             configProps.setProperty("derGainOne", derGainOne.getText());
             configProps.setProperty("contrMaxOutOne", contrMaxOutOne.getText());
@@ -721,16 +724,17 @@ public class SettingsController extends Subscriber implements Initializable {
             configProps.setProperty("reversedOne", getStringReversed(1));
             configProps.setProperty("reversedTwo", getStringReversed(2));
 
-
             configProps.store(output, "Parameter configuration test");
-        } catch (IOException e) {
+        } catch(FileNotFoundException ex) {
+            ex.fillInStackTrace();
+        }catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Sets a set of TextFields and some Checkboxes to the previous value that is stored in the config file.
-     *
+     * Sets a set of TextFields and some Checkboxes to the stored values in the config file.
+     * This method is called in the initialize.
      * @throws IOException
      */
     private void loadProperties() throws IOException {
@@ -785,18 +789,17 @@ public class SettingsController extends Subscriber implements Initializable {
             } else {
                 reversedTwo.setSelected(false);
             }
-        } catch (IOException ex) {
+        } catch (FileNotFoundException ex) {
+            ex.fillInStackTrace();
+        }catch (IOException ex) {
             ex.printStackTrace();
         }
 
     }
 
     /**
-     * Checking check-boxes in GUI/SettingsWindow tab->Picture, default is set to normal video. If both
-     * checkboxes is chosen
-     * when the method is called, its goes to normal video and unchecks image processed checkbox.
-     *
-     * @return True, if image processed video is chosen. False, if normal video, both or non is selected.
+     * Checking checkbox in GUI/SettingsWindow tab->Picture, default is set to normal video.
+     * @return True, if image processed video is chosen. False, if unchecked.
      */
     private boolean getVideoOpt() {
         boolean imageProcessed = false;
@@ -856,7 +859,7 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     /**
-     * Checks if string contains a number.
+     * Checks if string contains a number (if its numeric).
      *
      * @param str The string that's need to be checked.
      * @return true, if the string contains a number (can be decimal). False, if there is a character inside it.
@@ -893,7 +896,7 @@ public class SettingsController extends Subscriber implements Initializable {
     }
 
     /**
-     * Converts a double variable to a String variable.
+     * Converts a double variable to a String variable. No need for checks in this method.
      *
      * @param d The double that needs to be converted.
      * @return s the String.

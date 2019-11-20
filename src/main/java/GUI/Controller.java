@@ -28,9 +28,8 @@ import java.util.concurrent.TimeUnit;
  * The Controller class controls all the necessary objects in the GUI.fxml.
  * This class also do necessarily checks, comparisons, updates and conversions.
  *
- * @author Lars Berge, Jarl Eirik Heide, Ruben Natvik and Einar Samset.
  * @version 1.0
- * @since 30.10.2019
+ * @since 20.11.2019
  */
 
 public class Controller extends Subscriber implements Initializable {
@@ -39,41 +38,30 @@ public class Controller extends Subscriber implements Initializable {
     private TCPClient tcpClient;
     private UDPClient udpClient;
     private SettingsController settingsController;
-    private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
-    private ObjectProperty<TextField> textFieldObjectProperty = new SimpleObjectProperty<TextField>();
+    private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<>();
     private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
     private KeyboardInput keyboardInput;
     private GuiUpdater guiUpdater;
 
     @FXML
-    private Button manuelBtn;
-    @FXML
-    private Button catchingBtn;
-    @FXML
-    private Button trackingBtn;
-    @FXML
     private CheckBox debugCheckWindow;
     @FXML
-    public Label modeText;
+    private Label modeText;
     @FXML
-    public TextField xPos;
+    private TextField xPos;
     @FXML
-    public TextField distance;
+    private TextField distance;
     @FXML
-    public TextField leftMotor;
+    private TextField leftMotor;
     @FXML
-    public TextField rightMotor;
+    private TextField rightMotor;
     @FXML
-    public TextArea conMessage;
+    private TextArea conMessage;
     @FXML
-    public ImageView imageView;
-    @FXML
-    public Button settingsButton;
-    @FXML
-    public Button helpBtn;
+    private ImageView imageView;
 
     /**
-     * The constructor of the Controller class.
+     * The constructor of the Controller class, constructs a Shared Recourse of a broker.
      */
     public Controller() {
         super(SharedResource.getInstance().getBroker());
@@ -138,11 +126,10 @@ public class Controller extends Subscriber implements Initializable {
     }
 
     /**
-     * TODO: Write some help stuff things...
+     * Spouse to write some text to the console display about how the you can use
+     * the application, but this is something we don't prioritise.
      */
     public void helpBtnPressed() {
-        String old = conMessage.getText() + "\n";
-        conMessage.setText(old + "Dette er en test");
 
     }
 
@@ -154,15 +141,17 @@ public class Controller extends Subscriber implements Initializable {
     }
 
     /**
-     * Clears all the console message TextArea.
+     * Clears all the text in console display.
      */
     public void ClearConWindow() {
         conMessage.clear();
     }
 
     /**
+     * Handles the KeyEvent's that are fired when the GUI window is active
+     * and a button is pressed
      *
-     * @param keyEvent The allowed keys that is pressed.
+     * @param keyEvent the KeyEvent to handle
      */
     public void onKeyPressed(KeyEvent keyEvent) {
             String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
@@ -182,6 +171,12 @@ public class Controller extends Subscriber implements Initializable {
             }
     }
 
+    /**
+     * Handles the KeyEvent's that are fired when the GUI window is active
+     * and a button is released
+     *
+     * @param keyEvent the KeyEvent to handle
+     */
     public void onKeyReleased(KeyEvent keyEvent) {
         String keysChanged = this.keyboardInput.doHandleKeyEvent(keyEvent);
         if (keysChanged != null){
@@ -197,7 +192,7 @@ public class Controller extends Subscriber implements Initializable {
     /**
      * Try's to stop the Scheduled Exicuter, then awaits for the Exicuter to terminate, and then shuts its down.
      */
-    public void safeStopSceduledExicuter() {
+    void safeStopSceduledExicuter() {
         System.out.println("In test");
         settingsController.safeStopSceduledExicuter();
         this.ses.shutdown();
@@ -207,7 +202,6 @@ public class Controller extends Subscriber implements Initializable {
             e.printStackTrace();
         }
         this.ses.shutdownNow();
-        System.out.println("test controller:" + this.ses.isShutdown());
     }
 
     /**
