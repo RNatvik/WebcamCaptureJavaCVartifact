@@ -28,9 +28,8 @@ import java.util.concurrent.TimeUnit;
  * The Controller class controls all the necessary objects in the GUI.fxml.
  * This class also do necessarily checks, comparisons, updates and conversions.
  *
- * @author Jarl Eirik Heide.
  * @version 1.0
- * @since 30.10.2019
+ * @since 20.11.2019
  */
 
 public class Controller extends Subscriber implements Initializable {
@@ -39,37 +38,27 @@ public class Controller extends Subscriber implements Initializable {
     private TCPClient tcpClient;
     private UDPClient udpClient;
     private SettingsController settingsController;
-    private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
+    private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<>();
     private ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
     private KeyboardInput keyboardInput;
     private GuiUpdater guiUpdater;
 
     @FXML
-    private Button manuelBtn;
-    @FXML
-    private Button catchingBtn;
-    @FXML
-    private Button trackingBtn;
-    @FXML
     private CheckBox debugCheckWindow;
     @FXML
-    public Label modeText;
+    private Label modeText;
     @FXML
-    public TextField xPos;
+    private TextField xPos;
     @FXML
-    public TextField distance;
+    private TextField distance;
     @FXML
-    public TextField leftMotor;
+    private TextField leftMotor;
     @FXML
-    public TextField rightMotor;
+    private TextField rightMotor;
     @FXML
-    public TextArea conMessage;
+    private TextArea conMessage;
     @FXML
-    public ImageView imageView;
-    @FXML
-    public Button settingsButton;
-    @FXML
-    public Button helpBtn;
+    private ImageView imageView;
 
     /**
      * The constructor of the Controller class, constructs a Shared Recourse of a broker.
@@ -137,9 +126,12 @@ public class Controller extends Subscriber implements Initializable {
     }
 
     /**
-     * TODO: Write some help stuff things...
+     * Spouse to write some text to the console display about how the you can use
+     * the application, but this is something we don't prioritise.
      */
-    public void helpBtnPressed() { }
+    public void helpBtnPressed() {
+
+    }
 
     /**
      * Sets the settingswindow primary stage to visible.
@@ -149,7 +141,7 @@ public class Controller extends Subscriber implements Initializable {
     }
 
     /**
-     * Clears all the console message TextArea.
+     * Clears all the text in console display.
      */
     public void ClearConWindow() {
         conMessage.clear();

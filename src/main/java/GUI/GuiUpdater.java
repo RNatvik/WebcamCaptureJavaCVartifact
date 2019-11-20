@@ -13,6 +13,15 @@ import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
 import java.awt.image.BufferedImage;
 
+/**
+ * This class represents all field in gui that is spouse to be updated based on the incoming data.
+ * The class is executed by a periodic task via scheduledAtFixedRate, and the scheduler is created from a
+ * ScheduledThreadPoolExecutor. Data is read at this fixed rate, and fields are updated. Streaming a series of pictures
+ * sent form the udp-client to gui is also done in this class.
+ *
+ * @version 1.0
+ * @since 20.11.2019
+ */
 public class GuiUpdater extends Subscriber implements Runnable {
     private ObjectProperty<Image> imageProperty;
     private ImageView imageView;
@@ -138,4 +147,13 @@ public class GuiUpdater extends Subscriber implements Runnable {
         String s = Double.toString(d);
         return s;
     }
+//    /**
+//     * Checks if the console window contains more than hundred lines, and if it does, the l
+//     */
+//    private void constrainConWindow(){
+//        if(conMessage.getText().split("\n", -1).length >= 100){
+//            int fle = conMessage.getText().indexOf("\n");
+//            conMessage.replaceText(0, fle+1, "");
+//        }
+//    }
 }

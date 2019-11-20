@@ -33,9 +33,8 @@ import java.util.concurrent.TimeUnit;
  * The SettingsController class controls all the necessary objects in the SettingsWindow.fxml.
  * This class also do necessarily checks, comparisons and conversions.
  *
- * @author Jarl Eirik Heide.
  * @version 1.0
- * @since 30.10.2019
+ * @since 20.11.2019
  */
 
 public class SettingsController extends Subscriber implements Initializable {
@@ -115,8 +114,6 @@ public class SettingsController extends Subscriber implements Initializable {
     private TextField conMaxOut;
     @FXML
     private TextField ratio;
-    @FXML
-    private Button controllerApply;
     @FXML
     private Button conUdpBtn;
     @FXML
