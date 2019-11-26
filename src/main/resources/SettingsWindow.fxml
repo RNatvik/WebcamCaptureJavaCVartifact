@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.SettingsController">
+<AnchorPane prefHeight="575.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.SettingsController">
     <children>
         <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <tabs>
@@ -49,9 +49,9 @@
                                               <Separator prefHeight="55.0" prefWidth="400.0" visible="false" />
                                     <HBox alignment="CENTER">
                                        <children>
-                                                    <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connectButtonUDPClicked" prefWidth="100.0" text="Connect UDP" />
+                                                    <Button fx:id="conUdpBtn" mnemonicParsing="false" onAction="#connectButtonUDPClicked" prefWidth="100.0" text="Connect UDP" />
                                           <Separator orientation="VERTICAL" prefWidth="20.0" visible="false" />
-                                          <Button mnemonicParsing="false" onAction="#connectButtonTCPClicked" prefWidth="100.0" text="Connect TCP" />
+                                          <Button fx:id="conTcpBtn" mnemonicParsing="false" onAction="#connectButtonTCPClicked" prefWidth="100.0" text="Connect TCP" />
                                        </children>
                                     </HBox>
                                           </children>
@@ -62,33 +62,25 @@
                         </AnchorPane>
                     </content>
                 </Tab>
-                <Tab text="Controller parameters">
+                <Tab text="Controller Forward parameters">
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                             <children>
-                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="75.0" AnchorPane.topAnchor="0.0">
+                                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="75.0" AnchorPane.topAnchor="10.0">
                                     <children>
                                         <Separator prefHeight="50.0" prefWidth="400.0" visible="false" />
-                                        <Label alignment="CENTER" prefHeight="30.0" prefWidth="250.0" text="PID Tuning Settings">
+                                        <Label alignment="CENTER" prefHeight="30.0" prefWidth="250.0" text="Forward PID Tuning Settings">
                                  <font>
                                     <Font size="15.0" />
                                  </font></Label>
                                         <Separator prefWidth="200.0" />
-                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-                                 <children>
-                                    <Label alignment="CENTER" prefWidth="200.0" text="Forward PID" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
-                                    <Label alignment="CENTER" prefWidth="200.0" text="Turning PID" />
-                                 </children>
-                              </HBox>
-                              <Separator prefWidth="200.0" />
                                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                             <children>
                                                 <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Proportional:" />
                                                 <TextField fx:id="propGainOne" prefWidth="130.0" text="1" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Proportional:" />
-                                    <TextField fx:id="propGainTwo" prefWidth="130.0" text="0" />
+                                    <Separator orientation="VERTICAL" visible="false" />
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Max Output:" />
+                                    <TextField fx:id="contrMaxOutOne" prefWidth="130.0" text="200" />
                                             </children>
                                         </HBox>
                                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
@@ -96,8 +88,8 @@
                                                 <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Integral:" />
                                                 <TextField fx:id="intGainOne" prefWidth="130.0" text="0" />
                                     <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Integral:" />
-                                    <TextField fx:id="intGainTwo" prefWidth="130.0" text="0" />
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Min Output:" />
+                                    <TextField fx:id="contrMinOutOne" prefWidth="130.0" text="-200" />
                                             </children>
                                         </HBox>
                                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
@@ -105,43 +97,31 @@
                                                 <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Derivation:" />
                                                 <TextField fx:id="derGainOne" prefWidth="130.0" text="0" />
                                     <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Derivation:" />
-                                    <TextField fx:id="derGainTwo" prefWidth="130.0" text="0" />
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="I Max:" />
+                                    <TextField fx:id="IMaxOne" prefWidth="130.0" text="0" />
                                             </children>
                                         </HBox>
                               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                  <children>
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Max Output:" />
-                                    <TextField fx:id="contrMaxOutOne" prefWidth="130.0" text="200" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Max Output:" />
-                                    <TextField fx:id="contrMaxOutTwo" prefWidth="130.0" text="200" />
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Setpoint:" />
+                                    <TextField fx:id="contrSetPointOne" prefWidth="130.0" text="50" />
                                  </children>
                               </HBox>
                               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                  <children>
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Min Output:" />
-                                    <TextField fx:id="contrMinOutOne" prefWidth="130.0" text="-200" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Min Output:" />
-                                    <TextField fx:id="contrMinOutTwo" prefWidth="130.0" text="-200" />
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Dead Band:" />
+                                    <TextField fx:id="deadBandOne" prefWidth="130.0" text="0" />
                                  </children>
                               </HBox>
                               <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                  <children>
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Setpoint:" />
-                                    <TextField fx:id="contrSetPointOne" prefWidth="130.0" text="150" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
-                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Setpoint:" />
-                                    <TextField fx:id="contrSetPointTwo" prefWidth="130.0" text="320" />
+                                    <CheckBox fx:id="reversedOne" mnemonicParsing="false" text="Reversed" />
                                  </children>
                               </HBox>
                                         <Separator prefHeight="43.0" prefWidth="400.0" />
                                         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                                             <children>
                                                 <Button mnemonicParsing="false" onAction="#controllerForwardApplyPressed" prefWidth="120.0" text="Apply Forward PID" />
-                                    <Separator orientation="VERTICAL" prefHeight="200.0" prefWidth="20.0" visible="false" />
-                                    <Button mnemonicParsing="false" onAction="#controllerTurningApplyPressed" prefWidth="120.0" text="Apply Turning PID" />
                                             </children>
                                         </HBox>
                                         <Separator prefHeight="80.0" prefWidth="200.0" visible="false" />
@@ -150,6 +130,81 @@
                             </children></AnchorPane>
                     </content>
                 </Tab>
+            <Tab text="Controller Turning Parameters Settings">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <VBox alignment="CENTER" layoutX="338.0" layoutY="128.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="75.0" AnchorPane.rightAnchor="75.0" AnchorPane.topAnchor="10.0">
+                           <children>
+                              <VBox alignment="TOP_CENTER">
+                                 <children>
+                                    <Separator prefHeight="50.0" prefWidth="200.0" visible="false" />
+                                    <Label alignment="CENTER" text="Turning PID Tuning">
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </VBox>
+                              <Separator prefWidth="200.0" />
+                              <Separator prefHeight="20.0" prefWidth="200.0" visible="false" />
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Proportional:" />
+                                    <TextField fx:id="propGainTwo" prefWidth="130.0" text="0" />
+                                    <Separator orientation="VERTICAL" prefHeight="100.0" visible="false" />
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Max Output:" />
+                                    <TextField fx:id="contrMaxOutTwo" prefWidth="130.0" text="200" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Integral:" />
+                                    <TextField fx:id="intGainTwo" prefWidth="130.0" text="0" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Min Output:" />
+                                    <TextField fx:id="contrMinOutTwo" prefWidth="130.0" text="-200" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Derivation:" />
+                                    <TextField fx:id="derGainTwo" prefWidth="130.0" text="0" />
+                                    <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" />
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="I Max:" />
+                                    <TextField fx:id="IMaxTwo" prefWidth="130.0" text="0" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                 <children>
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Setpoint:" />
+                                    <TextField fx:id="contrSetPointTwo" prefWidth="130.0" text="320" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" prefHeight="100.0">
+                                 <children>
+                                    <Label alignment="CENTER_RIGHT" prefWidth="70.0" text="Dead Band:" />
+                                    <TextField fx:id="deadBandTwo" prefWidth="130.0" text="0" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" prefHeight="100.0">
+                                 <children>
+                                    <CheckBox fx:id="reversedTwo" mnemonicParsing="false" text="Reversed" />
+                                 </children>
+                              </HBox>
+                              <Separator prefHeight="43.0" prefWidth="200.0" />
+                              <HBox alignment="CENTER" prefHeight="100.0">
+                                 <children>
+                                    <Button mnemonicParsing="false" onAction="#controllerTurningApplyPressed" prefWidth="120.0" text="Apply Turning PID" />
+                                 </children>
+                              </HBox>
+                              <Separator prefHeight="80.0" prefWidth="200.0" visible="false" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
                 <Tab text="Picture">
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
@@ -170,6 +225,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="hueMax" max="179.0" onMouseClicked="#hueMaxDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="98.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#hueMaxAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#hueMaxSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" visible="false" />
@@ -182,6 +243,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="hueMin" max="179.0" minorTickCount="2" onMouseClicked="#hueMinDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="52.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#hueMinAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#hueMinSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" visible="false" />
@@ -192,6 +259,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="satMax" majorTickUnit="5.0" max="255.0" minorTickCount="1" onMouseClicked="#satMaxDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="204.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#satMaxAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#satMaxSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Label text="Saturation Min">
@@ -203,6 +276,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="satMin" majorTickUnit="5.0" max="255.0" minorTickCount="1" onMouseClicked="#satMinDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#satMinAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#satMinSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" visible="false" />
@@ -213,6 +292,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="valMax" majorTickUnit="5.0" max="255.0" minorTickCount="1" onMouseClicked="#valMaxDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="208.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#valMaxAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#valMaxSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefWidth="200.0" visible="false" />
@@ -224,6 +309,12 @@
                               <HBox alignment="CENTER">
                                  <children>
                                     <Slider fx:id="valMin" majorTickUnit="5.0" max="255.0" minorTickCount="1" onMouseClicked="#valMinDragClicked" prefWidth="400.0" showTickLabels="true" showTickMarks="true" value="52.0" HBox.hgrow="ALWAYS" />
+                                    <VBox alignment="CENTER">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#valMinAdd" prefWidth="25.0" text="+" />
+                                          <Button mnemonicParsing="false" onAction="#valMinSub" prefWidth="25.0" text="-" />
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                               <Separator prefHeight="20.0" prefWidth="200.0" visible="false" />
@@ -250,7 +341,76 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <AnchorPane layoutX="200.0" layoutY="74.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <AnchorPane layoutX="200.0" layoutY="74.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <VBox alignment="TOP_CENTER" layoutX="325.0" layoutY="153.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="10.0">
+                                 <children>
+                                    <Label text="Reulator Output">
+                                       <font>
+                                          <Font size="15.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator prefHeight="40.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Minimum Reverse:" />
+                                          <TextField fx:id="minRev" prefWidth="130.0" text="-200" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Maximum Reverse:" />
+                                          <TextField fx:id="maxRev" prefWidth="130.0" text="200" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Minimum Forward:" />
+                                          <TextField fx:id="minFwd" prefWidth="130.0" text="-100" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Maximum Forward:" />
+                                          <TextField fx:id="maxFwd" prefWidth="130.0" text="100" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Controller Minimum Output:" />
+                                          <TextField fx:id="conMinOut" prefWidth="130.0" text="-200" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Controller Maximum Output:" />
+                                          <TextField fx:id="conMaxOut" prefWidth="130.0" text="200" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="25.0" prefWidth="200.0" visible="false" />
+                                    <HBox alignment="CENTER">
+                                       <children>
+                                          <Label alignment="CENTER_RIGHT" prefWidth="160.0" text="Ratio:" />
+                                          <TextField fx:id="ratio" prefWidth="130.0" text="1" />
+                                          <Separator orientation="VERTICAL" prefWidth="40.0" visible="false" />
+                                       </children>
+                                    </HBox>
+                                    <Separator prefHeight="40.0" prefWidth="200.0" visible="false" />
+                                    <Button mnemonicParsing="false" onAction="#RegulatorApplyPressed" prefWidth="120.0" text="Apply Regulator" />
+                                 </children>
+                              </VBox>
+                           </children></AnchorPane>
                      </children>
                   </AnchorPane>
               </content>

@@ -1,39 +1,52 @@
 package data;
 
-public class ControlInput extends Data{
+/**
+ * Manual speed control class
+ */
+public class ControlInput extends Data {
 
     private boolean manualControl;
     private double forwardSpeed;
     private double turnSpeed;
 
+    /**
+     * Constructor
+     *
+     * @param manualControl flag for whether manual control is enabled
+     * @param forwardSpeed  the target forward speed
+     * @param turnSpeed     the target turn speed
+     */
     public ControlInput(boolean manualControl, double forwardSpeed, double turnSpeed) {
-        super(Data.CONTROLER_INPUT);
         this.manualControl = manualControl;
         this.forwardSpeed = forwardSpeed;
         this.turnSpeed = turnSpeed;
     }
 
+    /**
+     * Gets the manual control flag
+     *
+     * @return the manual control flag
+     */
     public boolean isManualControl() {
         return manualControl;
     }
 
-    public void setManualControl(boolean manualControl) {
-        this.manualControl = manualControl;
-    }
 
+    /**
+     * Gets the target forward speed
+     *
+     * @return the target forward speed
+     */
     public double getForwardSpeed() {
         return forwardSpeed;
     }
 
-    public void setForwardSpeed(double forwardSpeed) {
-        this.forwardSpeed = forwardSpeed;
-    }
-
+    /**
+     * Gets the target turn speed
+     *
+     * @return the target turn speed
+     */
     public double getTurnSpeed() {
         return turnSpeed;
-    }
-
-    public void setTurnSpeed(double turnSpeed) {
-        this.turnSpeed = turnSpeed;
     }
 }

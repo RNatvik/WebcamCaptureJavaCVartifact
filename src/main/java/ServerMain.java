@@ -10,6 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This is the startup script for the robot.
+ */
 public class ServerMain {
 
     public static void main(String[] args) {
@@ -17,10 +20,10 @@ public class ServerMain {
         Broker broker = new Broker();
 
         Flag imFlag = new Flag(false);
-        Camera camera = new Camera(1, imFlag);
+        Camera camera = new Camera(0, imFlag);
         ImageProcessor processor = new ImageProcessor(imFlag, broker);
-        TCPServer tcpServer = new TCPServer(9876, true, 3, broker);
-        UDPServer udpServer = new UDPServer(2345, true, 3, broker);
+        TCPServer tcpServer = new TCPServer(9876, false, 3, broker);
+        UDPServer udpServer = new UDPServer(2345, false, 3, broker);
         Controller controller = new Controller(broker);
 
         try {
@@ -34,7 +37,7 @@ public class ServerMain {
             ses.schedule(udpServer, 0, TimeUnit.SECONDS);
 
             try {
-                Thread.sleep(300000);
+                Thread.sleep(9900000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -50,9 +53,9 @@ public class ServerMain {
 
         boolean finished = false;
         while (!finished) {
-            System.out.print("");
+            //System.out.print("");
             if (camera.isTerminated() && processor.isTerminated() && tcpServer.isTerminated() && udpServer.isTerminated()) {
-                System.out.println("process should terminate");
+                //System.out.println("process should terminate");
                 finished = true;
             }
         }

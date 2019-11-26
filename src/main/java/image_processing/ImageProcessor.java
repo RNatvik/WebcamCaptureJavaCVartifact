@@ -1,9 +1,6 @@
 package image_processing;
 
-import data.Flag;
-import data.ImageProcessorData;
-import data.ImageProcessorParameter;
-import data.Topic;
+import data.*;
 import org.bytedeco.javacpp.indexer.UByteBufferIndexer;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -34,7 +31,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
     private IplImage binIm;
     private OpenCVFrameConverter.ToIplImage converter;
     private Java2DFrameConverter bufferedImageConverter;
-    private LowPassFilter filter;
+    private FilterBank filter;
     private Flag flag;
     private ImageProcessorParameter parameters;
     private boolean shutdown;
@@ -54,11 +51,14 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         this.binIm = cvCreateImage(new CvSize(640, 480), 8, 1);
         this.converter = new OpenCVFrameConverter.ToIplImage();
         this.bufferedImageConverter = new Java2DFrameConverter();
-        this.filter = new LowPassFilter(5);
+        this.filter = new FilterBank();
         this.flag = flag;
         this.parameters = new ImageProcessorParameter(
                 52, 98, 0, 204, 52, 208, false
         );
+        this.filter.registerSignal("momY", new double[]{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1});
+        this.filter.registerSignal("momX", new double[]{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1});
+        this.filter.registerSignal("area", new double[]{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1});
         this.shutdown = false;
         this.initialized = false;
         this.terminated = false;
@@ -110,30 +110,39 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
      */
     @Override
     public void run() {
+        int counter = 0;
         while (!this.shutdown) {
             this.readMessages();
             if (this.flag.get()) {
-                long startTime = System.currentTimeMillis();
+                //long startTime = System.currentTimeMillis();
 
                 IplImage image = cvCloneImage(this.srcIm);
-                long cloneImTime = System.currentTimeMillis();
+                //long cloneImTime = System.currentTimeMillis();
 
                 IplConvKernel kernel = IplConvKernel.create(5, 5, 2, 2, CV_SHAPE_ELLIPSE, null);
                 this.flag.set(false);
                 this.threshold(image, this.binIm);
-                long thresholdTime = System.currentTimeMillis();
+                //long thresholdTime = System.currentTimeMillis();
 
                 //this.morph(this.binIm, kernel, 5, 3);
-                cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 5, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
+                cvSmooth(this.binIm, this.binIm, CV_GAUSSIAN, 11, 0, 0, 0); // cvSmooth(input, output, method, N, M=0, sigma1=0, sigma2=0)
+                cvThreshold(this.binIm, this.binIm, 200, 255, CV_THRESH_BINARY);
+                //long morphTime = System.currentTimeMillis();
 
-                long morphTime = System.currentTimeMillis();
+                double[] location = this.getCoordinates(this.binIm);
+                double distance = 1979.877*Math.pow(location[2],-1.0315375);
+                double newX = (location[0]-320) / 1;
+                if (location[3] == 0) {
+                    distance = 0;
+                    newX = 0;
+                }
+                double[] newLocation = new double[]{newX, location[1], distance, location[3]};
 
-                int[] location = this.getCoordinates(this.binIm);
-                long locationTime = System.currentTimeMillis();
+                //long locationTime = System.currentTimeMillis();
 
-                this.paintCircle(image, new int[]{location[0], location[1], 2});
-                this.paintCircle(image, location);
-                long paintTime = System.currentTimeMillis();
+                this.paintCircle(image, new int[]{(int) location[0], (int) location[1], 2});
+                this.paintCircle(image, new int[]{(int) location[0], (int) location[1], (int) location[2]});
+                //long paintTime = System.currentTimeMillis();
 
                 BufferedImage buffIm;
                 if (this.parameters.isStoreProcessedImage()) {
@@ -141,9 +150,11 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 } else {
                     buffIm = this.bufferedImageConverter.convert(this.converter.convert(image));
                 }
-                Message message = new Message(Topic.IMAGE_DATA, new ImageProcessorData(buffIm, location));
+                Message message = new Message(Topic.OUTPUT_IMAGE, new OutputImage(buffIm));
                 this.publish(this.getBroker(), message);
-                long publishTime = System.currentTimeMillis();
+                message = new Message(Topic.IMPROC_DATA, new ImageProcessorData(newLocation));
+                this.publish(this.getBroker(), message);
+                //long publishTime = System.currentTimeMillis();
                 /*
                 if (!this.parameters.isStoreProcessedImage()) {
                     this.canvas.showImage(this.converter.convert(image));
@@ -152,11 +163,17 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
                 }
                  */
                 cvReleaseImage(image);
-                long endTime = System.currentTimeMillis();
-                //System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
-                 //       (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
-                long endEndTime = System.currentTimeMillis();
-                //System.out.println("PrintTime: " + (endEndTime-endTime));
+                //long endTime = System.currentTimeMillis();
+                counter += 1;
+                if (counter == 15) {
+                    //System.out.println(String.format("x: %f    y: %f    r: %f    a: %f",
+                     //       location[0], location[1], location[2], location[3]));
+                    counter = 0;
+                }
+//                //System.out.println(String.format("Improc::\n Clone: %d \n Thresh: %d \n Morph: %d \n Loc: %d \n Paint: %d \n Publish: %d \n Total: %d \n",
+//                        (cloneImTime-startTime), (thresholdTime-cloneImTime), (morphTime-thresholdTime), (locationTime-morphTime), (paintTime-locationTime), (publishTime-paintTime), (endTime-startTime)));
+//                long endEndTime = System.currentTimeMillis();
+//                //System.out.println("PrintTime: " + (endEndTime-endTime));
             }
         }
         if (!this.isTerminated()) {
@@ -248,7 +265,7 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
      * @param thresholdImage the image to calculate from
      * @return integer array
      */
-    private int[] getCoordinates(IplImage thresholdImage) {
+    private double[] getCoordinates(IplImage thresholdImage) {
 
         CvMoments moments = new CvMoments();
         cvMoments(thresholdImage, moments, 1);
@@ -257,11 +274,17 @@ public class ImageProcessor extends Subscriber implements Runnable, Publisher {
         double momX10 = cvGetSpatialMoment(moments, 1, 0); // (x,y)
         double momY01 = cvGetSpatialMoment(moments, 0, 1);// (x,y)
         double area = cvGetCentralMoment(moments, 0, 0);
-        int x = (int) (momX10 / area);
-        int y = (int) (momY01 / area);
-        int radius = (int) (Math.sqrt(area / Math.PI));
-        int r = this.filter.passValue(radius);
-        return new int[]{x, y, r, (int)area};
+//        momX10 = this.filter.passValue("momX", momX10); // (x,y)
+//        momY01 = this.filter.passValue("momY", momY01);// (x,y)
+//        area = this.filter.passValue("area", area);
+        double r = (Math.sqrt(area / Math.PI));
+        double x = momX10 / area;
+        double y = momY01 / area;
+        if (area == 0) {
+            x = 0;
+            y = 0;
+        }
+        return new double[]{x, y, r, area};
     }
 
     /**

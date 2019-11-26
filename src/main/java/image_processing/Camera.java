@@ -65,8 +65,8 @@ public class Camera implements Runnable {
             try {
                 this.grabber.start();
 
-                System.out.println(this.grabber.getFormat());
-                System.out.println(this.grabber.getImageMode());
+                //System.out.println(this.grabber.getFormat());
+                //System.out.println(this.grabber.getImageMode());
                 Frame capturedFrame = this.grabber.grabFrame();
                 this.srcIm = this.converter.convert(capturedFrame);
                 success = true;
@@ -114,16 +114,16 @@ public class Camera implements Runnable {
     public void run() {
 
         if (!this.shutdown) {
-            long time = System.currentTimeMillis();
-            long dt = time - this.timeTest;
-            this.timeTest = time;
+            //long time = System.currentTimeMillis();
+            //long dt = time - this.timeTest;
+            //this.timeTest = time;
             //System.out.println("Camera:: Executor timer: " + dt);
             try {
 
-                long startTime = System.currentTimeMillis();
+                //long startTime = System.currentTimeMillis();
                 this.grabber.grab();
                 this.flag.set(true);
-                long endTime = System.currentTimeMillis();
+                //long endTime = System.currentTimeMillis();
                 //System.out.println("Camera:: Grab time: " + (endTime-startTime));
             } catch (FrameGrabber.Exception e) {
                 e.printStackTrace();
@@ -134,7 +134,7 @@ public class Camera implements Runnable {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                System.out.println("sleep was interrupted");
+                //System.out.println("sleep was interrupted");
             }
             this.shutdownProcedure();
         }

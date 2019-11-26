@@ -9,6 +9,7 @@ public class Flag {
 
     /**
      * Constructs a new Flag
+     *
      * @param initialValue the flag's initial value
      */
     public Flag(boolean initialValue) {
@@ -17,6 +18,7 @@ public class Flag {
 
     /**
      * Returns the flag value
+     *
      * @return the flag value
      */
     public synchronized boolean get() {
@@ -25,6 +27,7 @@ public class Flag {
 
     /**
      * Sets the flag value
+     *
      * @param newValue new flag value
      */
     public synchronized void set(boolean newValue) {

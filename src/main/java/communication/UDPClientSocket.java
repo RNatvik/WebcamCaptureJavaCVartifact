@@ -1,8 +1,6 @@
 package communication;
 
-import data.Data;
-import data.Flag;
-import data.ImageProcessorData;
+import data.*;
 import pub_sub_service.Broker;
 import pub_sub_service.Message;
 import pub_sub_service.Subscriber;
@@ -13,7 +11,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.*;
 
-
+/**
+ * Class for handling communication with a single UDPClient
+ */
 public class UDPClientSocket extends Subscriber implements Runnable {
 
     private DatagramSocket socket;
@@ -22,6 +22,14 @@ public class UDPClientSocket extends Subscriber implements Runnable {
     private Flag serverShutdownFlag;
     private boolean shutdown;
 
+    /**
+     * Constructor
+     *
+     * @param address            the client's address
+     * @param port               the client's port
+     * @param broker             the broker to receive images from
+     * @param serverShutdownFlag flag for whether the server is shutting down
+     */
     public UDPClientSocket(InetAddress address, int port, Broker broker, Flag serverShutdownFlag) {
         super(broker);
         try {
@@ -32,16 +40,19 @@ public class UDPClientSocket extends Subscriber implements Runnable {
             this.shutdown = false;
             this.socket.setSoTimeout(5);
             this.socket.connect(this.clientAddress, this.clientPort);
-            System.out.println(this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getLocalPort() + ")");
+            //System.out.println(this + ":: created at: " + this.socket.getLocalAddress() + " (" + this.socket.getLocalPort() + ")");
         } catch (SocketException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * UDPClientSocket main loop
+     */
     @Override
     public void run() {
-        System.out.println(this + ":: In run");
-        this.getBroker().subscribeTo("IMAGE_DATA", this);
+        //System.out.println(this + ":: In run");
+        this.getBroker().subscribeTo(Topic.OUTPUT_IMAGE, this);
         while (!(this.serverShutdownFlag.get() || this.shutdown)) {
             try {
                 this.readMessages();
@@ -60,14 +71,17 @@ public class UDPClientSocket extends Subscriber implements Runnable {
             }
         }
         this.shutdownProcedure();
-        System.out.println(this + " is terminated");
+        //System.out.println(this + " is terminated");
     }
 
+    /**
+     * The UDPClient shutdown procedure.
+     */
     private void shutdownProcedure() {
         try {
             String message = "END";
             byte[] buffer = message.getBytes();
-            System.out.println();
+            //System.out.println();
             DatagramPacket packet = new DatagramPacket(
                     buffer,
                     buffer.length,
@@ -83,6 +97,9 @@ public class UDPClientSocket extends Subscriber implements Runnable {
     }
 
 
+    /**
+     * Handler for reading incoming messages.
+     */
     @Override
     protected synchronized void doReadMessages() {
         while (!this.getMessageQueue().isEmpty()) {
@@ -90,8 +107,8 @@ public class UDPClientSocket extends Subscriber implements Runnable {
             Data data = message.getData();
             String topic = message.getTopic();
 
-            if (topic.equals("IMAGE_DATA")) {
-                ImageProcessorData image = data.safeCast(ImageProcessorData.class);
+            if (topic.equals(Topic.OUTPUT_IMAGE)) {
+                OutputImage image = data.safeCast(OutputImage.class);
                 try {
                     if (image != null) {
                         BufferedImage bufferedImage = image.getImage();
@@ -106,14 +123,14 @@ public class UDPClientSocket extends Subscriber implements Runnable {
                         );
                         this.socket.send(packet);
                     } else {
-                        System.out.println(this + ":: image is null");
+                        //System.out.println(this + ":: image is null");
 
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
-                System.out.println(this + ":: Topic Error");
+                //System.out.println(this + ":: Topic Error");
             }
         }
     }

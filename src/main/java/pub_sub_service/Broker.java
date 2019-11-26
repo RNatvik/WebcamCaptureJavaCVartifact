@@ -44,7 +44,7 @@ public class Broker implements Runnable {
             set.add(subscriber);
             this.topicSubscribers.put(topic, set);
         }
-        System.out.println(subscriber + " subscribed to: " + topic);
+        //System.out.println(subscriber + " subscribed to: " + topic);
     }
 
     /**
