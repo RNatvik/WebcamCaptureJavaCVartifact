@@ -16,11 +16,6 @@ Project description - Coming soon
 * [Arduino](https://www.arduino.cc/) - Arduino
 
 
-## Link to python script
-
-* [PythonCode](https://github.com/LarsBerge1/RoboClawNet)
-
-
 ## Authors
 
 * **Ruben Natvik** - [RNatvik](https://github.com/RNatvik)
